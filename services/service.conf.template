@@ -1,0 +1,12 @@
+[{{ param }}]
+mode = threaded
+port = 18236
+host = localhost
+logfile = {{ param }}.log
+#ssl-keyfile
+#ssl-cafile
+register = True
+register-type = UDP
+register-host = localhost
+register-port = 18811
+

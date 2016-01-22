@@ -1,0 +1,69 @@
+#!/bin/python
+# -*- coding: utf-8 -*-
+# ####################################################################
+# gofed-ng - Golang system
+# Copyright (C) 2016  Fridolin Pokorny, fpokorny@redhat.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# ####################################################################
+
+from common.registry.registryClient import RegistryClient
+from common.helpers.output import log
+from rpyc.utils.registry import REGISTRY_PORT
+import rpyc
+import random
+
+def _get_service_conn(service_name):
+	service = RegistryClient.query(service_name)
+	if len(service) < 1:
+		raise Exception("Service not found in Registry")
+	idx = int(random.random() * len(service)) # try to do load balancing if possible
+	conn = rpyc.connect(service[idx][0], service[idx][1])
+	return conn
+
+class System(object):
+	def __init__(self, config):
+		self.config = config
+
+{% for service in param %}{% for action in service['defs'] %}
+	def {{ action["name"] }}(self{% for arg in action["args"] %}, {{ arg }}{% endfor %}):
+		def remote_call():
+			conn = _get_service_conn("{{ service['name'] }}")
+			return conn.root.{{ action["name"] }}({% for arg in action["args"][:-2] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
+		def local_call():
+			try:
+				from services.{{ service["name"] }}.{{ action["file"] }} import exposed_{{ action["name"] }}
+			except ImportError:
+				log.print_error("Failed to import local service %s to do action %s" % (service['name'], action['name']))
+			return exposed_{{ action["name"] }}({% for arg in action["args"][:-2] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
+		def remote_direct_call(host, port):
+			conn = rpyc.connect(host, port)
+			return conn.root.{{ action["name"] }}({% for arg in action["args"][:-2] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
+
+		if "{{ action['name'] }}" in self.config.sections():
+			items = self.config.items("{{ action['name'] }}")
+			remote = [ x[1] for x in items if x[0] == "remote" ]
+			if len(remote) >= 1 and remote[0] == 'True':
+				host = [ x[1] for x in items if x[0] == "host" ]
+				port = [ x[1] for x in items if x[0] == "host" ]
+				if len(host) >= 1: # TODO
+					return remote_direct_call(host[0], port[0] if len(port) >= 1 else REGISTRY_PORT)
+				else:
+					return remote_call()
+
+		# always fallback to local
+		return local_call()
+{% endfor %}{% endfor %}
+

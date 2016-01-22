@@ -1,0 +1,17 @@
+[gofed]
+# Generic gofed configuration
+
+[registry]
+host = localhost
+port = 18811
+mode = UDP
+ipv6 = False
+
+{% for service in param %}
+[{{ service['name'] }}]
+# Configuration of service 'service2'
+remote = True
+#host = localhost
+#port = 11829
+{% endfor %}
+
