@@ -71,62 +71,6 @@ class GofedBootstrap(cli.Application):
 	def _script_dir(self):
 		return os.path.dirname(os.path.abspath(__file__))
 
-	def generate_service_key(self, ssl_key_directory = None):
-		if not ssl_key_directory:
-			ssl_key_directory = os.path.join(self._script_dir(), 'keys')
-
-		ssl_ca_key_path = os.path.join(ssl_key_directory, 'ca.key')
-		log.info("Generating CA key '%s'..." % ssl_ca_key_path)
-		cmd = "certtool --generate-privkey --outfile '%s'" % ssl_ca_key_path
-		runcmd(shlex.split(cmd))
-
-		templ_path = os.path.join(ssl_key_directory, 'ca.templ')
-		log.info("Generating CA template '%s'..." % templ_path)
-		templ = \
-			'cn = "Gofed CA"'             \
-			'organization = "Gofed CA"'   \
-			'serial = 1'                  \
-			'expiration_days = -1'        \
-			'ca'                          \
-			'signing_key'                 \
-			'cert_signing_key'            \
-			'crl_signing_key'
-		with open(templ_path, 'w') as f:
-			f.write(templ)
-
-		ssl_ca_cert_path = os.path.join(ssl_key_directory, 'ca.cert')
-		log.info("Generating CA cert '%s'..." % ssl_ca_cert_path)
-		cmd = "certtool --generate-self-signed --load-privkey '%s' --template '%s' --outfile '%s'" \
-			% (ssl_ca_key_path, templ_path, ssl_ca_cert_path)
-		runcmd(shlex.split(cmd))
-
-		ssl_server_key_path = os.path.join(ssl_key_directory, 'server.key')
-		log.info("Generating server key '%s'..." % ssl_server_key_path)
-		cmd = "certtool --generate-privkey --outfile '%s'" % ssl_server_key_path
-		runcmd(shlex.split(cmd))
-
-		templ_path = os.path.join(ssl_key_directory, 'server.templ')
-		log.info("Generating server template '%s'..." % templ_path)
-		templ = \
-				'cn = "Gofed service"\n'        \
-				'dns_name = "gofed.service"\n'  \
-				'organization = "Gofed"\n'      \
-				'expiration_days = -1\n'        \
-				'tls_www_server\n'              \
-				'signing_key\n'                 \
-				'encryption_key\n'
-		with open(templ_path, 'w') as f:
-			f.write(templ)
-
-		ssl_server_cert_path = os.path.join(ssl_key_directory, 'server.cert')
-		log.info("Generating server cert '%s'..." % ssl_server_cert_path)
-		cmd = "certtool --generate-certificate --load-ca-certificate '%s' --load-ca-privkey '%s'  --load-privkey '%s' --template '%s' --outfile '%s'" \
-				% (ssl_ca_cert_path, ssl_ca_key_path, ssl_server_key_path, templ_path, ssl_server_cert_path)
-		runcmd(shlex.split(cmd))
-
-		return { 'ssl_ca_cert_path': ssl_ca_cert_path, 'ssl_ca_key_path': ssl_ca_key_path,
-					'ssl_server_key_path': ssl_server_key_path, 'ssl_server_cert_path': ssl_server_cert_path }
-
 	def system(self, directory = None, system_template = None, registry_conf_template = None, gofed_conf_template = None, output_dir = None):
 		log.info("Running gofed system bootstrap...")
 
@@ -158,27 +102,25 @@ class GofedBootstrap(cli.Application):
 
 			render_services.append({"name": service_name, 'defs': []})
 
-			for service_file in os.listdir(service_path):
-				if service_file.startswith("exposed") and service_file.endswith(".py"):
-					log.info("Analysing file '%s' for exposed actions..." % service_file)
+			log.info("Analysing file 'exposed.py for exposed actions...")
+			src = open(os.path.join(service_path, 'exposed.py'), 'r').read()
 
-					src = open(os.path.join(service_path, service_file)).read()
-					p = ast.parse(src)
-					funcs = [node for node in ast.walk(p) if isinstance(node, ast.FunctionDef)]
+			p = ast.parse(src)
+			funcs = [node for node in ast.walk(p) if isinstance(node, ast.FunctionDef)]
 
-					for action in funcs:
-						if action.name.startswith('exposed_') and len(action.name) > len('exposed_'):
-							log.info("Found action '%s'..." % action.name)
+			for action in funcs:
+				if action.name.startswith('exposed_') and len(action.name) > len('exposed_'):
+					log.info("Found action '%s'..." % action.name)
 
-							item = {}
-							item['name'] = action.name[len('exposed_'):]
-							item['file'] = service_file.split(".")[0]
-							item['args'] = []
+					item = {}
+					item['name'] = action.name[len('exposed_'):]
+					item['file'] = 'exposed.py'
+					item['args'] = []
 
-							for arg in action.args.args:
-								item['args'].append(arg.id)
+					for arg in action.args.args:
+						item['args'].append(arg.id)
 
-							render_services[-1]['defs'].append(item)
+					render_services[-1]['defs'].append(item)
 
 		log.info("Generating system.py")
 		self._render_template(system_template, os.path.join(output_dir, "system.py"), render_services)
@@ -246,12 +188,6 @@ class GofedBootstrap(cli.Application):
 
 						log.info("Creating symlink to common files...")
 						os.symlink(os.path.join(script_dir, "common"), os.path.join(output_dir, service_common))
-
-						# TODO: this needs to be adjusted
-						service_keys_path = os.path.join(service_path, "keys")
-						log.info("Generatin key and cert to '%s'" % service_keys_path)
-						os.mkdir(service_keys_path)
-						self.generate_service_key(service_keys_path)
 
 			except Exception as e:
 				error_occurred = True

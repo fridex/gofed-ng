@@ -1,15 +1,16 @@
 [gofed]
 # Generic gofed configuration
 
+# Registry contact point configuration
 [registry]
 host = localhost
 port = 18811
 mode = UDP
 ipv6 = False
 
+# Services configuration
 {% for service in param %}
 [{{ service['name'] }}]
-# Configuration of service 'service2'
 remote = True
 #host = localhost
 #port = 11829

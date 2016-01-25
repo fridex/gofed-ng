@@ -20,7 +20,7 @@
 
 import sys
 from rpyc import Service
-from exposedAction2 import exposed_action2
+from exposed import exposed_action2
 from common.helpers.version import VERSION
 
 class Service2Service(Service):
