@@ -32,6 +32,9 @@ class Service2Service(Service):
 	def exposed_action2(self, project):
 		return "Remote:" + exposed_action2(project)
 
+	def exposed_action3(self, project):
+		return "Remote:" + exposed_action2(project)
+
 if __name__ == "__main__":
 	sys.exit(1)
 

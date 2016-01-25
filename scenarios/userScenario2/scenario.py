@@ -28,9 +28,7 @@ class UserScenario2(AbstractScenario):
 		print "Action1 output: %s" % out1
 		out2 = system.action2(out1)
 		print "Action2 output: %s" % out2
-		out3 = system.action2(out1)
-		print "Action2 output: %s" % out3
-		out4 = system.action2(out3)
-		print "Action2 output: %s" % out4
-		return out4
+		out3 = system.action3(out2)
+		print "Action3 output: %s" % out3
+		return out3
 
