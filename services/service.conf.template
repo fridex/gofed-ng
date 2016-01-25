@@ -1,8 +1,8 @@
-[{{ param }}]
+[{{ param['str'] }}]
 mode = threaded
 port = 18236
 host = localhost
-logfile = {{ param }}.log
+logfile = {{ param['str'] }}.log
 register = True
 register-type = UDP
 register-host = localhost

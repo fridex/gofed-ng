@@ -87,7 +87,7 @@ class System(object):
 					self.{{ service["name"] }} = {{ service["class"] }}(self.config.items("{{service['name']}}"))
 				else:
 					self.{{ service["name"] }} = {{ service["class"] }}()
-			return exposed_{{ action["name"] }}({% for arg in action["args"][:-1] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
+			return self.{{ service["name"] }}.exposed_{{ action["name"] }}({% for arg in action["args"][:-1] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
 {% else %}
 			try:
 				from services.{{ service["name"] }}.exposed import {{ action["name"] }}
