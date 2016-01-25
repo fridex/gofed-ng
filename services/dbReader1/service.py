@@ -22,9 +22,8 @@
 import sys
 from common.database.dbReaderProjectAPI import DBreaderProjectAPI
 from common.service.service import Service
-from common.helpers.version import VERSION
 
-class DBReader1(Service, DBreaderProjectAPI):
+class DBReader1Service(Service, DBreaderProjectAPI):
 	def on_connect(self):
 		pass
 

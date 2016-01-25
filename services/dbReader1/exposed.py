@@ -1,8 +1,13 @@
 #!/bin/python
 
-from common.service.exposedClass import ExposedClass
+from common.helpers.output import log
+from common.service.service import Service
+from common.database.dbReaderProjectAPI import DBreaderProjectAPI
 
-class DBreader1(ExposedClass):
+class DBreader1(Service, DBreaderProjectAPI):
+	def __init__(self, config):
+		log.info("instantiated with config '%s'" % config)
+
 	def exposed_get_project_api(self, project, commit = None):
 		return "local(exposed_get_project_api)"
 
