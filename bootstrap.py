@@ -226,6 +226,7 @@ class GofedBootstrap(cli.Application):
 				render_param['str'] = service_ident
 				render_param['name'] = cls['class']
 
+				log.info("Generating service envelope...")
 				self._render_template(service_py_template, os.path.join(output_dir, service_envelope), render_param)
 
 				log.info("Generating service config file...")
