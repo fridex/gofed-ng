@@ -20,9 +20,8 @@
 # ####################################################################
 
 import sys
-from rpyc import Service
 
-class DBwriterProjectAPI(Service):
+class DBwriterProjectAPI(object):
 	def __init__(self):
 		raise NotImplementedError()
 

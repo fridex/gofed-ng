@@ -20,9 +20,8 @@
 # ####################################################################
 
 import sys
-from rpyc import Service
 
-class DBreaderProjectAPI(Service):
+class DBreaderProjectAPI(object):
 	def __init__(self):
 		raise NotImplementedError()
 

@@ -23,8 +23,9 @@ from scenarios.abstractScenario import AbstractScenario
 
 class UserScenario1(AbstractScenario):
 	def run(self, system):
+		data = system.get_project_api("k8s", "commit")
 		print "Running user scenario 1"
-		out1 = system.action1("init_data")
+		out1 = system.action1(data)
 		print "Action1 output: %s" % out1
 		out2 = system.action2(out1)
 		print "Action2 output: %s" % out2

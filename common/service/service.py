@@ -24,7 +24,7 @@ from rpyc import Service as RpycService
 from common.helpers.version import VERSION
 
 class Service(RpycService):
-	def exposed_version(self, project):
+	def exposed_dbaction1(self, project):
 		return VERSION
 
 if __name__ == "__main__":

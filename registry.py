@@ -72,7 +72,6 @@ class RegistryServer(cli.Application):
 		self.port = conf.getint("registry", "port")
 		self.logfile = conf.get("registry", "logfile")
 		self.quiet = conf.getboolean("registry", "quiet")
-		#self.timeout = conf.getint("registry", "timeout")
 
 	def main(self):
 		if self.mode == "UDP":

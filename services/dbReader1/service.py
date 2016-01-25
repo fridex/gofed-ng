@@ -20,16 +20,24 @@
 # ####################################################################
 
 import sys
+from common.database.dbReaderProjectAPI import DBreaderProjectAPI
+from common.service.service import Service
+from common.helpers.version import VERSION
 
-class DBreaderDistributionAPI(object):
-	def __init__(self):
-		raise NotImplementedError()
+class DBReader1(Service, DBreaderProjectAPI):
+	def on_connect(self):
+		pass
 
-	def exposed_get_distribution_api(project, distribution, commit = None):
-		raise NotImplementedError()
+	def on_disconnect(self):
+		pass
 
-	def exposed_get_distribution_dependencies(project, distribution, commit = None):
-		raise NotImplementedError()
+	def exposed_get_project_api(self, project, commit = None):
+		return "query result of API from db for project '%s' and commint '%s'" \
+				% (str(project), str(commit))
+
+	def exposed_get_project_dependencies(self, project, commit = None):
+		return "query result of DEPS from db for project '%s' and commint '%s'" \
+				% (str(project), str(commit))
 
 if __name__ == "__main__":
 	sys.exit(1)

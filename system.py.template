@@ -31,6 +31,9 @@ DEFAULT_SERVICE_PORT = 18812
 class System(object):
 	def __init__(self, config):
 		self.config = config
+{% for service in param %}{% if service['type'] == 'class' %}
+		self.{{ service['name'] }} = None
+{%endif%}{% endfor %}
 
 	def _parse_bool(self, s):
 		if s not in [ 'True', 'False' ]:
@@ -74,20 +77,33 @@ class System(object):
 {% for service in param %}{% for action in service['defs'] %}
 	def {{ action["name"] }}(self{% for arg in action["args"] %}, {{ arg }}{% endfor %}):
 		def local_call():
+{% if service['type'] == 'class' %}
 			try:
-				from services.{{ service["name"] }}.exposed import exposed_{{ action["name"] }}
+				from services.{{ service["name"] }}.exposed import {{ service["class"] }}
+			except ImportError:
+				log.print_error("Failed to import local service '{{ service['name'] }}' to do action '{{ action['name'] }}'")
+			if self.{{ service["name"] }} == None:
+				if "{{service['name']}}" in self.config.sections():
+					self.{{ service["name"] }} = {{ service["class"] }}(self.config.items("{{service['name']}}"))
+				else:
+					self.{{ service["name"] }} = {{ service["class"] }}()
+			return exposed_{{ action["name"] }}({% for arg in action["args"][:-1] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
+{% else %}
+			try:
+				from services.{{ service["name"] }}.exposed import {{ action["name"] }}
 			except ImportError:
 				log.print_error("Failed to import local service %s to do action %s" % (service['name'], action['name']))
-			return exposed_{{ action["name"] }}({% for arg in action["args"][:-2] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
+			return exposed_{{ action["name"] }}({% for arg in action["args"][:-1] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
+{% endif %}
 
 		def remote_rpc_call(host, port):
 			conn = rpyc.connect(host, port)
-			return conn.root.{{ action["name"] }}({% for arg in action["args"][:-2] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
+			return conn.root.{{ action["name"] }}({% for arg in action["args"][:-1] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
 
 		def remote_ssh_call(host, port):
 			sshctx = SshMachine(host) # TODO: add keys to config
 			conn = rpyc.ssh_connect(sshctx, port)
-			return conn.root.{{ action["name"] }}({% for arg in action["args"][:-2] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
+			return conn.root.{{ action["name"] }}({% for arg in action["args"][:-1] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
 
 
 		cnf = self._parse_service_section("{{ service['name'] }}")

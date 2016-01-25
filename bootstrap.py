@@ -71,6 +71,48 @@ class GofedBootstrap(cli.Application):
 	def _script_dir(self):
 		return os.path.dirname(os.path.abspath(__file__))
 
+	def _get_exposed_funcs(self, node, method = False):
+		ret = []
+
+		funcs = [f for f in node.body if isinstance(f, ast.FunctionDef)]
+		for action in funcs:
+			if action.name.startswith('exposed_') and len(action.name) > len('exposed_'):
+				log.info("Found action '%s'..." % action.name)
+
+				item = {}
+				item['name'] = action.name[len('exposed_'):]
+				item['args'] = []
+
+				for arg in action.args.args:
+					item['args'].append(arg.id)
+
+				if method is True: # omit self in methods
+					item['args'] = item['args'][1:]
+
+				ret.append(item)
+
+		return ret
+
+	def _get_exposed_classes(self, node, base = 'ExposedClass'):
+		ret = []
+
+		classes = [c for c in node.body if isinstance(c, ast.ClassDef)]
+		for cls in classes:
+
+			exposed = False
+			for cls_base in cls.bases:
+				if base == cls_base.id:
+					exposed = True
+					break
+
+			if not exposed:
+				continue
+
+			ret.append({ 'defs': self._get_exposed_funcs(cls, method = True), 'class': cls.name })
+
+		return ret
+
+
 	def system(self, directory = None, system_template = None, registry_conf_template = None, gofed_conf_template = None, output_dir = None):
 		log.info("Running gofed system bootstrap...")
 
@@ -91,45 +133,45 @@ class GofedBootstrap(cli.Application):
 		if not output_dir:
 			output_dir = script_dir
 
-		render_services = []
-
+		exposed_services = []
 		for service_name in os.listdir(directory):
 			service_path = os.path.join(directory, service_name)
 			if not os.path.isdir(service_path):
 				continue
 
-			log.info("Inspecting service '%s'..." % service_name)
-
-			render_services.append({"name": service_name, 'defs': []})
-
-			log.info("Analysing file 'exposed.py for exposed actions...")
+			log.info("Analysing file 'exposed.py'")
 			src = open(os.path.join(service_path, 'exposed.py'), 'r').read()
 
 			p = ast.parse(src)
-			funcs = [node for node in ast.walk(p) if isinstance(node, ast.FunctionDef)]
+			log.info("Looking for exposed actions of service '%s'..." % service_name)
+			funcs = self._get_exposed_funcs(p)
+			for f in funcs: log.info("Found exposed action '%s'..." % f['name'])
+			if len(funcs) > 0:
+				exposed_services.append({ 'name': service_name, 'defs': funcs, 'type': 'action' })
 
-			for action in funcs:
-				if action.name.startswith('exposed_') and len(action.name) > len('exposed_'):
-					log.info("Found action '%s'..." % action.name)
+			log.info("Looking for exposed classes of service '%s'..." % service_name)
+			classes = self._get_exposed_classes(p)
 
-					item = {}
-					item['name'] = action.name[len('exposed_'):]
-					item['file'] = 'exposed.py'
-					item['args'] = []
+			if len(classes) > 0:
+				if len(classes) > 1:
+					raise ValueError("Cannot export more than one class per service...")
 
-					for arg in action.args.args:
-						item['args'].append(arg.id)
+				classes = classes[0]
 
-					render_services[-1]['defs'].append(item)
+				for f in classes['defs']: log.info("Found exposed method '%s' in class '%s'..." % (f['name'], classes['class']))
+				exposed_services.append({ 'name': service_name, 'defs': classes['defs'], 'type': 'class', 'class': classes['class'] })
+
+			if len(classes) > 0 and len(funcs) > 0:
+				raise ValueError("Cannot export actions and classes at the same time...")
 
 		log.info("Generating system.py")
-		self._render_template(system_template, os.path.join(output_dir, "system.py"), render_services)
+		self._render_template(system_template, os.path.join(output_dir, "system.py"), exposed_services)
 
 		log.info("Generating system.conf")
 		shutil.copy(registry_conf_template, os.path.join(output_dir, "registry.conf"))
 
 		log.info("Generating gofed.conf")
-		self._render_template(gofed_conf_template, os.path.join(output_dir, "gofed.conf"), render_services)
+		self._render_template(gofed_conf_template, os.path.join(output_dir, "gofed.conf"), exposed_services)
 
 		return True
 
@@ -158,36 +200,41 @@ class GofedBootstrap(cli.Application):
 				continue
 
 			try:
-				log.info("Inspecting dir '%s'..." % service_path)
+				log.info("Inspecting dir '%s'..." % service_name)
 
 				src = open(os.path.join(service_path, "service.py")).read()
 				p = ast.parse(src)
-				cls = [node.name for node in ast.walk(p) if isinstance(node, ast.ClassDef)]
 
-				for c in cls:
-					if c.endswith('Service') and len(c) > len('Service'):
-						log.info("Found service class '%s'..." % c)
-						log.info("Generating service envelope...")
+				cls = self._get_exposed_classes(p, base = 'Service')
 
-						service_ident = c[0].lower() + c[1:]
-						service_envelope = os.path.join(service_name, service_ident + ".py")
-						service_conf = os.path.join(service_name, service_ident + ".conf")
-						service_common = os.path.join(service_name, "common")
-						service_keys = os.path.join(service_name, "keys")
-						service_str = c[0:len(c) - len("Service")].lower()
+				if len(cls) == 0:
+					log.warn("Nothing to expose in service '%s'..." % service_name)
+				if len(cls) > 1:
+					raise ValueError("Cannot expose more than one class per service in service '%s'", service_name)
+				cls = cls[0]
 
-						render_param = {}
-						render_param['str'] = service_str
-						render_param['name'] = c
+				if True:
+					log.info("Found service class '%s'..." % cls['class'])
+					log.info("Generating service envelope...")
 
-						log.info("Generating service envelope...")
-						self._render_template(service_py_template, os.path.join(output_dir, service_envelope), render_param)
+					service_ident = cls['class'][0].lower() + cls['class'][1:]
+					service_envelope = os.path.join(service_name, service_ident + ".py")
+					service_conf = os.path.join(service_name, service_ident + ".conf")
+					service_common = os.path.join(service_name, "common")
+					service_keys = os.path.join(service_name, "keys")
+					service_str = cls['class'][0:len(cls['class']) - len("Service")].lower()
 
-						log.info("Generating service config file...")
-						self._render_template(service_conf_template, os.path.join(output_dir, service_conf), render_param)
+					render_param = {}
+					render_param['str'] = service_str
+					render_param['name'] = cls['class']
 
-						log.info("Creating symlink to common files...")
-						os.symlink(os.path.join(script_dir, "common"), os.path.join(output_dir, service_common))
+					self._render_template(service_py_template, os.path.join(output_dir, service_envelope), render_param)
+
+					log.info("Generating service config file...")
+					self._render_template(service_conf_template, os.path.join(output_dir, service_conf), render_param)
+
+					log.info("Creating symlink to common files...")
+					os.symlink(os.path.join(script_dir, "common"), os.path.join(output_dir, service_common))
 
 			except Exception as e:
 				error_occurred = True

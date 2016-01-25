@@ -20,16 +20,17 @@
 # ####################################################################
 
 import sys
+from common.helpers.version import VERSION
 
-class DBreaderDistributionAPI(object):
+class ExposedClass(object):
 	def __init__(self):
-		raise NotImplementedError()
+		raise NotImplemented("Not implemented")
 
-	def exposed_get_distribution_api(project, distribution, commit = None):
-		raise NotImplementedError()
+	def __init__(self, configuration = None):
+		raise NotImplemented("Not implemented")
 
-	def exposed_get_distribution_dependencies(project, distribution, commit = None):
-		raise NotImplementedError()
+	def version(self, project):
+		return VERSION + "-local"
 
 if __name__ == "__main__":
 	sys.exit(1)
