@@ -46,7 +46,7 @@ class RegistryServer(cli.Application):
 	logfile = cli.SwitchAttr(["--logfile"], str, default = None,
 		help = "The log file to use; the default is stderr")
 
-	quiet = cli.SwitchAttr(["-q", "--quiet"], help = "Quiet mode (only errors are logged)")
+	quiet = cli.Flag(["-q", "--quiet"], help = "Quiet mode (only errors are logged)")
 
 	timeout = cli.SwitchAttr(["-t", "--timeout"], int,
 		default = DEFAULT_PRUNING_TIMEOUT, help = "Set a custom pruning timeout (in seconds)")
