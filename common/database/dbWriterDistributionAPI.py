@@ -25,10 +25,10 @@ class DBWriterAPI(object):
 	def __init__(self):
 		raise NotImplementedError()
 
-	def set_package_api(project, commit = None):
+	def exposed_set_package_api(project, commit = None):
 		raise NotImplementedError()
 
-	def set_package_dependencies(project, commit = None):
+	def exposed_set_package_dependencies(project, commit = None):
 		raise NotImplementedError()
 
 if __name__ == "__main__":
