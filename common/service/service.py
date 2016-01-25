@@ -20,18 +20,12 @@
 # ####################################################################
 
 import sys
-from exposed import exposed_action1
-from common.service.service import Service
+from rpyc import Service as RpycService
+from common.helpers.version import VERSION
 
-class Service1Service(Service):
-	def on_connect(self):
-		pass
-
-	def on_disconnect(self):
-		pass
-
-	def exposed_action1(self, project):
-		return "Remote: " + exposed_action1(project)
+class Service(RpycService):
+	def exposed_version(self, project):
+		return VERSION
 
 if __name__ == "__main__":
 	sys.exit(1)

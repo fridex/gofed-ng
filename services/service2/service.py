@@ -19,9 +19,8 @@
 # ####################################################################
 
 import sys
-from rpyc import Service
+from common.service.service import Service
 from exposed import exposed_action2
-from common.helpers.version import VERSION
 
 class Service2Service(Service):
 	def on_connect(self):
@@ -29,9 +28,6 @@ class Service2Service(Service):
 
 	def on_disconnect(self):
 		pass
-
-	def exposed_version(self, project):
-		return VERSION
 
 	def exposed_action2(self, project):
 		return "Remote:" + exposed_action2(project)
