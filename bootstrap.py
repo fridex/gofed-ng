@@ -144,7 +144,7 @@ class GofedBootstrap(cli.Application):
 			directory = os.path.join(script_dir, "services")
 
 		if not service_py_template:
-			service_py_template = os.path.join(directory, "service.py.template")
+			service_py_template = os.path.join(directory, "serviceEnvelope.py.template")
 
 		if not service_conf_template:
 			service_conf_template = os.path.join(directory, "service.conf.template")
