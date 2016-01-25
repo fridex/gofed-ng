@@ -93,7 +93,7 @@ class GofedBootstrap(cli.Application):
 
 		return ret
 
-	def _get_exposed_classes(self, node, base = 'ExposedClass'):
+	def _get_exposed_classes(self, node, base = 'Service'):
 		ret = []
 
 		classes = [c for c in node.body if isinstance(c, ast.ClassDef)]
@@ -213,28 +213,26 @@ class GofedBootstrap(cli.Application):
 					raise ValueError("Cannot expose more than one class per service in service '%s'", service_name)
 				cls = cls[0]
 
-				if True:
-					log.info("Found service class '%s'..." % cls['class'])
-					log.info("Generating service envelope...")
+				log.info("Found service class '%s'..." % cls['class'])
+				log.info("Generating service envelope...")
 
-					service_ident = cls['class'][0].lower() + cls['class'][1:]
-					service_envelope = os.path.join(service_name, service_ident + ".py")
-					service_conf = os.path.join(service_name, service_ident + ".conf")
-					service_common = os.path.join(service_name, "common")
-					service_keys = os.path.join(service_name, "keys")
-					service_str = cls['class'][0:len(cls['class']) - len("Service")].lower()
+				service_ident = cls['class'][0].lower() + cls['class'][1:]
+				service_envelope = os.path.join(service_name, service_ident + ".py")
+				service_conf = os.path.join(service_name, service_ident + ".conf")
+				service_common = os.path.join(service_name, "common")
+				service_keys = os.path.join(service_name, "keys")
 
-					render_param = {}
-					render_param['str'] = service_str
-					render_param['name'] = cls['class']
+				render_param = {}
+				render_param['str'] = service_ident
+				render_param['name'] = cls['class']
 
-					self._render_template(service_py_template, os.path.join(output_dir, service_envelope), render_param)
+				self._render_template(service_py_template, os.path.join(output_dir, service_envelope), render_param)
 
-					log.info("Generating service config file...")
-					self._render_template(service_conf_template, os.path.join(output_dir, service_conf), render_param)
+				log.info("Generating service config file...")
+				self._render_template(service_conf_template, os.path.join(output_dir, service_conf), render_param)
 
-					log.info("Creating symlink to common files...")
-					os.symlink(os.path.join(script_dir, "common"), os.path.join(output_dir, service_common))
+				log.info("Creating symlink to common files...")
+				os.symlink(os.path.join(script_dir, "common"), os.path.join(output_dir, service_common))
 
 			except Exception as e:
 				error_occurred = True
