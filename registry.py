@@ -64,9 +64,9 @@ class RegistryServer(cli.Application):
 				"timeout": DEFAULT_PRUNING_TIMEOUT})
 			conf.read(config)
 
-		mode = conf.get("registry", "mode").upper()
-		if mode not in ["UDP", "TCP"]:
-			raise ValueError("Invalid mode %r" % (mode,))
+		self.mode = conf.get("registry", "mode").upper()
+		if self.mode not in ["UDP", "TCP"]:
+			raise ValueError("Invalid mode %r" % mode)
 
 		self.ipv6 = conf.getboolean("registry", "ipv6")
 		self.port = conf.getint("registry", "port")
