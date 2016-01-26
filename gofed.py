@@ -28,8 +28,6 @@ try:
 except ImportError:
 	from ConfigParser import ConfigParser
 
-from rpyc.utils.registry import REGISTRY_PORT, DEFAULT_PRUNING_TIMEOUT
-
 from scenarios.userScenario1.scenario import UserScenario1
 from scenarios.userScenario2.scenario import UserScenario2
 
