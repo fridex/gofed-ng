@@ -263,7 +263,6 @@ class GofedBootstrap(cli.Application):
 
 			if not self.system_only:
 				if not self.services(self.services_directory,
-						self.services_py_template,
 						self.services_conf_template,
 						self.services_output_dir):
 					log.errror("System bootstrap failed")
