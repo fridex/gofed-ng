@@ -1,5 +1,5 @@
 [{{ param['str'] }}]
-port = 18236
+port = 0
 host = localhost
 logfile = {{ param['str'] }}.log
 register = True
