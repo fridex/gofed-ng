@@ -20,6 +20,7 @@
 # ####################################################################
 
 import sys
+from common.helpers.output import log
 from exposed import exposed_action1
 from common.service.service import Service
 from common.service.serviceEnvelope import ServiceEnvelope
@@ -27,26 +28,27 @@ from common.service.serviceEnvelope import ServiceEnvelope
 class Service1Service(Service):
 	@classmethod
 	def signal_startup(cls, config):
+		log.info("Custom config sections: " + str(config.sections()))
 		print "got startup signal"
 
 	@classmethod
 	def signal_termination(cls):
-		print "got termination signal"
+		log.info("got termination signal")
 
 	def signal_connect(self):
-		print "got connect signal"
+		log.info("got connect signal")
 
 	def signal_disconnect(self):
-		print "got disconnect signal"
+		log.info("got disconnect signal")
 
 	def signal_process(self):
-		print "got process signal"
+		log.info("got process signal")
 
 	def signal_processed(self):
-		print "got processed signal"
-		pass
+		log.info("got processed signal")
 
 	def exposed_action1(self):
+		log.info("Processing action")
 		return { "remote": exposed_action1() }
 
 if __name__ == "__main__":
