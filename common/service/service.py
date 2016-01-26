@@ -67,8 +67,9 @@ class Service(RpycService):
 	def signal_processed(self):
 		pass
 
-	def get_service_version(self):
-		return self.exposed_version()
+	@classmethod
+	def get_service_version(cls):
+		return VERSION
 
 	def exposed_version(self):
 		return VERSION

@@ -26,7 +26,7 @@ from rpyc.utils.server import ThreadPoolServer
 from rpyc.utils.registry import REGISTRY_PORT
 from rpyc.utils.registry import UDPRegistryClient, TCPRegistryClient, REGISTRY_PORT
 from rpyc.lib import setup_logger
-from common.helpers.version import VERSION
+from common.helpers.output import log
 
 try:
 	from configparser import ConfigParser
@@ -34,12 +34,22 @@ except ImportError:
 	from ConfigParser import ConfigParser
 
 class ServiceEnvelope(cli.Application):
+
 	@classmethod
 	def serve(cls, service_class):
 		cls.SERVICE_CLASS = service_class
 		return ServiceEnvelope.run()
 
-	@cli.switch("--config", str, mandatory = True)
+	@cli.switch("--info", excludes = ['--config'])
+	def info(self):
+		print "Service name:\t\t%s\nService version:\t%s\nService description:\n\t%s" % \
+					(ServiceEnvelope.SERVICE_CLASS.get_service_name(),
+						ServiceEnvelope.SERVICE_CLASS.get_service_version(),
+						str(ServiceEnvelope.SERVICE_CLASS.__doc__)
+					)
+		sys.exit(1)
+
+	@cli.switch("--config", str)
 	def config(self, config):
 		''' Use config instead of command line arguments '''
 		self.conf = ConfigParser({
@@ -99,6 +109,12 @@ class ServiceEnvelope(cli.Application):
 		t.start()
 
 	def main(self):
+		try:
+			self.conf
+		except Exception:
+			log.error("config option is mandatory, see '--help'")
+			sys.exit(1)
+
 		ServiceEnvelope.SERVICE_CLASS.signal_startup(self.conf)
 
 		ServiceEnvelope.worker_pid = os.fork()

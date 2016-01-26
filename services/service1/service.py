@@ -26,6 +26,8 @@ from common.service.service import Service
 from common.service.serviceEnvelope import ServiceEnvelope
 
 class Service1Service(Service):
+	''' This is an example of a service '''
+
 	@classmethod
 	def signal_startup(cls, config):
 		log.info("Custom config sections: " + str(config.sections()))
