@@ -33,7 +33,7 @@ class RegistryClient(object):
 
 		if mode not in ["UDP", "TCP"]:
 			raise ValueError("Unknown registry mode '%s', expected %s"
-					% (mode, ["UDP", "TCP"]))
+					% (mode, str(["UDP", "TCP"])))
 
 		if mode == "UDP":
 			client = UDPRegistryClient
@@ -45,6 +45,5 @@ class RegistryClient(object):
 		return registrar.discover(service_name)
 
 if __name__ == "__main__":
-	print RegistryClient.query("APIDIFF")
 	sys.exit(1)
 
