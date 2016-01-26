@@ -21,7 +21,7 @@
 
 from jinja2 import Environment, FileSystemLoader
 from common.helpers.output import log
-from common.helpers.runcmd import runcmd
+from common.helpers.utils import runcmd
 import shlex
 import os, sys
 import shutil

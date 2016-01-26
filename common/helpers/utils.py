@@ -25,6 +25,17 @@ import os
 def script_dir():
 	return os.path.dirname(os.path.abspath(__file__))
 
+def runcmd(cmd, cwd = "."):
+	''' Run command `cmd' in working directory `cwd' '''
+	process = Popen(cmd, stderr=PIPE, stdout=PIPE, cwd=cwd, close_fds=True)
+	stdout, stderr = process.communicate()
+	rt = process.returncode
+
+	if rt != 0:
+		raise RuntimeError(stderr)
+
+	return stdout, stderr, rt
+
 if __name__ == '__main__':
 	sys.exit(1)
 

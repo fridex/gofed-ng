@@ -34,7 +34,6 @@ except ImportError:
 	from ConfigParser import ConfigParser
 
 class ServiceEnvelope(cli.Application):
-
 	@classmethod
 	def serve(cls, service_class):
 		cls.SERVICE_CLASS = service_class
