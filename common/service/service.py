@@ -22,8 +22,38 @@
 import sys
 from rpyc import Service as RpycService
 from common.helpers.version import VERSION
+from common.service.actionWrapper import ActionWrapper
+from common.service.serviceResultGenerator import ServiceResultGenerator
 
 class Service(RpycService):
+	def __init__(self, conn):
+		super(Service, self).__init__(conn)
+		self._result = ServiceResultGenerator()
+		self._result.log_service_name(self.get_service_name())
+		self._result.log_service_aliases(self.get_service_aliases())
+
+	def on_connect(self):
+		self._result.log_connect_time()
+		self.signal_connect()
+
+	def on_disconnect(self):
+		self.signal_disconnect()
+
+	def _rpyc_getattr(self, name):
+		return ActionWrapper(super(Service, self)._rpyc_getattr(name), self._result)
+
+	def signal_connect(self):
+		pass
+
+	def signal_disconnect(self):
+		pass
+
+	def signal_process(self):
+		pass
+
+	def signal_processed(self):
+		pass
+
 	def exposed_version(self, project):
 		return VERSION
 

@@ -20,29 +20,47 @@
 # ####################################################################
 
 import sys
-from common.database.dbReaderProjectAPI import DBreaderProjectAPI
-from common.service.service import Service
+import json
+import os
+from time import gmtime, strftime
 
-class DBReader1Service(Service, DBreaderProjectAPI):
-	def signal_connect(self):
-		pass
+# TODO: this could be extended with action logging to a file
 
-	def signal_disconnect(self):
-		pass
+class ServiceResultGenerator(object):
+	def _print_time(self):
+		return strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
-	def signal_process(self):
-		pass
+	def __init__(self):
+		self._stats = {'connected': None,
+				'started': None,
+				'finished': None,
+				'result': None,
+				'hostname': os.uname()[1],
+				}
 
-	def signal_processed(self):
-		pass
+	def log_connect_time(self):
+		self._stats['connected'] = self._print_time()
 
-	def exposed_get_project_api(self, project, commit = None):
-		return { 'res1': "query result of API from db for project '%s' and commint '%s'" \
-				% (str(project), str(commit)) }
+	def log_process_time(self):
+		self._stats['started'] = self._print_time()
 
-	def exposed_get_project_dependencies(self, project, commit = None):
-		return { 'res2': "query result of DEPS from db for project '%s' and commint '%s'" \
-				% (str(project), str(commit)) }
+	def log_processed_time(self):
+		self._stats['finished'] = self._print_time()
+
+	def log_result(self, result):
+		if type(result) is not dict:
+			raise ValueError("Action should return a dict, got '%s'", type(result))
+
+		self._stats['result'] = result
+
+	def log_service_name(self, name):
+		self._stats['service'] = name
+
+	def log_service_aliases(self, names):
+		self._stats['aliases'] = names
+
+	def dump(self):
+		return json.dumps(self._stats)
 
 if __name__ == "__main__":
 	sys.exit(1)

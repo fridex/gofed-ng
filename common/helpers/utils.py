@@ -20,30 +20,11 @@
 # ####################################################################
 
 import sys
-from common.database.dbReaderProjectAPI import DBreaderProjectAPI
-from common.service.service import Service
+import os
 
-class DBReader1Service(Service, DBreaderProjectAPI):
-	def signal_connect(self):
-		pass
+def script_dir():
+	return os.path.dirname(os.path.abspath(__file__))
 
-	def signal_disconnect(self):
-		pass
-
-	def signal_process(self):
-		pass
-
-	def signal_processed(self):
-		pass
-
-	def exposed_get_project_api(self, project, commit = None):
-		return { 'res1': "query result of API from db for project '%s' and commint '%s'" \
-				% (str(project), str(commit)) }
-
-	def exposed_get_project_dependencies(self, project, commit = None):
-		return { 'res2': "query result of DEPS from db for project '%s' and commint '%s'" \
-				% (str(project), str(commit)) }
-
-if __name__ == "__main__":
+if __name__ == '__main__':
 	sys.exit(1)
 

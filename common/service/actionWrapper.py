@@ -20,29 +20,21 @@
 # ####################################################################
 
 import sys
-from common.database.dbReaderProjectAPI import DBreaderProjectAPI
-from common.service.service import Service
 
-class DBReader1Service(Service, DBreaderProjectAPI):
-	def signal_connect(self):
-		pass
+class ActionWrapper(object):
+	def __init__(self, action, stats_logger):
+		self._action = action
+		self._stats_logger = stats_logger
 
-	def signal_disconnect(self):
-		pass
+	def action_call(self, *args, **kwargs):
+		self._stats_logger.log_process_time()
+		result = self._action(*args, **dict(kwargs))
+		self._stats_logger.log_processed_time()
+		self._stats_logger.log_result(result)
 
-	def signal_process(self):
-		pass
+		return self._stats_logger.dump()
 
-	def signal_processed(self):
-		pass
-
-	def exposed_get_project_api(self, project, commit = None):
-		return { 'res1': "query result of API from db for project '%s' and commint '%s'" \
-				% (str(project), str(commit)) }
-
-	def exposed_get_project_dependencies(self, project, commit = None):
-		return { 'res2': "query result of DEPS from db for project '%s' and commint '%s'" \
-				% (str(project), str(commit)) }
+	__call__ = action_call # make myself act like a function
 
 if __name__ == "__main__":
 	sys.exit(1)

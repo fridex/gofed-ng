@@ -24,14 +24,20 @@ from exposed import exposed_action1
 from common.service.service import Service
 
 class Service1Service(Service):
-	def on_connect(self):
+	def signal_connect(self):
 		pass
 
-	def on_disconnect(self):
+	def signal_disconnect(self):
+		pass
+
+	def signal_process(self):
+		pass
+
+	def signal_processed(self):
 		pass
 
 	def exposed_action1(self):
-		return "Remote: " + exposed_action1()
+		return { "remote": exposed_action1() }
 
 if __name__ == "__main__":
 	sys.exit(1)

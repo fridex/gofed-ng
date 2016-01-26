@@ -23,17 +23,23 @@ from common.service.service import Service
 from exposed import exposed_action2, exposed_action3
 
 class Service2Service(Service):
-	def on_connect(self):
+	def signal_connect(self):
 		pass
 
-	def on_disconnect(self):
+	def signal_disconnect(self):
+		pass
+
+	def signal_process(self):
+		pass
+
+	def signal_processed(self):
 		pass
 
 	def exposed_action2(self, project):
-		return "Remote:" + exposed_action2(project)
+		return { "remote": exposed_action2(project) }
 
 	def exposed_action3(self, project, commit):
-		return "Remote:" + exposed_action3(project, commit)
+		return { "remote:": exposed_action3(project, commit) }
 
 if __name__ == "__main__":
 	sys.exit(1)
