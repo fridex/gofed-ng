@@ -81,7 +81,7 @@ class System(object):
 			try:
 				from services.{{ service["name"] }}.exposed import {{ service["class"] }}
 			except ImportError:
-				log.print_error("Failed to import local service '{{ service['name'] }}' to do action '{{ action['name'] }}'")
+				log.error("Failed to import local service '{{ service['name'] }}' to do action '{{ action['name'] }}'")
 			if self.{{ service["name"] }} == None:
 				if "{{service['name']}}" in self.config.sections():
 					self.{{ service["name"] }} = {{ service["class"] }}(self.config.items("{{service['name']}}"))
@@ -90,9 +90,9 @@ class System(object):
 			return self.{{ service["name"] }}.exposed_{{ action["name"] }}({% for arg in action["args"][:-1] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
 {% else %}
 			try:
-				from services.{{ service["name"] }}.exposed import {{ action["name"] }}
+				from services.{{ service["name"] }}.exposed import exposed_{{ action["name"] }}
 			except ImportError:
-				log.print_error("Failed to import local service %s to do action %s" % (service['name'], action['name']))
+				log.error("Failed to import local service '{{ service['name'] }}' to do action '{{ action['name'] }}'")
 			return exposed_{{ action["name"] }}({% for arg in action["args"][:-1] %}{{ arg }},{% endfor %}{{ action["args"][-1] }})
 {% endif %}
 
