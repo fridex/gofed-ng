@@ -30,7 +30,7 @@ class Service1Service(Service):
 
 	@classmethod
 	def signal_startup(cls, config):
-		log.info("Custom config sections: " + str(config.sections()))
+		log.info("Custom config sections: " + str(config.items('Service1Service')))
 		print "got startup signal"
 
 	@classmethod
