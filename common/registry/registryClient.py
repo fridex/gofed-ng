@@ -25,18 +25,23 @@ from rpyc.utils.registry import UDPRegistryClient, TCPRegistryClient
 from rpyc.lib import setup_logger
 
 class RegistryClient(object):
-	host = "localhost"
-	port = REGISTRY_PORT
-	timeout = DEFAULT_PRUNING_TIMEOUT
-	logger = None
-	client = UDPRegistryClient
-
 	@staticmethod
-	def query(service_name):
-		#setup_logger()
-		registrar = RegistryClient.client(ip = RegistryClient.host,
-				port = RegistryClient.port,
-				timeout = RegistryClient.timeout)
+	def query(service_name, host = "localhost", port = REGISTRY_PORT,
+			timeout = DEFAULT_PRUNING_TIMEOUT, logger = None, mode = "UDP"):
+		if logger:
+			setup_logger(False, logger)
+
+		if mode not in ["UDP", "TCP"]:
+			raise ValueError("Unknown registry mode '%s', expected %s"
+					% (mode, ["UDP", "TCP"]))
+
+		if mode == "UDP":
+			client = UDPRegistryClient
+		else:
+			client = TCPRegistryClient
+
+		registrar = client(host, port, timeout)
+
 		return registrar.discover(service_name)
 
 if __name__ == "__main__":
