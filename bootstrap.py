@@ -220,7 +220,6 @@ class GofedBootstrap(cli.Application):
 				service_envelope = os.path.join(service_name, service_ident + ".py")
 				service_conf = os.path.join(service_name, service_ident + ".conf")
 				service_common = os.path.join(service_name, "common")
-				service_keys = os.path.join(service_name, "keys")
 
 				render_param = {}
 				render_param['str'] = service_ident
