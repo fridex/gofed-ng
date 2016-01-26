@@ -19,6 +19,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-def exposed_action1(project):
-	return "(Action1: %s)" % project
+def exposed_action1():
+	return "(Action1: noparam)"
 

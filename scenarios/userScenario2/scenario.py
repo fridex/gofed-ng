@@ -24,11 +24,11 @@ from scenarios.abstractScenario import AbstractScenario
 class UserScenario2(AbstractScenario):
 	def run(self, system):
 		print "Running user scenario 2"
-		out1 = system.action1("init_data")
+		out1 = system.action1()
 		print "Action1 output: %s" % out1
 		out2 = system.action2(out1)
 		print "Action2 output: %s" % out2
-		out3 = system.action3(out2)
+		out3 = system.action3(out2, "param2")
 		print "Action3 output: %s" % out3
 		return out3
 

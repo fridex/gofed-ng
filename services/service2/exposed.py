@@ -22,6 +22,6 @@
 def exposed_action2(project):
 	return "(Action2: %s)" % project
 
-def exposed_action3(project):
-	return "(Action3: %s)" % project
+def exposed_action3(project, commit):
+	return "(Action3: %s - %s)" % (project, commit)
 

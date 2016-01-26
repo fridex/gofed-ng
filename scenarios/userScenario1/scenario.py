@@ -25,9 +25,11 @@ class UserScenario1(AbstractScenario):
 	def run(self, system):
 		data = system.get_project_api("k8s", "commit")
 		print "Running user scenario 1"
-		out1 = system.action1(data)
+		out1 = system.action1()
 		print "Action1 output: %s" % out1
-		out2 = system.action2(out1)
+		in1 = "(%s - %s)" % (out1, data)
+		print "Action2 input: %s" % in1
+		out2 = system.action2(in1)
 		print "Action2 output: %s" % out2
 		return out2
 

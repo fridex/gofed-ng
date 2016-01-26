@@ -20,7 +20,7 @@
 
 import sys
 from common.service.service import Service
-from exposed import exposed_action2
+from exposed import exposed_action2, exposed_action3
 
 class Service2Service(Service):
 	def on_connect(self):
@@ -32,8 +32,8 @@ class Service2Service(Service):
 	def exposed_action2(self, project):
 		return "Remote:" + exposed_action2(project)
 
-	def exposed_action3(self, project):
-		return "Remote:" + exposed_action2(project)
+	def exposed_action3(self, project, commit):
+		return "Remote:" + exposed_action3(project, commit)
 
 if __name__ == "__main__":
 	sys.exit(1)

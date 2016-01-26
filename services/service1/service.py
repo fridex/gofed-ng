@@ -30,8 +30,8 @@ class Service1Service(Service):
 	def on_disconnect(self):
 		pass
 
-	def exposed_action1(self, project):
-		return "Remote: " + exposed_action1(project)
+	def exposed_action1(self):
+		return "Remote: " + exposed_action1()
 
 if __name__ == "__main__":
 	sys.exit(1)
