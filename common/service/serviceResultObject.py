@@ -24,25 +24,37 @@ import json
 
 class ServiceResultObject(object):
 	def __init__(self, result):
-		self._result = json.parse(result)
+		if type(result) is str:
+			self._result = json.parse(result)
+			self._local = False
+		else:
+			self._result = {}
+			self._result['result'] = result
+			self._local = True
 
 	def get_result(self):
-		return self._result['result']
+		return self._result.get('result')
 
 	def get_connect_time(self):
-		return self._result['connected']
+		return self._result.get('connected')
 
 	def get_start_time(self):
-		self._result['started']
+		self._result.get('started')
 
 	def get_end_time(self):
-		self._stats['finished']
+		self._result.get('finished')
 
 	def get_service_name(self):
-		self._stats['service'] = name
+		self._result.get('service')
 
 	def get_service_aliases(self):
-		self._stats['aliases'] = names
+		self._result.get('aliases')
+
+	def was_local_call(self):
+		return self._local
+
+	def was_remote_call(self):
+		return not self.was_local_call()
 
 if __name__ == "__main__":
 	sys.exit(1)
