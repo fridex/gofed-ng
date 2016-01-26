@@ -22,14 +22,18 @@
 import sys
 
 class ActionWrapper(object):
-	def __init__(self, action, stats_logger):
+	def __init__(self, action, stats_logger, prehook, posthook):
 		self._action = action
 		self._stats_logger = stats_logger
+		self._prehook = prehook
+		self._posthook = posthook
 
 	def action_call(self, *args, **kwargs):
+		self._prehook()
 		self._stats_logger.log_process_time()
 		result = self._action(*args, **dict(kwargs))
 		self._stats_logger.log_processed_time()
+		self._posthook()
 		self._stats_logger.log_result(result)
 
 		return self._stats_logger.dump()

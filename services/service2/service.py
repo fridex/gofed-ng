@@ -21,6 +21,7 @@
 import sys
 from common.service.service import Service
 from exposed import exposed_action2, exposed_action3
+from common.service.serviceEnvelope import ServiceEnvelope
 
 class Service2Service(Service):
 	def signal_connect(self):
@@ -42,5 +43,5 @@ class Service2Service(Service):
 		return { "remote:": exposed_action3(project, commit) }
 
 if __name__ == "__main__":
-	sys.exit(1)
+	ServiceEnvelope.serve(Service2Service)
 

@@ -22,23 +22,33 @@
 import sys
 from exposed import exposed_action1
 from common.service.service import Service
+from common.service.serviceEnvelope import ServiceEnvelope
 
 class Service1Service(Service):
+	@classmethod
+	def signal_startup(cls, config):
+		print "got startup signal"
+
+	@classmethod
+	def signal_termination(cls):
+		print "got termination signal"
+
 	def signal_connect(self):
-		pass
+		print "got connect signal"
 
 	def signal_disconnect(self):
-		pass
+		print "got disconnect signal"
 
 	def signal_process(self):
-		pass
+		print "got process signal"
 
 	def signal_processed(self):
+		print "got processed signal"
 		pass
 
 	def exposed_action1(self):
 		return { "remote": exposed_action1() }
 
 if __name__ == "__main__":
-	sys.exit(1)
+	ServiceEnvelope.serve(Service1Service)
 

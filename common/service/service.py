@@ -40,7 +40,20 @@ class Service(RpycService):
 		self.signal_disconnect()
 
 	def _rpyc_getattr(self, name):
-		return ActionWrapper(super(Service, self)._rpyc_getattr(name), self._result)
+		return ActionWrapper(
+				super(Service, self)._rpyc_getattr(name),
+				self._result,
+				prehook = self.signal_process,
+				posthook = self.signal_processed
+			)
+
+	@classmethod
+	def signal_startup(cls, config):
+		pass
+
+	@classmethod
+	def signal_termination(cls):
+		pass
 
 	def signal_connect(self):
 		pass
@@ -54,7 +67,10 @@ class Service(RpycService):
 	def signal_processed(self):
 		pass
 
-	def exposed_version(self, project):
+	def get_service_version(self):
+		return self.exposed_version()
+
+	def exposed_version(self):
 		return VERSION
 
 if __name__ == "__main__":

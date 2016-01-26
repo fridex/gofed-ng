@@ -22,6 +22,7 @@
 import sys
 from common.database.dbReaderProjectAPI import DBreaderProjectAPI
 from common.service.service import Service
+from common.service.serviceEnvelope import ServiceEnvelope
 
 class DBReader1Service(Service, DBreaderProjectAPI):
 	def signal_connect(self):
@@ -45,5 +46,5 @@ class DBReader1Service(Service, DBreaderProjectAPI):
 				% (str(project), str(commit)) }
 
 if __name__ == "__main__":
-	sys.exit(1)
+	ServiceEnvelope.serve(DBReader1Service)
 

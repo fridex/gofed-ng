@@ -185,7 +185,7 @@ class GofedBootstrap(cli.Application):
 		with open(service_conf, "a") as fa:
 			fa.write(conf_content)
 
-	def services(self, directory = None, service_py_template = None, service_conf_template = None, output_dir = None):
+	def services(self, directory = None, service_conf_template = None, output_dir = None):
 		log.info("Services bootstrap")
 
 		script_dir = self._script_dir()
@@ -194,9 +194,6 @@ class GofedBootstrap(cli.Application):
 
 		if not directory:
 			directory = os.path.join(script_dir, "services")
-
-		if not service_py_template:
-			service_py_template = os.path.join(directory, "serviceEnvelope.py.template")
 
 		if not service_conf_template:
 			service_conf_template = os.path.join(directory, "service.conf.template")
@@ -224,21 +221,15 @@ class GofedBootstrap(cli.Application):
 				cls = cls[0]
 
 				log.info("Found service class '%s'..." % cls['class'])
-				log.info("Generating service envelope...")
-
-				service_ident = cls['class'][0].lower() + cls['class'][1:]
-				service_envelope = os.path.join(service_name, service_ident + ".py")
+				service_class = cls['class']
 				service_dir = os.path.join(output_dir, service_name)
 				service_common = os.path.join(service_dir, "common")
-				service_conf = os.path.join(service_dir, service_ident + ".conf")
-				service_custom_conf = os.path.join(service_dir, "service.conf")
+				service_conf = os.path.join(service_dir, "service.conf")
+				service_custom_conf = os.path.join(service_dir, "service_extended.conf")
 
 				render_param = {}
-				render_param['str'] = service_ident
-				render_param['name'] = cls['class']
-
-				log.info("Generating service envelope...")
-				self._render_template(service_py_template, os.path.join(output_dir, service_envelope), render_param)
+				render_param['str'] = service_class
+				render_param['name'] = service_class
 
 				log.info("Generating service config file...")
 				self._render_template(service_conf_template, service_conf, render_param)
