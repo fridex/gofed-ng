@@ -1,3 +1,4 @@
 *.pyc
-*.conf
+services/*Service.conf
+registry.conf
 ./system.py

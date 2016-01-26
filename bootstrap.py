@@ -175,6 +175,16 @@ class GofedBootstrap(cli.Application):
 
 		return True
 
+	def _apply_custom_conf(self, service_conf, service_custom_conf):
+		with open(service_conf, "r") as f:
+			conf_content = f.read()
+
+		with open(service_custom_conf, "r") as fc:
+			conf_content += fc.read()
+
+		with open(service_conf, "a") as fa:
+			fa.write(conf_content)
+
 	def services(self, directory = None, service_py_template = None, service_conf_template = None, output_dir = None):
 		log.info("Services bootstrap")
 
@@ -218,8 +228,10 @@ class GofedBootstrap(cli.Application):
 
 				service_ident = cls['class'][0].lower() + cls['class'][1:]
 				service_envelope = os.path.join(service_name, service_ident + ".py")
-				service_conf = os.path.join(service_name, service_ident + ".conf")
-				service_common = os.path.join(service_name, "common")
+				service_dir = os.path.join(output_dir, service_name)
+				service_common = os.path.join(service_dir, "common")
+				service_conf = os.path.join(service_dir, service_ident + ".conf")
+				service_custom_conf = os.path.join(service_dir, "service.conf")
 
 				render_param = {}
 				render_param['str'] = service_ident
@@ -229,7 +241,11 @@ class GofedBootstrap(cli.Application):
 				self._render_template(service_py_template, os.path.join(output_dir, service_envelope), render_param)
 
 				log.info("Generating service config file...")
-				self._render_template(service_conf_template, os.path.join(output_dir, service_conf), render_param)
+				self._render_template(service_conf_template, service_conf, render_param)
+
+				log.info("Applying service custom configuration file...")
+				self._apply_custom_conf(service_conf, service_custom_conf)
+
 
 				log.info("Creating symlink to common files...")
 				os.symlink(os.path.join(script_dir, "common"), os.path.join(output_dir, service_common))
