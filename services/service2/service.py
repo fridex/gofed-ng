@@ -20,7 +20,6 @@
 
 import sys
 from common.service.service import Service
-from exposed import exposed_action2, exposed_action3
 from common.service.serviceEnvelope import ServiceEnvelope
 
 class Service2Service(Service):
@@ -37,10 +36,10 @@ class Service2Service(Service):
 		pass
 
 	def exposed_action2(self, project):
-		return { "remote": exposed_action2(project) }
+		return { 'action2': "result" }
 
 	def exposed_action3(self, project, commit):
-		return { "remote:": exposed_action3(project, commit) }
+		return { "action3": "result" }
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(Service2Service)

@@ -20,8 +20,9 @@
 # ####################################################################
 
 import sys
+from storage import Storage
 
-class DBWriterAPI(object):
+class DBWriterAPI(Storage):
 	def __init__(self):
 		raise NotImplementedError()
 

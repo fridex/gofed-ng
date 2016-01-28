@@ -20,8 +20,9 @@
 # ####################################################################
 
 import sys
+from storage import Storage
 
-class DBreaderDistributionAPI(object):
+class DBreaderDistributionAPI(Storage):
 	def __init__(self):
 		raise NotImplementedError()
 

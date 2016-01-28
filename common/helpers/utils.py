@@ -21,9 +21,29 @@
 
 import sys
 import os
+import getpass
+import json
+from subprocess import PIPE, Popen
+from time import gmtime, strftime
 
-def script_dir():
-	return os.path.dirname(os.path.abspath(__file__))
+def get_user():
+	return getpass.getuser()
+
+def get_hostname():
+	return os.uname()[1]
+
+def json_pretty_format(o):
+	return json.dumps(o, sort_keys = True, separators = (',', ': '), indent = 2)
+
+def get_time_str(t = None):
+	return strftime("%Y-%m-%d %H:%M:%S", t if t else gmtime())
+
+def config2dict(config):
+	ret = {}
+	for section in config.sections():
+		ret[section] = dict(config.items(section))
+
+	return ret
 
 def runcmd(cmd, cwd = "."):
 	''' Run command `cmd' in working directory `cwd' '''

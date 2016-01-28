@@ -20,7 +20,8 @@
 import sys
 from plumbum import cli
 from common.registry.registryClient import RegistryClient
-from system import System
+from common.helpers.utils import config2dict
+from common.system.system import System
 import rpyc
 
 try:
@@ -32,21 +33,40 @@ from scenarios.userScenario1.scenario import UserScenario1
 from scenarios.userScenario2.scenario import UserScenario2
 
 GOFED_CONFIG="gofed.conf"
+SYSTEM_JSON="system.json"
 
 class Gofed(cli.Application):
 	def config(self, config = GOFED_CONFIG):
 		''' Use config '''
 		conf = ConfigParser()
 		conf.read(config)
-		self.config = conf
+		self.config = config2dict(conf)
 
 	def main(self):
 		self.config()
 
-		system = System(self.config)
+		system = System(self.config, SYSTEM_JSON)
 
-		UserScenario1().run(system)
-		UserScenario2().run(system)
+		print system._config
+		print "system.call"
+		print system.call
+		print "system.async_call"
+		print system.async_call
+		print "system.call.action1"
+		print system.call.action1
+		print "system.async_call.action1"
+		print system.async_call.action1
+		print "system.call.action1()"
+		print system.call.action1()
+		print "system.async_call.action1()"
+		print system.async_call.action1()
+
+		#print system.get_service_name('action1')
+		#print system.call.action`1
+		#print system.call.action1()
+
+		#UserScenario1().run(system)
+		#UserScenario2().run(system)
 
 if __name__ == "__main__":
 	Gofed.run()

@@ -26,14 +26,18 @@ from common.service.actionWrapper import ActionWrapper
 from common.service.serviceResultGenerator import ServiceResultGenerator
 
 class Service(RpycService):
-	def __init__(self, conn):
-		super(Service, self).__init__(conn)
-		self._result = ServiceResultGenerator()
-		self._result.log_service_name(self.get_service_name())
-		self._result.log_service_aliases(self.get_service_aliases())
+	def __init__(self, conn = None):
+		if conn:
+			super(Service, self).__init__(conn)
+			self._result = ServiceResultGenerator()
+			self._result.log_service_name(self.get_service_name())
+			self._result.log_service_aliases(self.get_service_aliases())
+
+		self.signal_init()
 
 	def on_connect(self):
-		self._result.log_connect_time()
+		if self.is_remote():
+			self._result.log_connect_time()
 		self.signal_connect()
 
 	def on_disconnect(self):
@@ -47,12 +51,23 @@ class Service(RpycService):
 				posthook = self.signal_processed
 			)
 
+	def __getattr__(self, name):
+		if not name.startwith('exposed_'):
+			exposed_name = "exposed_" + name
+			if hasattr(self, exposed_name) and callable(getattr(self, exposed_name)):
+				super(Service, self).__getattr__(exposed_name)
+
+		return super(Service, self).__getattr__(name)
+
 	@classmethod
 	def signal_startup(cls, config):
 		pass
 
 	@classmethod
 	def signal_termination(cls):
+		pass
+
+	def signal_init(self):
 		pass
 
 	def signal_connect(self):
@@ -67,12 +82,25 @@ class Service(RpycService):
 	def signal_processed(self):
 		pass
 
+	def is_local(self):
+		try:
+			self._conn
+			return False
+		except NameError:
+			return True
+
+	def is_remote(self):
+		return not self.is_local()
+
 	@classmethod
 	def get_service_version(cls):
 		return VERSION
 
 	def exposed_version(self):
-		return VERSION
+		return self.__class__.get_service_version()
+
+	def version(self):
+		return self.__class__.get_service_version()
 
 if __name__ == "__main__":
 	sys.exit(1)

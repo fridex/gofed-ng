@@ -19,9 +19,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-def exposed_action2(project):
-	return "(Action2: %s)" % project
+import sys
 
-def exposed_action3(project, commit):
-	return "(Action3: %s - %s)" % (project, commit)
+class Storage(object):
+	pass
+
+if __name__ == "__main__":
+	sys.exit(1)
 

@@ -25,6 +25,8 @@ from common.service.service import Service
 from common.service.serviceEnvelope import ServiceEnvelope
 
 class DBReader1Service(Service, DBreaderProjectAPI):
+	''' A simple database service example '''
+
 	def signal_connect(self):
 		pass
 

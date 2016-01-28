@@ -21,7 +21,6 @@
 
 import sys
 from common.helpers.output import log
-from exposed import exposed_action1
 from common.service.service import Service
 from common.service.serviceEnvelope import ServiceEnvelope
 
@@ -50,8 +49,9 @@ class Service1Service(Service):
 		log.info("got processed signal")
 
 	def exposed_action1(self):
+		''' exposed action 1 '''
 		log.info("Processing action")
-		return { "remote": exposed_action1() }
+		return { "remote": "action1" }
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(Service1Service)

@@ -20,8 +20,9 @@
 # ####################################################################
 
 import sys
+from storage import Storage
 
-class DBreaderProjectAPI(object):
+class DBreaderProjectAPI(Storage):
 	def __init__(self):
 		raise NotImplementedError()
 

@@ -22,30 +22,28 @@
 import sys
 import json
 import os
-from time import gmtime, strftime
+from common.helpers.utils import get_hostname, get_time_str
 
 # TODO: this could be extended with action logging to a file
 
 class ServiceResultGenerator(object):
-	def _print_time(self):
-		return strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
 	def __init__(self):
 		self._stats = {'connected': None,
 				'started': None,
 				'finished': None,
 				'result': None,
-				'hostname': os.uname()[1],
+				'hostname': get_hostname(),
 				}
 
 	def log_connect_time(self):
-		self._stats['connected'] = self._print_time()
+		self._stats['connected'] = get_time_str()
 
 	def log_process_time(self):
-		self._stats['started'] = self._print_time()
+		self._stats['started'] = get_time_str()
 
 	def log_processed_time(self):
-		self._stats['finished'] = self._print_time()
+		self._stats['finished'] = get_time_str()
 
 	def log_result(self, result):
 		if type(result) is not dict:

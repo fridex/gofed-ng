@@ -19,59 +19,35 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-from jinja2 import Environment, FileSystemLoader
-from common.helpers.output import log
-from common.helpers.utils import runcmd
-import shlex
-import os, sys
-import shutil
-import ast
+import os, sys, ast, json
 from plumbum import cli
+from common.helpers.output import log
+from common.helpers.utils import get_user, get_hostname, get_time_str, json_pretty_format
+from common.helpers.version import VERSION
+
+SYSTEM_JSON = 'system.json'
+SERVICE_DIR = 'services/'
 
 class GofedBootstrap(cli.Application):
-	''' Bootstrap script for Gofed ecosystem '''
+	# TODO: configuration merge,
+	service_dir = cli.SwitchAttr(["--service-dir", "-s"], cli.ExistingDirectory,
+			default = SERVICE_DIR, help="Specify service root directory",
+			excludes = ["--service"])
 
-	system_directory = cli.SwitchAttr("--system-dir", str, default = None,
-			help="Specify system root dir", group = "System")
-	system_template = cli.SwitchAttr("--system-template", str, default = None,
-			help="Specify system.py template", group = "System")
-	registry_conf_template = cli.SwitchAttr("--registry-conf-template", str, default = None,
-			help="Specify registry.conf template", group = "System")
-	gofed_conf_template = cli.SwitchAttr("--gofed-conf", str, default = None,
-			help="Specify gofed conf file template", group = "System")
-	system_output_dir = cli.SwitchAttr("--system-outdir", str, default = None,
-			help="Specify output dir", group = "System")
+	output_file = cli.SwitchAttr(["--output", "-o"], str, default = SYSTEM_JSON,
+			help="System JSON output file")
 
-	services_directory = cli.SwitchAttr("--services-dir", str, default = None,
-			help="Specify services root dir", group = "Services")
-	services_py_template = cli.SwitchAttr("--services-template", str, default = None,
-			help="Specify service.py template", group = "Services")
-	services_conf_template = cli.SwitchAttr("--services-conf", str, default = None,
-			help="Specify service.conf template", group = "Services")
-	services_output_dir = cli.SwitchAttr("--services-outdir", str, default = None,
-			help="Specify services output dir", group = "Services")
+	check_only = cli.Flag(["--check-only", "-c"],
+			help="Check only, do not generate output")
 
-	system_only = cli.Flag("--system-only",
-			help="Bootstrap only main system", group = "Control handling",
-			excludes = ["--services-dir", "--services-template", "--services-conf",
-								"--services-outdir", "--services-only"])
-	services_only = cli.Flag("--services-only",
-			help="Bootstrap only services", group = "Control handling",
-			excludes = ["--system-dir", "--system-template", "--gofed-conf",
-				"--system-outdir", "--system-only", "--registry-conf-template"])
-	debug = cli.Flag(["--debug", "-d"],
-			help="Run in debug mode", group = "Control handling")
+	ugly_output = cli.Flag(["--ugly-output", "-u"],
+			help="Do not do pretty formatted output", excludes=['-c'])
 
-	def _render_template(self, in_template, out_file, render_param):
-		j2_env = Environment(loader=FileSystemLoader(os.path.dirname(in_template)))
-		out = j2_env.get_template(os.path.basename(in_template)).render(param = render_param)
-		with open(out_file, "w") as f:
-			f.write(out)
+	service = cli.SwitchAttr(["--service"], cli.ExistingDirectory, default = None,
+			help="Inspect only one particular service",
+			excludes = ["--service-dir"])
 
-	def _script_dir(self):
-		return os.path.dirname(os.path.abspath(__file__))
-
-	def _get_exposed_funcs(self, node, method = False):
+	def _get_exposed_funcs(self, node, path, method = False):
 		ret = []
 
 		funcs = [f for f in node.body if isinstance(f, ast.FunctionDef)]
@@ -82,6 +58,9 @@ class GofedBootstrap(cli.Application):
 				item = {}
 				item['name'] = action.name[len('exposed_'):]
 				item['args'] = []
+				item['doc'] = ast.get_docstring(action, clean = True)
+				if not item['doc']:
+					log.warn("Exposed function '%s' does not provide docstring in '%s'" % (action.name, path))
 
 				for arg in action.args.args:
 					item['args'].append(arg.id)
@@ -93,185 +72,102 @@ class GofedBootstrap(cli.Application):
 
 		return ret
 
-	def _get_exposed_classes(self, node, base = 'Service'):
+	def _get_exposed_classes(self, node, path):
 		ret = []
+		bases = []
 
 		classes = [c for c in node.body if isinstance(c, ast.ClassDef)]
 		for cls in classes:
-
 			exposed = False
+
 			for cls_base in cls.bases:
-				if base == cls_base.id:
+				if cls_base.id == 'Service':
 					exposed = True
-					break
+				else:
+					bases.append(cls_base.id)
 
-			if not exposed:
-				continue
+				if not exposed:
+					continue
 
-			ret.append({ 'defs': self._get_exposed_funcs(cls, method = True), 'class': cls.name })
+			ret.append({
+				'defs': self._get_exposed_funcs(cls, path, method = True),
+				'name': cls.name,
+				'doc': ast.get_docstring(cls, clean = True),
+				'bases': bases
+				})
 
 		return ret
 
+	def _service_sanity_check(self, service, service_file):
+		# service.py
+		if len(service) > 1:
+			raise ValueError("Cannot expose more than one Service class per service in '%s'" % service_file)
 
-	def system(self, directory = None, system_template = None, registry_conf_template = None, gofed_conf_template = None, output_dir = None):
-		log.info("Running gofed system bootstrap...")
+		if len(service) == 0:
+			raise ValueError("No Service class defined in '%s'" % service_file)
 
-		script_dir = self._script_dir()
+		if not service[0]['name'].endswith('Service'):
+			raise ValueError("Service class should be named with Service suffix in '%s'" % service_file)
 
-		if not system_template:
-			system_template = os.path.join(script_dir, "system.py.template")
+		# TODO: action with name: "exposed_action" and def with name "action" are
+		# not allowed
 
-		if not registry_conf_template: # Now only copy, but can be extended in the future
-			registry_conf_template = os.path.join(script_dir, "registry.conf.template")
+	def _analyse_service(self, directory):
+		ret = { }
+		service_file = os.path.join(directory, 'service.py')
 
-		if not gofed_conf_template:
-			gofed_conf_template = os.path.join(script_dir, "gofed.conf.template")
+		with open(service_file, 'r') as f:
+			src = f.read()
 
-		if not directory:
-			directory = os.path.join(script_dir, "services")
+		service = self._get_exposed_classes(ast.parse(src), service_file)
 
-		if not output_dir:
-			output_dir = script_dir
+		self._service_sanity_check(service, service_file)
 
-		exposed_services = []
-		for service_name in os.listdir(directory):
-			service_path = os.path.join(directory, service_name)
-			if not os.path.isdir(service_path):
-				continue
+		# now we know that service.py is valid after sanity check, now sum up the analysis
+		ret['name'] = service[0]['name']
+		ret['name'] = ret['name'][:len(ret['name']) - len('Service')].upper()
+		ret['doc'] = service[0]['doc']
+		ret['actions'] = service[0]['defs']
 
-			log.info("Analysing file 'exposed.py'")
-			src = open(os.path.join(service_path, 'exposed.py'), 'r').read()
+		return ret
 
-			p = ast.parse(src)
-			log.info("Looking for exposed actions of service '%s'..." % service_name)
-			funcs = self._get_exposed_funcs(p)
-			for f in funcs: log.info("Found exposed action '%s'..." % f['name'])
-			if len(funcs) > 0:
-				exposed_services.append({ 'name': service_name, 'defs': funcs, 'type': 'action' })
+	def _make_services_header(self, services):
+		ret = { }
 
-			log.info("Looking for exposed classes of service '%s'..." % service_name)
-			classes = self._get_exposed_classes(p)
+		ret['gofed_version'] = VERSION
+		ret['author'] = get_user()
+		ret['hostname'] = get_hostname()
+		ret['generated'] = get_time_str()
+		ret['services'] = services
 
-			if len(classes) > 0:
-				if len(classes) > 1:
-					raise ValueError("Cannot export more than one class per service...")
-
-				classes = classes[0]
-
-				for f in classes['defs']: log.info("Found exposed method '%s' in class '%s'..." % (f['name'], classes['class']))
-				exposed_services.append({ 'name': service_name, 'defs': classes['defs'], 'type': 'class', 'class': classes['class'] })
-
-			if len(classes) > 0 and len(funcs) > 0:
-				raise ValueError("Cannot export actions and classes at the same time...")
-
-		log.info("Generating system.py")
-		self._render_template(system_template, os.path.join(output_dir, "system.py"), exposed_services)
-
-		log.info("Generating system.conf")
-		shutil.copy(registry_conf_template, os.path.join(output_dir, "registry.conf"))
-
-		log.info("Generating gofed.conf")
-		self._render_template(gofed_conf_template, os.path.join(output_dir, "gofed.conf"), exposed_services)
-
-		return True
-
-	def _apply_custom_conf(self, service_conf, service_custom_conf):
-		with open(service_conf, "r") as f:
-			conf_content = f.read()
-
-		with open(service_custom_conf, "r") as fc:
-			conf_content += fc.read()
-
-		with open(service_conf, "a") as fa:
-			fa.write(conf_content)
-
-	def services(self, directory = None, service_conf_template = None, output_dir = None):
-		log.info("Services bootstrap")
-
-		script_dir = self._script_dir()
-
-		error_occurred = False
-
-		if not directory:
-			directory = os.path.join(script_dir, "services")
-
-		if not service_conf_template:
-			service_conf_template = os.path.join(directory, "service.conf.template")
-
-		if not output_dir:
-			output_dir = directory
-
-		for service_name in os.listdir(directory):
-			service_path = os.path.join(directory, service_name)
-			if not os.path.isdir(service_path):
-				continue
-
-			try:
-				log.info("Inspecting dir '%s'..." % service_name)
-
-				src = open(os.path.join(service_path, "service.py")).read()
-				p = ast.parse(src)
-
-				cls = self._get_exposed_classes(p, base = 'Service')
-
-				if len(cls) == 0:
-					log.warn("Nothing to expose in service '%s'..." % service_name)
-				if len(cls) > 1:
-					raise ValueError("Cannot expose more than one class per service in service '%s'", service_name)
-				cls = cls[0]
-
-				log.info("Found service class '%s'..." % cls['class'])
-				service_class = cls['class']
-				service_dir = os.path.join(output_dir, service_name)
-				service_common = os.path.join(service_dir, "common")
-				service_conf = os.path.join(service_dir, "service.conf")
-				service_custom_conf = os.path.join(service_dir, "service_extended.conf")
-
-				render_param = {}
-				render_param['str'] = service_class
-				render_param['name'] = service_class
-
-				log.info("Generating service config file...")
-				self._render_template(service_conf_template, service_conf, render_param)
-
-				log.info("Applying service custom configuration file...")
-				self._apply_custom_conf(service_conf, service_custom_conf)
-
-
-				log.info("Creating symlink to common files...")
-				os.symlink(os.path.join(script_dir, "common"), os.path.join(output_dir, service_common))
-
-			except Exception as e:
-				error_occurred = True
-				log.error("Error: %s" % e)
-
-		if error_occurred:
-			log.warn("There were errors when generating service files, application can misbehave!")
-
-		return True
+		return ret
 
 	def main(self):
-		try:
-			if not self.services_only:
-				if not self.system(self.system_directory,
-						self.system_template,
-						self.registry_conf_template,
-						self.gofed_conf_template,
-						self.system_output_dir):
-					log.errror("Servives bootstrap failed")
-					sys.exit(2)
+		services = []
+		if self.service:
+			services.append(self._analyse_service(str(self.service)))
+		else:
+			for service in os.listdir(self.service_dir):
 
-			if not self.system_only:
-				if not self.services(self.services_directory,
-						self.services_conf_template,
-						self.services_output_dir):
-					log.errror("System bootstrap failed")
-					sys.exit(3)
-		except Exception as e:
-			log.error(e)
-			if self.debug:
-				raise e
-			return 3
+				path = os.path.join(self.service_dir, service)
+
+				if not os.path.isdir(path):
+					continue
+				services.append(self._analyse_service(path))
+
+		if not self.check_only:
+			ret = self._make_services_header(services)
+			if not self.ugly_output:
+				ret = json_pretty_format(ret)
+			else:
+				ret = json.dumps(ret)
+			if self.output_file == '-':
+				print ret
+			else:
+				with open(self.output_file, "w") as f:
+					f.write(ret)
+
+		return 0
 
 if __name__ == "__main__":
 	GofedBootstrap.run()
