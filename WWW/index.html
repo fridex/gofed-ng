@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Fridolin Pokorny">
+
+    <title>gofed system</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/simple-sidebar.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/highlight.style.css">
+  </head>
+
+  <body>
+    <h1 style="display: none">gofed system</h1>
+    <div id="wrapper">
+      <!-- Sidebar -->
+      <div id="sidebar-wrapper">
+        <ul class="sidebar-nav">
+          <li class="sidebar-brand">
+            <a href="/">gofed system</a>
+          </li>
+          <li>
+            <a href="#overview">Overview</a>
+          </li>
+          <li>
+            <a href="#howto">How To</a>
+          </li>
+          <li>
+            <a href="#api">System API</a>
+          </li>
+          <li>
+            <a target="_blank" href="https://github.com/gofed/gofed-ng">
+              Source Code
+           </a>
+          </li>
+          <li>
+            <a target="_black" href="http://209.132.179.123:8080/gofed-ng/">
+              Source Code DOC
+            </a>
+          </li>
+          <li>
+            <a href="#architecture">Architecture</a>
+          </li>
+          <li>
+            <a href="#contact">Contact</a>
+          </li>
+        </ul>
+      </div>
+      <!-- Content -->
+      <div id="page-content-wrapper">
+        <div class="container-fluid">
+          <div class="row">
+            <div id="content" class="col-lg-12">
+              <div class="alert alert-danger text-center" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                  Please enable JavaScript to browse this page. If you are
+                  seeing this with JavaScript enabled, make sure that this page
+                  is located on a web server (because of jQuery
+                  <code>load()</code> call).
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script type="text/javascript">
+    jQuery(function($) {
+      $(window).on('hashchange load', function() {
+        var hash = location.hash.replace( /^#/, '' );
+
+         if (hash == "overview")
+           $('#content').load('overview.html');
+         else if (hash == "api")
+           $('#content').load('api.html');
+         else if (hash == "howto")
+           $('#content').load('howto.html');
+         else if (hash == "contact")
+           $('#content').load('contact.html');
+         else if (hash == "architecture")
+           $('#content').load('architecture.html');
+         else
+           $('#content').load('overview.html');
+
+         return true;
+      })
+    });
+  </script>
+
+  </body>
+</html>
+
