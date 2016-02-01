@@ -93,13 +93,16 @@ href="system.json">system.json</a> file.
 '  <dd>' + json['generated'] + '</dd>' +
 '  <dt>gofed version</dt>' +
 '  <dd>' + json['gofed_version'] + '</dd>' +
-'  <dt>Services #</dt>' +
-'  <dd>' + json['services'].length + '</dd>' +
+'  <dt>Git HEAD</dt>' +
+'  <dd>' + json['git_head'] + '</dd>' +
+'  <dt>Computational #</dt>' +
+'  <dd>' + json['services']['computational'].length + '</dd>' +
 '  <dt>Storages #</dt>' +
-'  <dd>' + json['storages'].length + '</dd>' +
+'  <dd>' + json['services']['storages'].length + '</dd>' +
+'  <dt>Services total #</dt>' +
+'  <dd>' + (json['services']['storages'].length + json['services']['computational'].length) + '</dd>' +
 '</dl>'
       ));
-      console.log($('#api-info'));
     }
 
     var json = (function () {
@@ -108,8 +111,8 @@ href="system.json">system.json</a> file.
         'url': 'system.json',
         'dataType': "json",
         'success': function (data) {
-          print_service(data['services'], $('#computational-services'));
-          print_service(data['storages'], $('#storage-services'));
+          print_service(data['services']['computational'], $('#computational-services'));
+          print_service(data['services']['storages'], $('#storage-services'));
           print_json_info(data);
         },
         'error': function (e, status, error) {
