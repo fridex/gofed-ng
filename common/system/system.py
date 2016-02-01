@@ -86,6 +86,20 @@ class System(object):
 
 		return conn
 
+	def is_storage(self, service_name):
+		for storage in self._system['services']['storages']:
+			if storage['name'] == service_name:
+				return True
+
+		return False
+
+	def is_computational(self, service_name):
+		for computational in self._system['services']['computational']:
+			if computational['name'] == service_name:
+				return True
+
+		return False
+
 	def get_service(self, action):
 		for storage in self._system['services']['storages']:
 			for a in storage['actions']:
