@@ -45,6 +45,10 @@ def config2dict(config):
 
 	return ret
 
+def get_githead():
+	stdout, _, _ = runcmd(["git", "rev-parse", "HEAD"])
+	return stdout[:-1]
+
 def runcmd(cmd, cwd = "."):
 	''' Run command `cmd' in working directory `cwd' '''
 	process = Popen(cmd, stderr=PIPE, stdout=PIPE, cwd=cwd, close_fds=True)

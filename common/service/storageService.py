@@ -20,17 +20,10 @@
 # ####################################################################
 
 import sys
-from storage import Storage
+from service import Service
 
-class DBreaderDistributionAPI(Storage):
-	def __init__(self):
-		raise NotImplementedError()
-
-	def exposed_get_distribution_api(project, distribution, commit = None):
-		raise NotImplementedError()
-
-	def exposed_get_distribution_dependencies(project, distribution, commit = None):
-		raise NotImplementedError()
+class StorageService(Service):
+	pass
 
 if __name__ == "__main__":
 	sys.exit(1)

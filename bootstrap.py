@@ -22,30 +22,28 @@
 import os, sys, ast, json
 from plumbum import cli
 from common.helpers.output import log
-from common.helpers.utils import get_user, get_hostname, get_time_str, json_pretty_format
+from common.helpers.utils import get_user, get_hostname, get_time_str, json_pretty_format, get_githead
 from common.helpers.version import VERSION
 
 SYSTEM_JSON = 'system.json'
 SERVICE_DIR = 'services/'
 
 class GofedBootstrap(cli.Application):
-	# TODO: configuration merge,
-	service_dir = cli.SwitchAttr(["--service-dir", "-s"], cli.ExistingDirectory,
-			default = SERVICE_DIR, help="Specify service root directory",
-			excludes = ["--service"])
+	DESCRIPTION = "A gofed system bootstrap script"
 
+	# TODO: configuration merge,
 	output_file = cli.SwitchAttr(["--output", "-o"], str, default = SYSTEM_JSON,
-			help="System JSON output file")
+			help = "System JSON output file", group = "General")
 
 	check_only = cli.Flag(["--check-only", "-c"],
-			help="Check only, do not generate output")
+			help = "Check only, do not generate output", group = "General")
 
 	ugly_output = cli.Flag(["--ugly-output", "-u"],
-			help="Do not do pretty formatted output", excludes=['-c'])
+			help = "Do not do pretty formatted output",
+			excludes = ['-c'], group = "General")
 
-	service = cli.SwitchAttr(["--service"], cli.ExistingDirectory, default = None,
-			help="Inspect only one particular service",
-			excludes = ["--service-dir"])
+	service_dir = cli.SwitchAttr(["--service-dir"], cli.ExistingDirectory,
+			default = SERVICE_DIR, help="Specify service root directory", group="Services")
 
 	def _get_exposed_funcs(self, node, path, method = False):
 		ret = []
@@ -60,7 +58,7 @@ class GofedBootstrap(cli.Application):
 				item['args'] = []
 				item['doc'] = ast.get_docstring(action, clean = True)
 				if not item['doc']:
-					log.warn("Exposed function '%s' does not provide docstring in '%s'" % (action.name, path))
+					log.warn("Function '%s' does not provide docstring in '%s'" % (action.name, path))
 
 				for arg in action.args.args:
 					item['args'].append(arg.id)
@@ -72,45 +70,93 @@ class GofedBootstrap(cli.Application):
 
 		return ret
 
-	def _get_exposed_classes(self, node, path):
+	def _get_service_classes(self, node, path):
 		ret = []
-		bases = []
 
 		classes = [c for c in node.body if isinstance(c, ast.ClassDef)]
 		for cls in classes:
 			exposed = False
+			bases = []
 
 			for cls_base in cls.bases:
-				if cls_base.id == 'Service':
+				if cls_base.id in ['StorageService', 'ComputationalService']:
 					exposed = True
-				else:
-					bases.append(cls_base.id)
+				bases.append(cls_base.id)
 
-				if not exposed:
-					continue
+			if not exposed:
+				continue
 
 			ret.append({
 				'defs': self._get_exposed_funcs(cls, path, method = True),
 				'name': cls.name,
 				'doc': ast.get_docstring(cls, clean = True),
-				'bases': bases
+				'bases': bases,
+				'path': path
 				})
 
 		return ret
 
-	def _service_sanity_check(self, service, service_file):
-		# service.py
-		if len(service) > 1:
-			raise ValueError("Cannot expose more than one Service class per service in '%s'" % service_file)
+	def _sanity_check(self, service_classes):
+		for services in service_classes:
+			if len(services['classes']) > 1:
+					raise ValueError("Cannot expose more than one service per service dir in '%s'"
+							% services['classes'][0]['path'])
 
-		if len(service) == 0:
-			raise ValueError("No Service class defined in '%s'" % service_file)
+			if len(services['classes']) == 0:
+				raise ValueError("No service class defined in '%s'" % services['dir'])
 
-		if not service[0]['name'].endswith('Service'):
-			raise ValueError("Service class should be named with Service suffix in '%s'" % service_file)
+			service = services['classes'][0]
 
-		# TODO: action with name: "exposed_action" and def with name "action" are
-		# not allowed
+			if not service['name'].endswith('Service'):
+				raise ValueError("Service class should be named with 'Service' suffix in '%s'"
+						% service['path'])
+
+				if not service['name'][0].isupper():
+					raise ValueError("Service class name should start with uppercase character")
+
+			service_dir = service['name'][:-len('Service')]
+			service_dir = service_dir[0].lower() + service_dir[1:]
+			if os.path.basename(services['dir']) != service_dir:
+				raise ValueError("Service class '%s' should be placed in directory named '%s' instead of '%s'"
+						% (service['name'], service_dir, os.path.basename(services['dir'])))
+
+			for services2 in service_classes:
+				if services2['dir'] == services['dir']:
+					continue # skip currently analyzed service
+
+				if len(services2['classes']) == 0:
+					continue # this will be "No service class defined" error in next round
+
+				service2 = services2['classes'][0]
+
+				for s_def in service['defs']:
+					for s_def2 in service2['defs']:
+						if s_def['name'] == s_def2['name']:
+							raise ValueError("Cannot expose same action twice, action '%s' from '%s' already exposed by class '%s'"
+									% (s_def['name'], service['name'], service2['name']))
+
+
+	def _aggregate_services(self, service_classes):
+		# now we know that services are valid
+		ret = {'computational': [], 'storages': []}
+
+		for service_class in service_classes:
+			service = service_class['classes'][0]
+
+			item = {}
+			item['actions'] = service['defs']
+			item['doc'] = service['doc']
+			item['name'] = service['name'].upper()
+			item['name'] = item['name'][:-len('Service')]
+			item['bases'] = service['bases']
+
+			if 'ComputationalService' in item['bases']:
+				ret['computational'].append(item)
+			else:
+				ret['storages'].append(item)
+
+
+		return ret
 
 	def _analyse_service(self, directory):
 		ret = { }
@@ -119,44 +165,44 @@ class GofedBootstrap(cli.Application):
 		with open(service_file, 'r') as f:
 			src = f.read()
 
-		service = self._get_exposed_classes(ast.parse(src), service_file)
+		service_classes = { }
+		service_classes['classes'] = self._get_service_classes(ast.parse(src), service_file)
+		service_classes['dir'] = directory
 
-		self._service_sanity_check(service, service_file)
+		return service_classes
 
-		# now we know that service.py is valid after sanity check, now sum up the analysis
-		ret['name'] = service[0]['name']
-		ret['name'] = ret['name'][:len(ret['name']) - len('Service')].upper()
-		ret['doc'] = service[0]['doc']
-		ret['actions'] = service[0]['defs']
-
-		return ret
-
-	def _make_services_header(self, services):
+	def _make_header(self, services):
 		ret = { }
 
 		ret['gofed_version'] = VERSION
 		ret['author'] = get_user()
 		ret['hostname'] = get_hostname()
 		ret['generated'] = get_time_str()
-		ret['services'] = services
+		ret['services'] = {}
+		ret['services']['computational'] = services['computational']
+		ret['services']['storages'] = services['storages']
+		ret['git_head'] = get_githead()
 
 		return ret
 
 	def main(self):
-		services = []
-		if self.service:
-			services.append(self._analyse_service(str(self.service)))
-		else:
-			for service in os.listdir(self.service_dir):
+		services_classes = []
 
-				path = os.path.join(self.service_dir, service)
+		log.info("Performing analyses for services in '%s'" % self.service_dir)
+		for service in os.listdir(self.service_dir):
 
-				if not os.path.isdir(path):
-					continue
-				services.append(self._analyse_service(path))
+			path = os.path.join(self.service_dir, service)
+
+			if not os.path.isdir(path):
+				continue
+			services_classes.append(self._analyse_service(path))
+
+		self._sanity_check(services_classes)
+		services = self._aggregate_services(services_classes)
 
 		if not self.check_only:
-			ret = self._make_services_header(services)
+			ret = self._make_header(services)
+
 			if not self.ugly_output:
 				ret = json_pretty_format(ret)
 			else:

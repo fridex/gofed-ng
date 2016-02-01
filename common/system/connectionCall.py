@@ -20,17 +20,24 @@
 # ####################################################################
 
 import sys
-from storage import Storage
 
-class DBreaderProjectAPI(Storage):
-	def __init__(self):
-		raise NotImplementedError()
+class ConnectionCallAsync(object):
+	def __init__(self, system):
+		self._system = system
 
-	def exposed_get_project_api(project, commit = None):
-		raise NotImplementedError()
+	def __getattr__(self, action):
+		service_name = self._system.get_service_name(action)['name']
+		connection = self._system.get_connection(service_name)
+		return connection.get_action(action, async = True)
 
-	def exposed_get_project_dependencies(project, commit = None):
-		raise NotImplementedError()
+class ConnectionCallSync(object):
+	def __init__(self, system):
+		self._system = system
+
+	def __getattr__(self, action):
+		service_name = self._system.get_service_name(action)['name']
+		connection = self._system.get_connection(service_name)
+		return connection.get_action(action, async = False)
 
 if __name__ == "__main__":
 	sys.exit(1)

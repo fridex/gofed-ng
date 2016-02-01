@@ -21,10 +21,10 @@
 
 import sys
 from common.helpers.output import log
-from common.service.service import Service
+from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 
-class Service1Service(Service):
+class Service1Service(ComputationalService):
 	''' This is an example of a service '''
 
 	@classmethod

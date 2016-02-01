@@ -20,17 +20,20 @@
 # ####################################################################
 
 import sys
-from storage import Storage
 
-class DBWriterAPI(Storage):
-	def __init__(self):
-		raise NotImplementedError()
+class ServiceCallWrapper(object):
+	def __init__(self, service):
+		self._service = service
 
-	def exposed_set_package_api(project, commit = None):
-		raise NotImplementedError()
+	def action_call(self, *args, **kwargs):
+		self._prehook()
+		self._stats_logger.log_process_time()
+		result = self._action(*args, **dict(kwargs))
+		self._stats_logger.log_processed_time()
+		self._posthook()
+		self._stats_logger.log_result(result)
 
-	def exposed_set_package_dependencies(project, commit = None):
-		raise NotImplementedError()
+		return self._stats_logger.dump()
 
 if __name__ == "__main__":
 	sys.exit(1)

@@ -19,10 +19,10 @@
 # ####################################################################
 
 import sys
-from common.service.service import Service
+from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 
-class Service2Service(Service):
+class Service2Service(ComputationalService):
 	def signal_connect(self):
 		pass
 
