@@ -26,7 +26,7 @@ class ConnectionCallAsync(object):
 		self._system = system
 
 	def __getattr__(self, action):
-		service_name = self._system.get_service_name(action)['name']
+		service_name = self._system.get_service(action)['name']
 		connection = self._system.get_connection(service_name)
 		return connection.get_action(action, async = True)
 
@@ -35,7 +35,7 @@ class ConnectionCallSync(object):
 		self._system = system
 
 	def __getattr__(self, action):
-		service_name = self._system.get_service_name(action)['name']
+		service_name = self._system.get_service(action)['name']
 		connection = self._system.get_connection(service_name)
 		return connection.get_action(action, async = False)
 

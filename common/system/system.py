@@ -29,11 +29,12 @@ from common.system.connectionCall import ConnectionCallSync, ConnectionCallAsync
 from common.system.connection import Connection
 
 class System(object):
-	def __init__(self, config, system_json_file):
+	def __init__(self, config, system_json_file, service = False):
 		self._config = config
 		self._connections = {}
+		self._service = service
 		with open(system_json_file, 'r') as f:
-			self.system = json.load(f)
+			self._system = json.load(f)
 
 	def __getattr__(self, name):
 		if name == 'async_call':
@@ -78,11 +79,16 @@ class System(object):
 
 		return conn
 
-	def get_service_name(self, action):
-		for service in self.system['services']:
-			for a in service['actions']:
+	def get_service(self, action):
+		for storage in self._system['services']['storages']:
+			for a in storage['actions']:
 				if a['name'] == action:
-					return service
+					return storage
+		if not self._service:
+			for computational in self._system['services']['computational']:
+				for a in computational['actions']:
+					if a['name'] == action:
+						return computational
 		raise ValueError("Action '%s' not found in system" % action)
 
 if __name__ == "__main__":
