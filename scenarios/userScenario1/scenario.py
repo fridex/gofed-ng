@@ -19,9 +19,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-from scenarios.abstractScenario import AbstractScenario
+from scenarios.scenario import Scenario
 
-class UserScenario1(AbstractScenario):
+class UserScenario1(Scenario):
 	def run(self, system):
 		data = system.get_project_api("k8s", "commit")
 		print "Running user scenario 1"

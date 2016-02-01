@@ -20,7 +20,6 @@
 # ####################################################################
 
 import sys
-from common.database.dbReaderProjectAPI import DBreaderProjectAPI
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 
@@ -48,5 +47,5 @@ class Reader1Service(StorageService):
 				% (str(project), str(commit)) }
 
 if __name__ == "__main__":
-	ServiceEnvelope.serve(DBReader1Service)
+	ServiceEnvelope.serve(Reader1Service)
 

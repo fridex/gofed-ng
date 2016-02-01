@@ -19,9 +19,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-from scenarios.abstractScenario import AbstractScenario
+from scenarios.scenario import Scenario
 
-class UserScenario2(AbstractScenario):
+class UserScenario2(Scenario):
 	def run(self, system):
 		print "Running user scenario 2"
 		out1 = system.action1()
