@@ -67,7 +67,7 @@ class ServiceResultObject(object):
 		return json_pretty_format(ret)
 
 	def _create_empty_response(self):
-		return {'connected': None,
+		return { 'connected': None,
 			'started': None,
 			'finished': None,
 			'result': None,

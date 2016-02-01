@@ -27,6 +27,7 @@ from rpyc.utils.registry import REGISTRY_PORT
 from rpyc.utils.registry import UDPRegistryClient, TCPRegistryClient, REGISTRY_PORT
 from rpyc.lib import setup_logger
 from common.helpers.output import log
+from common.helpers.utils import config2dict
 
 try:
 	from configparser import ConfigParser
@@ -62,7 +63,8 @@ class ServiceEnvelope(cli.Application):
 			'registry-port': "18811",
 			'registry-host': "localhost",
 			'max-client-count': "20",
-			'max-requests-per-client': "10"
+			'max-requests-per-client': "10",
+			'system-json': "system.json"
 			})
 		self.conf.read(config)
 
@@ -79,6 +81,7 @@ class ServiceEnvelope(cli.Application):
 		self.max_client_count = self.conf.getint(name, "max-client-count")
 		self.max_requests_per_client = self.conf.getint(name, "max-requests-per-client")
 		self.quiet = self.conf.getboolean(name, "quiet")
+		self.system_json = self.conf.get(name, "system-json")
 
 		if self.port is None:
 			self.port = REGISTRY_PORT
@@ -114,6 +117,9 @@ class ServiceEnvelope(cli.Application):
 			log.error("config option is mandatory, see '--help'")
 			sys.exit(1)
 
+		self.conf = config2dict(self.conf)
+
+		ServiceEnvelope.SERVICE_CLASS.on_startup(self.conf, self.system_json)
 		ServiceEnvelope.SERVICE_CLASS.signal_startup(self.conf)
 
 		ServiceEnvelope.worker_pid = os.fork()

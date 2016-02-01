@@ -24,16 +24,35 @@ from rpyc import Service as RpycService
 from common.helpers.version import VERSION
 from common.service.actionWrapper import ActionWrapper
 from common.service.serviceResultGenerator import ServiceResultGenerator
+from common.system.system import System
 
 class Service(RpycService):
-	def __init__(self, conn = None):
-		if conn:
+	def __init__(self, conn, system = None):
+		# conn has to be always supplied because of rpyc.Service __init__
+		if conn is not None: # remote service
 			super(Service, self).__init__(conn)
-			self._result = ServiceResultGenerator()
-			self._result.log_service_name(self.get_service_name())
-			self._result.log_service_aliases(self.get_service_aliases())
+
+		self._result = ServiceResultGenerator()
+		self._result.log_service_name(self.get_service_name())
+		self._result.log_service_aliases(self.get_service_aliases())
+
+		if system is not None:
+			# we are running local service
+			assert conn is None
+			self.system = system
+		else:
+			# in this case we are running remote service, system should be passed
+			# by SystemEnvelope by calling on_startup()
+			assert conn is not None
+			self.system = self.__class__._system
 
 		self.signal_init()
+
+	@classmethod
+	def on_startup(cls, config, system_json):
+		# TODO: config is not accessible when local
+		cls._system = System(config, system_json, service = True)
+		cls._config = config
 
 	def on_connect(self):
 		if self.is_remote():
@@ -52,12 +71,12 @@ class Service(RpycService):
 			)
 
 	def __getattr__(self, name):
-		if not name.startwith('exposed_'):
+		if not name.startswith('exposed_'):
 			exposed_name = "exposed_" + name
 			if hasattr(self, exposed_name) and callable(getattr(self, exposed_name)):
-				super(Service, self).__getattr__(exposed_name)
+				getattr(self.__class__, exposed_name)
 
-		return super(Service, self).__getattr__(name)
+		return getattr(self.__class__, name)
 
 	@classmethod
 	def signal_startup(cls, config):

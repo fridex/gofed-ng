@@ -21,6 +21,7 @@
 
 import sys
 from common.helpers.output import log
+from common.helpers.utils import json_pretty_format
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 
@@ -29,8 +30,8 @@ class Service1Service(ComputationalService):
 
 	@classmethod
 	def signal_startup(cls, config):
-		log.info("Custom config sections: " + str(config.items('Service1Service')))
-		print "got startup signal"
+		log.info("Custom config sections: " + json_pretty_format(config))
+		log.info("got startup signal")
 
 	@classmethod
 	def signal_termination(cls):

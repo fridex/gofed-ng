@@ -21,11 +21,11 @@
 
 import sys
 import rpyc
-import importlib
 from common.system.serviceResultObject import ServiceResultObject
+from common.service.serviceWrapper import ServiceWrapper
 
 class Connection(object):
-	def __init__(self, service_name, host = None, port = None):
+	def __init__(self, service_name, host = None, port = None, system = None):
 		self._service_name = service_name
 		self._connection = None
 		self._instance = None
@@ -34,18 +34,13 @@ class Connection(object):
 			assert port is not None
 			self._connect(host, port)
 		else:
-			self._instantiate()
+			self._instantiate(system)
 
 	def _connect(self, host, port):
 		self._connection = rpyc.connect(host, port)
 
-	def _instantiate(self):
-		package = 'services.%s.service' % self._service_name
-		name = '%s.%s' % (package, self._service_name)
-
-		module = importlib.import_module(name, package)
-		cls = getattr(module. self._service_name)
-		self._instance = cls(None) # connection is None
+	def _instantiate(self, system):
+		self._instance = ServiceWrapper(self._service_name, system)
 
 	def is_local(self):
 		return self._connection is None
@@ -63,6 +58,13 @@ class Connection(object):
 				return ServiceResultObject(self._service_name, action_name, self, rpyc.async(action), async = True)
 			else:
 				return ServiceResultObject(self._service_name, action_name, self, action)
+
+	def destruct(self):
+		if self._connection is not None:
+			self._connection.__del__()
+
+		if self._instance is not None:
+			self._instance.__del__()
 
 if __name__ == "__main__":
 	sys.exit(1)

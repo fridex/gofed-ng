@@ -56,17 +56,24 @@ class System(object):
 	def _establish_connection(self, service_name):
 		host = None
 		port = None
+		remote = True
 
 		if self._config.get(service_name):
-			host = self._config[service_name].get('host')
-			port = self._config[service_name].get('port')
+			remote = self._config[service_name].get("remote") == 'True'
 
-		if not host or not port:
-			reg = self._get_service_location(service_name)
-			host = reg[0]
-			port = reg[1]
+			if remote is True:
+				host = self._config[service_name].get('host')
+				port = self._config[service_name].get('port')
 
-		conn = Connection(service_name, host, port) # TODO: local
+		if remote is True:
+			if not host or not port:
+				reg = self._get_service_location(service_name)
+				host = reg[0]
+				port = reg[1]
+
+			conn = Connection(service_name, host = host, port = port)
+		else:
+			conn = Connection(service_name, system = self)
 
 		return conn
 
@@ -91,5 +98,18 @@ class System(object):
 						return computational
 		raise ValueError("Action '%s' not found in system" % action)
 
+	def get_config(self):
+		return self._config
+
+	def __enter__(self):
+		return self
+		pass
+
+	def __exit__(self, type, value, traceback):
+		# we have to call destruct explicitely to notify about correct signals
+		for connection in self._connections.values():
+			connection.destruct()
+
 if __name__ == "__main__":
 	sys.exit(1)
+
