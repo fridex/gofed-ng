@@ -22,14 +22,42 @@
 import sys
 
 class _Logger(object):
+	def __init__(self):
+		self._warn_log = sys.stderr
+		self._err_log = sys.stderr
+		self._info_log = sys.stderr
+
+	def set_warn_logfile(self, logfile):
+		self._warn_log = logfile
+
+	def set_err_logfile(self, logfile):
+		self._err_log = logfile
+
+	def set_info_logfile(self, logfile):
+		self._info_log = logfile
+
+	def set_logfile(self, logfile):
+		self.set_warn_logfile(logfile)
+		self.set_err_logfile(logfile)
+		self.set_info_logfile(logfile)
+
 	def error(self, s):
-		print >> sys.stderr, "\033[91m!ERR:\033[0m %s" % s
+		if self._err_log.isatty():
+			self._err_log.write("\033[91m!ERR:\033[0m %s\n" % s)
+		else:
+			self._err_log.write("!ERR: %s\n" % s)
 
 	def warn(self, s):
-		print >> sys.stderr, "\033[93mWARN:\033[0m %s" % s
+		if self._warn_log.isatty():
+			self._warn_log.write("\033[93mWARN:\033[0m %s\n" % s)
+		else:
+			self._warn_log.write("WARN: %s\n" % s)
 
 	def info(self, s):
-		print >> sys.stderr, "\033[92mINFO:\033[0m %s" % s
+		if self._info_log.isatty():
+			self._info_log.write("\033[92mINFO:\033[0m %s\n" % s)
+		else:
+			self._info_log.write("INFO: %s\n" % s)
 
 log = _Logger()
 
