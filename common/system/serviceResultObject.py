@@ -66,26 +66,14 @@ class ServiceResultObject(object):
 
 		return json_pretty_format(ret)
 
-	def _create_empty_response(self):
-		return { 'connected': None,
-			'started': None,
-			'finished': None,
-			'result': None,
-			'hostname': "localhost"
-			}
-
 	def __getitem__(self, key):
 		if self._parsed_response is None:
 			if self.is_async():
 				self._parsed_response = json.loads(self._call_result.value)
-			elif self.is_remote():
-				self._parsed_response = json.loads(self._call_result)
 			else:
-				self._parsed_response = self._create_empty_response()
-				self._parsed_response['result'] = self._call_result
+				self._parsed_response = json.loads(self._call_result)
 
 		return self._parsed_response[key]
-
 
 	def __call__(self, *args, **kwargs):
 		self._args = args
