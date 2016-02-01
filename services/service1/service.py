@@ -52,7 +52,10 @@ class Service1Service(ComputationalService):
 	def exposed_action1(self):
 		''' exposed action 1 '''
 		log.info("Processing action")
-		return { "remote": "action1" }
+		ret = self.system.call.get_project_api("commit", "project")
+		print ret
+
+		return ret['result']
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(Service1Service)
