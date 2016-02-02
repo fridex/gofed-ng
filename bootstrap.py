@@ -119,8 +119,7 @@ class GofedBootstrap(cli.Application):
 				if not service['name'][0].isupper():
 					raise ValueError("Service class name should start with uppercase character")
 
-			service_dir = service['name'][:-len('Service')]
-			service_dir = service_dir[0].lower() + service_dir[1:]
+			service_dir = service['name'][:-len('Service')].lower()
 			if os.path.basename(services['dir']) != service_dir:
 				raise ValueError("Service class '%s' should be placed in directory named '%s' instead of '%s'"
 						% (service['name'], service_dir, os.path.basename(services['dir'])))
