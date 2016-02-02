@@ -23,6 +23,7 @@ import sys
 import rpyc
 from common.system.serviceResultObject import ServiceResultObject
 from common.service.serviceWrapper import ServiceWrapper
+from common.system.systemWrapper import SystemWrapper
 
 class Connection(object):
 	def __init__(self, service_name, host = None, port = None, system = None):
@@ -40,7 +41,7 @@ class Connection(object):
 		self._connection = rpyc.connect(host, port)
 
 	def _instantiate(self, system):
-		self._instance = ServiceWrapper(self._service_name, system)
+		self._instance = ServiceWrapper(self._service_name, SystemWrapper(system))
 
 	def is_local(self):
 		return self._connection is None
