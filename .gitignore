@@ -1,4 +1,5 @@
 *.pyc
-services/*Service.conf
-registry.conf
-./system.py
+service.conf
+system.json
+gofed.conf
+
