@@ -8,7 +8,7 @@ clean:
 	rm -rf DOC/
 	rm -f gofed.conf
 	find . -name '*.pyc' -exec rm -f {} +
-	#find services/ -name 'common' -xtype d -exec rm -rf {} +
+	find services/ -name 'common' -xtype d -exec rm -rf {} +
 	find services/ -name 'service.conf' -xtype f -exec rm -rf {} +
 
 pack: clean

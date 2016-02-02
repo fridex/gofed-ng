@@ -244,6 +244,20 @@ class GofedBootstrap(cli.Application):
 				if not os.path.isfile(service_conf_extended):
 					log.info("No extended service configuration in '%s'" % service_conf_extended)
 
+	def _make_symlinks(self, services):
+		for service in services['storages'] + services['computational']:
+			service_dir = os.path.join(self.service_dir, service['name'].lower())
+			dst = os.path.join(service_dir, 'common')
+
+			try:
+				os.symlink("../../common", dst)
+			except OSError as e:
+				# skip if exists
+				if not str(e).startswith("[Errno 17] File exists"):
+					raise e
+				else:
+					log.info("Symlink to common in '%s' already exists, skipping" % dst)
+
 	def main(self):
 		service_classes = []
 
@@ -260,14 +274,13 @@ class GofedBootstrap(cli.Application):
 
 		services = self._aggregate_services(service_classes)
 
-		if not self.no_configs:
+		if not self.no_configs and not self.check_only:
 			self._render_services_conf(services)
 			self._render_gofed_conf(services)
 
-		if not self.no_configs:
-			self._render_services_conf(services)
-
 		if not self.check_only:
+			self._make_symlinks(services)
+
 			ret = self._make_header(services)
 
 			if not self.ugly_output:
