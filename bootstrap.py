@@ -21,9 +21,11 @@
 
 import os, sys, ast, json
 from plumbum import cli
+from jinja2 import Environment, FileSystemLoader
 from common.helpers.output import log
 from common.helpers.utils import get_user, get_hostname, get_time_str, json_pretty_format, get_githead
 from common.helpers.version import VERSION
+from shutil import copyfile
 
 SYSTEM_JSON = 'system.json'
 SERVICE_DIR = 'services/'
@@ -44,6 +46,9 @@ class GofedBootstrap(cli.Application):
 
 	service_dir = cli.SwitchAttr(["--service-dir"], cli.ExistingDirectory,
 			default = SERVICE_DIR, help="Specify service root directory", group="Services")
+
+	no_configs = cli.Flag(["--no-configs"],
+			help = "Do not generate service and client configs", group = "Services")
 
 	def _get_exposed_funcs(self, node, path, method = False):
 		ret = []
@@ -92,7 +97,7 @@ class GofedBootstrap(cli.Application):
 				'doc': ast.get_docstring(cls, clean = True),
 				'bases': bases,
 				'path': path
-				})
+			})
 
 		return ret
 
@@ -185,8 +190,62 @@ class GofedBootstrap(cli.Application):
 
 		return ret
 
+	def _render_template(self, in_template, out_file, render_param):
+		j2_env = Environment(loader=FileSystemLoader(os.path.dirname(in_template)))
+		out = j2_env.get_template(os.path.basename(in_template)).render(param = render_param)
+		with open(out_file, "w") as f:
+			f.write(out)
+
+	def _append_extended_conf(self, service_dir, service_conf):
+		service_conf_extended = os.path.join(service_dir, 'service.conf.extended')
+
+		if not os.path.isfile(service_conf_extended):
+			log.info("No extended service configuration in '%s'" % service_conf_extended)
+
+		with open(service_conf_extended, "r") as f:
+			extended_conf = f.read()
+
+		with open(service_conf, "a") as f:
+			f.write(extended_conf)
+
+	def _render_services_conf(self, services):
+		for service in services['storages'] + services['computational']:
+			service_dir = os.path.join(self.service_dir, service['name'].lower())
+			service_conf_template = os.path.join(self.service_dir, 'service.conf.template')
+			service_conf = os.path.join(service_dir, 'service.conf')
+
+			self._render_template(service_conf_template, service_conf, { 'name': service['name'] })
+			self._append_extended_conf(service_dir, service_conf)
+
+	def _render_gofed_conf(self, services):
+		gofed_conf_template = os.path.join(os.path.dirname(__file__), 'gofed.conf.template')
+		gofed_conf = os.path.join(os.path.dirname(__file__), 'gofed.conf')
+
+		copyfile(gofed_conf_template, gofed_conf)
+
+		with open(gofed_conf, "a") as f:
+			for service in services['storages'] + services['computational']:
+				f.write("\n[%s]\n" % service['name'])
+				f.write("remote = True\n")
+
+				service_dir = os.path.join(self.service_dir, service['name'].lower())
+				service_conf_extended = os.path.join(service_dir, 'service.conf.extended')
+				service_dir = os.path.join(self.service_dir, service['name'].lower())
+				service_conf_extended = os.path.join(service_dir, 'service.conf.extended')
+
+				if not os.path.isfile(service_conf_extended):
+					continue
+
+				with open(service_conf_extended, "r") as f_e:
+					extended = f_e.read()
+
+				f.write(extended)
+
+				if not os.path.isfile(service_conf_extended):
+					log.info("No extended service configuration in '%s'" % service_conf_extended)
+
 	def main(self):
-		services_classes = []
+		service_classes = []
 
 		log.info("Performing analyses for services in '%s'" % self.service_dir)
 		for service in os.listdir(self.service_dir):
@@ -195,10 +254,18 @@ class GofedBootstrap(cli.Application):
 
 			if not os.path.isdir(path):
 				continue
-			services_classes.append(self._analyse_service(path))
+			service_classes.append(self._analyse_service(path))
 
-		self._sanity_check(services_classes)
-		services = self._aggregate_services(services_classes)
+		self._sanity_check(service_classes)
+
+		services = self._aggregate_services(service_classes)
+
+		if not self.no_configs:
+			self._render_services_conf(services)
+			self._render_gofed_conf(services)
+
+		if not self.no_configs:
+			self._render_services_conf(services)
 
 		if not self.check_only:
 			ret = self._make_header(services)

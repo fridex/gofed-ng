@@ -9,10 +9,3 @@ mode = UDP
 ipv6 = False
 
 # Services configuration
-{% for service in param %}
-[{{ service['name'] }}]
-remote = True
-#host = localhost
-#port = 11829
-{% endfor %}
-

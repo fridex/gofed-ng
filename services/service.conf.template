@@ -1,4 +1,4 @@
-[{{ param['str'] }}]
+[{{ param['name'] }}]
 port = 0
 host = localhost
 logfile = {{ param['str'] }}.log
