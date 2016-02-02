@@ -70,6 +70,9 @@ class ServiceConfig(TestConfig):
 	def set_max_requests_per_client(self, max_requests_per_client):
 		self._config['max-requests-per-client'] = str(max_requests_per_client)
 
+	def set_system_json(self, system_json):
+		self._config['system-json'] = system_json
+
 	# getters
 
 	def get_service_name(self):
@@ -102,6 +105,8 @@ class ServiceConfig(TestConfig):
 	def get_max_requests_per_client(self):
 		return int(self._config['max-requests-per-client'])
 
+	def get_system_json(self):
+		return self._config.get('system-json')
 
 if __name__ == "__main__":
 	sys.exit(1)
