@@ -1,0 +1,3 @@
+[submodule "services/specstorage/specker"]
+	path = services/specstorage/specker
+	url = https://github.com/gofed/specker
