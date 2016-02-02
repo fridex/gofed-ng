@@ -38,9 +38,7 @@
             <a href="#testsuite">Testsuite</a>
           </li>
           <li>
-            <a target="_blank" href="https://github.com/gofed/gofed-ng">
-              Source Code
-           </a>
+            <a href="#source">Source Code</a>
           </li>
           <li>
              <a href="#doc">Source Code DOC</a>
@@ -90,6 +88,8 @@
            $('#content').load('doc.html');
          else if (hash == "testsuite")
            $('#content').load('testsuite.html');
+         else if (hash == "source")
+           $('#content').load('source.html');
          else
            $('#content').load('overview.html');
 
