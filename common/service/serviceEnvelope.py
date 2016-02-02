@@ -68,20 +68,21 @@ class ServiceEnvelope(cli.Application):
 			})
 		self.conf.read(config)
 
-		name = ServiceEnvelope.SERVICE_CLASS.__name__
+		name = ServiceEnvelope.SERVICE_CLASS.__name__[:-len('Service')].upper()
 
-	 	self.ipv6 = self.conf.getboolean(name, "ipv6")
-	 	self.host = self.conf.get(name, "host")
-	 	self.port = self.conf.getint(name, "port")
-	 	self.logfile = self.conf.get(name, "logfile")
-		self.auto_register = self.conf.getboolean(name, "register")
-		self.registry_type = self.conf.get(name, "registry-type")
-		self.registry_port = self.conf.getint(name, "registry-port")
-		self.registry_host = self.conf.get(name, "registry-host")
-		self.max_client_count = self.conf.getint(name, "max-client-count")
-		self.max_requests_per_client = self.conf.getint(name, "max-requests-per-client")
-		self.quiet = self.conf.getboolean(name, "quiet")
-		self.system_json = self.conf.get(name, "system-json")
+		if name in self.conf.sections():
+	 		self.ipv6 = self.conf.getboolean(name, "ipv6")
+	 		self.host = self.conf.get(name, "host")
+	 		self.port = self.conf.getint(name, "port")
+	 		self.logfile = self.conf.get(name, "logfile")
+			self.auto_register = self.conf.getboolean(name, "register")
+			self.registry_type = self.conf.get(name, "registry-type")
+			self.registry_port = self.conf.getint(name, "registry-port")
+			self.registry_host = self.conf.get(name, "registry-host")
+			self.max_client_count = self.conf.getint(name, "max-client-count")
+			self.max_requests_per_client = self.conf.getint(name, "max-requests-per-client")
+			self.quiet = self.conf.getboolean(name, "quiet")
+			self.system_json = self.conf.get(name, "system-json")
 
 		if self.port is None:
 			self.port = REGISTRY_PORT
