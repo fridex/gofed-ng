@@ -22,6 +22,7 @@
 import sys
 import json
 import os
+from common.helpers.version import VERSION
 from common.helpers.utils import get_hostname, get_time_str
 
 # TODO: this could be extended with action logging to a file
@@ -33,6 +34,7 @@ class ServiceResultGenerator(object):
 				'started': None,
 				'finished': None,
 				'result': None,
+				'version': VERSION,
 				'hostname': get_hostname(),
 				}
 

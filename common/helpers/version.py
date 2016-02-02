@@ -19,5 +19,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-VERSION = "0.1a"
+from utils import runcmd, get_githead
+
+def _get_version():
+	try:
+		stdout, stderr, rt = runcmd(['git', 'describe'])
+	except RuntimeError as e:
+		if str(e).startswith('fatal: No names found, cannot describe anything.'):
+			return 'git-' + get_githead()[:8]
+
+	return stdout
+
+VERSION = _get_version()
 
