@@ -1,0 +1,3 @@
+# Custom service configuration
+upload-dir = uploads/
+file-lifetime = 2h30m
