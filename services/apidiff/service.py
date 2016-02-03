@@ -52,42 +52,11 @@ class ApidiffService(ComputationalService):
 	def signal_processed(self):
 		log.info("got processed signal")
 
-	def exposed_apidiff_project(self, project1, commit1, project2, commit2):
-		'''
-		Make diff of API of two projects
-		@param project1: the first project
-		@param commit1: a commit of the first project, if None current HEAD is used
-		@param project2: the second project
-		@param commit2: a commit of the second project, if None current HEAD is used
-		@return: list of API differences
-		'''
-		return "TODO"
-
-	def exposed_apidiff_file(self, project_file_id1, project_file_id2):
+	def exposed_apidiff_file(self, projectfile_id1, projectfile_id2):
 		'''
 		Make diff of API of two files
-		@param project_file_id1: the first project file
-		@param project_file_id2: the second project file
-		@return: list of API differences
-		'''
-		return "TODO"
-
-	def exposed_apidiff_project_file(self, project, commit, project_file_id):
-		'''
-		Make diff of API of two files
-		@param project: the first project file
-		@param commit: a commit of the project, if None current HEAD is used
-		@param project_file_id: a project file id
-		@return: list of API differences
-		'''
-		return "TODO"
-
-	def exposed_apidiff_file_project(self, project_file_id, project, commit):
-		'''
-		Make diff of API of two files
-		@param project_file_id: the first project file
-		@param project: a project file
-		@param commit: a commit of the project, if None current HEAD is used
+		@param projectfile_id1: the first project file
+		@param projectfile_id2: the second project file
 		@return: list of API differences
 		'''
 		return "TODO"
