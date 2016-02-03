@@ -19,47 +19,71 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
+import sys, os
+import urllib2
 from common.helpers.output import log
-from common.helpers.utils import json_pretty_format
+from common.service.file import file_id, blob_hash
+from common.helpers.utils import json_pretty_format, package2repo
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
+
+DEFAULT_TARBALL_DIR = 'tarballs'
 
 class TarballStorageService(StorageService):
 	''' Service for storing various files in system '''
 
 	@classmethod
 	def signal_startup(cls, config):
-		log.info("Custom config sections: " + json_pretty_format(config))
-		log.info("got startup signal")
+		cls.tarball_dir = config.get('tarball-dir', DEFAULT_TARBALL_DIR)
 
-	@classmethod
-	def signal_termination(cls):
-		log.info("got termination signal")
+		if not os.path.isdir(cls.tarball_dir):
+			os.mkdir(cls.tarball_dir)
 
 	def signal_init(self):
-		log.info("got init signal")
+		self.tarball_dir = self.__class__.tarball_dir
 
-	def signal_connect(self):
-		log.info("got connect signal")
+	def _get_file_name(self, package_name, commit):
+		return '%s-%s.tar.gz' % (package_name, commit[:8])
 
-	def signal_disconnect(self):
-		log.info("got disconnect signal")
+	def _download_tarball(self, package_name, commit):
+		upstream_url = package2repo(package_name)
+		upstream_url += "/archive/%s.tar.gz" % commit[:8]
 
-	def signal_process(self):
-		log.info("got process signal")
+		response = urllib2.urlopen(upstream_url)
+		blob = response.read()
+		h = blob_hash(blob)
 
-	def signal_processed(self):
-		log.info("got processed signal")
+		dst = os.path.join(self.tarball_dir, self._get_file_name(package_name, commit))
+		with open(dst, 'wb') as f:
+			f.write(blob)
 
-	def exposed_get_tarball_file_id(self, project, commit = None):
+		return dst, h
+
+	def _is_tarball_available(self, package_name, commit):
+		for f in os.listdir(self.tarball_dir):
+			name = self._get_file_name(package_name, commit)
+			if f == name:
+				return True
+
+		return False
+
+	def _get_tarball_file_id(self, package_name, commit):
+		path = os.path.join(self.tarball_dir, self._get_file_name(package_name, commit))
+
+		return file_id(self, path, -1)
+
+	def exposed_get_tarball_file_id(self, package_name, commit):
 		'''
 		Get tarball file
-		@param project: project name
+		@param package_name: package name in Fedora
 		@param commit: a commit in the project
-		@return: file
+		@return: file id
 		'''
-		return "TODO"
+		if self._is_tarball_available(package_name, commit):
+			return self._get_tarball_file_id(package_name, commit)
+		else:
+			file_path, h = self._download_tarball(package_name, commit)
+			return file_id(self, file_path, -1, h)
 
 	def exposed_download(self, file_id):
 		'''
@@ -67,7 +91,14 @@ class TarballStorageService(StorageService):
 		@param file_id: id of the file that will be downloaded
 		@return: file
 		'''
-		return "TODO"
+		log.info("downloading '%s'" % str(file_id))
+		filename = os.path.basename(file_id['identifier'])
+		file_path = os.path.join(self.tarball_dir, filename)
+
+		with open(file_path, 'rb') as f:
+			content = f.read()
+
+		return content
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(TarballStorageService)
