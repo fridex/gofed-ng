@@ -18,6 +18,12 @@ clean:
 pack: clean
 	tar -zcvf *
 
+update: update-system-json
+
+update-system-json: all
+	scp system.json fedora@209.132.179.123:~
+
+
 doc:
 	@epydoc --graph all -o DOC/ common/ plugins/ scenarios/ services gofed.py registry.py system.py -v && \
 		echo "Documentation created, see 'DOC/' dir..."
