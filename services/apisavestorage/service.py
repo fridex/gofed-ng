@@ -20,46 +20,56 @@
 # ####################################################################
 
 import sys
+from pymongo import MongoClient
 from common.helpers.output import log
 from common.helpers.utils import json_pretty_format
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
+
+DEFAULT_DATABASE_HOST = 'localhost'
+DEFAULT_DATABASE_PORT = 27017
+DEFAULT_DATABASE_NAME = 'gofed'
+DEFAULT_DATABASE_COLLECTION = 'api'
+
+# TODO: locking in threads
 
 class ApiSaveStorageService(StorageService):
 	''' Service for storing API of projects'''
 
 	@classmethod
 	def signal_startup(cls, config):
-		log.info("Custom config sections: " + json_pretty_format(config))
-		log.info("got startup signal")
+		print cls.get_service_name()
+		cls.host = config.get('database-host', DEFAULT_DATABASE_HOST)
+		cls.port = int(config.get('database-port', DEFAULT_DATABASE_PORT))
+		cls.name = config.get('database-name', DEFAULT_DATABASE_NAME)
+		cls.collection_name = config.get('database-collection', DEFAULT_DATABASE_COLLECTION)
 
-	@classmethod
-	def signal_termination(cls):
-		log.info("got termination signal")
+		cls.client = MongoClient(cls.host, cls.port)
+		cls.db = cls.client[cls.name]
+		cls.api = cls.db[cls.collection_name]
 
 	def signal_init(self):
-		log.info("got init signal")
+		self.api = self.__class__.api
 
-	def signal_connect(self):
-		log.info("got connect signal")
-
-	def signal_disconnect(self):
-		log.info("got disconnect signal")
-
-	def signal_process(self):
-		log.info("got process signal")
-
-	def signal_processed(self):
-		log.info("got processed signal")
-
-	def exposed_store_api(self, project, commit):
+	def exposed_store_api(self, project, commit, api, meta):
 		'''
-		Store API of a project in commit
+		Store API of a project
 		@param project: project name
-		@param commit: project commit
-		@return: status report
+		@param commit: commit
+		@param api: exported API
+		@param meta: metadata from analysis
 		'''
-		return "TODO"
+		item = {
+			'project': project,
+			'commit': commit,
+			'api': api,
+			'meta': meta
+		}
+
+		self.api.insert(item)
+
+		return True
+
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(ApiSaveStorageService)
