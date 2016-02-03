@@ -11,9 +11,11 @@ submodules:
 clean:
 	rm -rf DOC/
 	rm -f gofed.conf
+	rm -f system.json
 	find . -name '*.pyc' -exec rm -f {} +
 	find services/ -name 'common' -xtype d -exec rm -rf {} +
 	find services/ -name 'service.conf' -xtype f -exec rm -rf {} +
+	find services/ -name 'system.json' -xtype f -exec rm -rf {} +
 
 pack: clean
 	tar -zcvf *
