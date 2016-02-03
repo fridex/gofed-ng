@@ -40,6 +40,22 @@ href="system.json">system.json</a> file.
           return "<i>Documentation not available</i>";
       }
 
+      function get_action_doc(action_doc) {
+        if (! action_doc)
+          return "<i>Documentation not available</i>";
+
+        ret = action_doc.replace('@return:', '<br /><strong>Returns:</strong>');
+        ret = ret.replace(/@param .*:.*\n/gi, function (match) {
+                ret = match.replace(/@param/, "<li>");
+                ret = ret.replace(/.*:/, function (match) { return "<u>" + match + "</u>"; });
+                ret += "</li>";
+                return ret;
+              });
+        rer = ret.replace("<li>.*</li>", function (match) { return "<ul>" + match + "</ul>"; });
+
+        return ret;
+      }
+
       function get_service_source(service) {
         return 'https://github.com/gofed/gofed-ng/tree/master/services/' + service['name'].toLowerCase() + '/service.py';
       }
@@ -60,7 +76,7 @@ href="system.json">system.json</a> file.
 '  <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>' +
 '  <code>' + action['name'] + '(' + get_param(action) + ')</code>' +
 '  <div class="api-text">' +
-'    <p>' + get_doc(action['doc']) + '</p>' +
+'    <p>' + get_action_doc(action['doc']) + '</p>' +
 '    <div class="api-provided-by">' +
 '      <strong>Provided by:</strong><code>' + service['name'] + '</code> - ' + get_doc(service['doc']) +
 '      <a class="api-ref" href="' + get_service_source(service) +'">[source]<a>' +
