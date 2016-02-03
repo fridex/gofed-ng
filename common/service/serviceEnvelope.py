@@ -120,8 +120,9 @@ class ServiceEnvelope(cli.Application):
 
 		self.conf = config2dict(self.conf)
 
-		ServiceEnvelope.SERVICE_CLASS.on_startup(self.conf, self.system_json)
-		ServiceEnvelope.SERVICE_CLASS.signal_startup(self.conf)
+		service_cls = ServiceEnvelope.SERVICE_CLASS
+		service_cls.on_startup(self.conf, self.system_json)
+		service_cls.signal_startup(self.conf.get(service_cls.get_service_name()))
 
 		ServiceEnvelope.worker_pid = os.fork()
 
