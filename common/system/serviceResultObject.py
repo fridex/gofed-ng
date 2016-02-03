@@ -23,6 +23,8 @@ import sys
 import json
 from common.helpers.utils import json_pretty_format
 
+_MAX_STORE_SIZE = 128
+
 class ServiceResultObject(object):
 	def __init__(self, service_name, action_name, connection, call, async = False):
 		self._service_name = service_name
@@ -76,8 +78,26 @@ class ServiceResultObject(object):
 		return self._parsed_response[key]
 
 	def __call__(self, *args, **kwargs):
-		self._args = args
-		self._kwargs = kwargs
+		if len(args) > 0:
+			self._args = []
+			for arg in args:
+				if len(arg) < _MAX_STORE_SIZE:
+					self._args.append(str(arg))
+				else:
+					self._args.append("<BLOB>")
+		else:
+			try:
+				self._args = str(args)
+			except:
+				self._args = "<BLOB>"
+
+		if kwargs is not None:
+			self._kwargs = {}
+			for key, val in kwargs.iteritems():
+				if len(val) > _MAX_STORE_SIZE:
+					self._kwargs[key] = "<BLOB>"
+				else:
+					self._kwargs[key] = val
 
 		self._call_result = self._call(*args, **kwargs)
 
