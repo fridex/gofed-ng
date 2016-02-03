@@ -2,4 +2,6 @@
 service.conf
 system.json
 gofed.conf
-
+services/*/common
+services/*/system.json
+services/*/service.conf
