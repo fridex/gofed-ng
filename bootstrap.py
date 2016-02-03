@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import os, sys, ast, json
+import os, sys, ast, json, shutil
 from plumbum import cli
 from jinja2 import Environment, FileSystemLoader
 from common.helpers.output import log
@@ -258,6 +258,14 @@ class GofedBootstrap(cli.Application):
 				else:
 					log.info("Symlink to common in '%s' already exists, skipping" % dst)
 
+	def _copy_system_json(self, system_json, services):
+		log.info("Copying system.json to services")
+		for service in services['storages'] + services['computational']:
+			service_dir = os.path.join(self.service_dir, service['name'].lower())
+			dst = os.path.join(service_dir, 'system.json')
+
+			shutil.copyfile(system_json, dst)
+
 	def main(self):
 		service_classes = []
 
@@ -292,6 +300,7 @@ class GofedBootstrap(cli.Application):
 			else:
 				with open(self.output_file, "w") as f:
 					f.write(ret)
+				self._copy_system_json(self.output_file, services)
 
 		return 0
 
