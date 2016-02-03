@@ -1,8 +1,12 @@
 # Makefile for gofed-ng
 # 2016 Fridolin Pokorny <fpokorny@redhat.com>
 
-all:
+all: submodules
 	python bootstrap.py
+
+submodules:
+	git submodule init
+	> services/spec/specker/__init__.py
 
 clean:
 	rm -rf DOC/
