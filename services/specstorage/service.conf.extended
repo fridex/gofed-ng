@@ -1,2 +1,2 @@
 # Custom service configuration
-spec-tree-dir = specs/
+spec-dir = specs

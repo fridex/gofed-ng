@@ -7,4 +7,10 @@ services/*/system.json
 services/*/service.conf
 
 # service relevant
+services/apidiff/tmp/
+services/api/tmp/
+services/filestorage/rpms/
+services/filestorage/uploads/
 services/specstorage/specs/
+services/spec/tmp/
+services/tarballstorage/tarballs/

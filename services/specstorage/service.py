@@ -75,7 +75,7 @@ class SpecStorageService(StorageService):
 	@classmethod
 	def signal_startup(cls, config):
 		service_name = cls.get_service_name()
-		tree_dir = config.get('spec-tree-dir', DEFAULT_SPEC_TREE_DIR)
+		tree_dir = config.get('spec-dir', DEFAULT_SPEC_TREE_DIR)
 
 		if not os.path.isdir(tree_dir):
 			log.info("Creating tree dir '%s'" % tree_dir)

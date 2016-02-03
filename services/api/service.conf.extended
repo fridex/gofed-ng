@@ -1,2 +1,2 @@
 # Custom service configuration
-my_custom_val = example
+tmp-dir = tmp
