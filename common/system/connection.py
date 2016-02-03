@@ -50,15 +50,21 @@ class Connection(object):
 		return not self.is_local()
 
 	def get_action(self, action_name, async = False):
-		if self.is_local():
-			# TODO: bind to object
-			return ServiceResultObject(self._service_name, action_name, self, getattr(self._instance, action_name))
-		else:
-			action = getattr(self._connection.root, action_name)
-			if async is True:
-				return ServiceResultObject(self._service_name, action_name, self, rpyc.async(action), async = True)
+		if action_name == 'download':
+			if self.is_local():
+				getattr(self._instance, action_name)
 			else:
-				return ServiceResultObject(self._service_name, action_name, self, action)
+				return getattr(self._connection.root, action_name)
+		else:
+			if self.is_local():
+				# TODO: bind to object
+				return ServiceResultObject(self._service_name, action_name, self, getattr(self._instance, action_name))
+			else:
+				action = getattr(self._connection.root, action_name)
+				if async is True:
+					return ServiceResultObject(self._service_name, action_name, self, rpyc.async(action), async = True)
+				else:
+					return ServiceResultObject(self._service_name, action_name, self, action)
 
 	def destruct(self):
 		if self._connection is not None:
