@@ -63,7 +63,7 @@ class SpecService(ComputationalService):
 
 		# TODO: remove tmp_file
 
-	def exposed_get_spec_requires(self, tmp_dir):
+	def exposed_get_spec_requires(self, specfile_id):
 		'''
 		Get all requires for package
 		@param specfile_id: a file id of a file stored in system
