@@ -20,44 +20,48 @@
 # ####################################################################
 
 import sys
+from pymongo import MongoClient
 from common.helpers.output import log
 from common.helpers.utils import json_pretty_format
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
+
+DEFAULT_DATABASE_HOST = 'localhost'
+DEFAULT_DATABASE_PORT = 27017
+DEFAULT_DATABASE_NAME = 'gofed'
+DEFAULT_DATABASE_COLLECTION = 'api'
+
+# TODO: locking in threads
 
 class ApiStorageService(StorageService):
 	''' Service for retrieving API of projects'''
 
 	@classmethod
 	def signal_startup(cls, config):
-		log.info("Custom config sections: " + json_pretty_format(config))
-		log.info("got startup signal")
+		cls.host = config.get('database-host', DEFAULT_DATABASE_HOST)
+		cls.port = int(config.get('database-port', DEFAULT_DATABASE_PORT))
+		cls.name = config.get('database-name', DEFAULT_DATABASE_NAME)
+		cls.collection_name = config.get('database-collection', DEFAULT_DATABASE_COLLECTION)
 
-	@classmethod
-	def signal_termination(cls):
-		log.info("got termination signal")
+		cls.client = MongoClient(cls.host, cls.port)
+		cls.db = cls.client[cls.name]
+		cls.api = cls.db[cls.collection_name]
 
 	def signal_init(self):
-		log.info("got init signal")
-
-	def signal_connect(self):
-		log.info("got connect signal")
-
-	def signal_disconnect(self):
-		log.info("got disconnect signal")
-
-	def signal_process(self):
-		log.info("got process signal")
-
-	def signal_processed(self):
-		log.info("got processed signal")
+		self.api = self.__class__.api
 
 	def exposed_get_api_project_listing(self):
 		'''
 		Listing of all available projects with analyzed API
 		@return: list of all available projects
 		'''
-		return "TODO"
+		ret = []
+		filtering = {'commit': 0, '_id': 0, 'api': 0, 'meta': 0}
+
+		for item in self.api.find({}, filtering):
+			ret.append(item['project'])
+
+		return ret
 
 	def exposed_get_api_commit_listing(self, project):
 		'''
@@ -65,16 +69,28 @@ class ApiStorageService(StorageService):
 		@param project: project name
 		@return: list of all available commits
 		'''
-		return "TODO"
+		ret = []
+		filtering = {'_id': 0, 'api': 0, 'project': 0, 'meta': 0}
 
-	def exposed_get_api_project(self, project, commit = None):
+		for item in self.api.find({'project': project}, filtering):
+			ret.append(item['commit'])
+
+		return ret
+
+	def exposed_get_api_project(self, project, commit):
 		'''
 		API of given project in specified commit
 		@param project: project name
 		@param commit: commit of project, if omitted, currend HEAD is used
 		@return: API of the project
 		'''
-		return "TODO"
+		ret = []
+		filtering = { 'commit': 0, '_id': 0, 'project': 0 }
+
+		for item in self.api.find({'project': project, 'commit': commit}, filtering):
+			ret.append(item['api'])
+
+		return ret
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(ApiStorageService)

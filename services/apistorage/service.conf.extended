@@ -1,2 +1,5 @@
 # Custom service configuration
-my_custom_val = example
+database-host = localhost
+database-port = 27017
+database-name = gofed
+database-collection = api
