@@ -86,6 +86,14 @@ class System(object):
 
 		return conn
 
+	def download(self, file_id, path):
+		# TODO: check IP/port
+		conn = self.get_connection(file_id['service'])
+		call = conn.get_action('download', async = False)
+		blob = call(file_id)
+		with open(path, 'wb') as f:
+			f.write(blob)
+
 	def is_storage(self, service_name):
 		for storage in self._system['services']['storages']:
 			if storage['name'] == service_name:
