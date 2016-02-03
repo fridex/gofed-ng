@@ -52,11 +52,11 @@ class ApidiffService(ComputationalService):
 	def signal_processed(self):
 		log.info("got processed signal")
 
-	def exposed_apidiff_file(self, projectfile_id1, projectfile_id2):
+	def exposed_apidiff(self, api1, api2):
 		'''
-		Make diff of API of two files
-		@param projectfile_id1: the first project file
-		@param projectfile_id2: the second project file
+		Make diff of API
+		@param api1: the first API
+		@param api2: the second API
 		@return: list of API differences
 		'''
 		return "TODO"
