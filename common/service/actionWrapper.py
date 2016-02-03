@@ -36,7 +36,10 @@ class ActionWrapper(object):
 		self._posthook()
 		self._stats_logger.log_result(result)
 
-		return self._stats_logger.dump()
+		if self._action.__name__ == 'exposed_download':
+			return result
+		else:
+			return self._stats_logger.dump()
 
 	__call__ = action_call # make myself act like a function
 
