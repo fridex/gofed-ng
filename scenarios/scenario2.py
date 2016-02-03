@@ -19,16 +19,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-from scenarios.scenario import Scenario
+import sys
+from scenario import Scenario
 
 class UserScenario2(Scenario):
-	def run(self, system):
-		print "Running user scenario 2"
-		out1 = system.action1()
-		print "Action1 output: %s" % out1
-		out2 = system.action2(out1)
-		print "Action2 output: %s" % out2
-		out3 = system.action3(out2, "param2")
-		print "Action3 output: %s" % out3
-		return out3
+	def main(self):
+		with self.get_system() as system:
+			print "Running user scenario 2"
+		return 0
+
+if __name__ == '__main__':
+	sys.exit(1)
 

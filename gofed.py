@@ -19,54 +19,34 @@
 
 import sys
 from plumbum import cli
-from common.registry.registryClient import RegistryClient
 from common.helpers.utils import config2dict
-from common.system.system import System
-import rpyc
+from common.helpers.version import VERSION
+from subcommand.gofedSystem import GofedSystem
+from ConfigParser import ConfigParser
 
-try:
-	from configparser import ConfigParser
-except ImportError:
-	from ConfigParser import ConfigParser
-
-from scenarios.userScenario1.scenario import UserScenario1
-from scenarios.userScenario2.scenario import UserScenario2
-
-GOFED_CONFIG="gofed.conf"
-SYSTEM_JSON="system.json"
+DEFAULT_GOFED_CONFIG_PATH = "gofed.conf"
 
 class Gofed(cli.Application):
-	def config(self, config = GOFED_CONFIG):
-		''' Use config '''
-		conf = ConfigParser()
-		conf.read(config)
-		self.config = config2dict(conf)
+	VERSION = VERSION
+	DESCRIPTION = "gofed - golang packaging and analysis tool"
+
+	config_path = cli.SwitchAttr("--config", str,
+			help = "gofed config path",
+			default = DEFAULT_GOFED_CONFIG_PATH)
+
+	def get_config(self):
+		return self.config
 
 	def main(self):
-		self.config()
+		if self.nested_command is None:
+			self.help()
+			return 1
 
-		system = System(self.config, SYSTEM_JSON)
+		conf = ConfigParser()
+		conf.read(self.config_path)
+		self.config = config2dict(conf)
 
-		print system._config
-		print "system.call"
-		print system.call
-		print "system.async_call"
-		print system.async_call
-		print "system.call.action1"
-		print system.call.action1
-		print "system.async_call.action1"
-		print system.async_call.action1
-		print "system.call.action1()"
-		print system.call.action1()
-		print "system.async_call.action1()"
-		print system.async_call.action1()
-
-		#print system.get_service_name('action1')
-		#print system.call.action`1
-		#print system.call.action1()
-
-		#UserScenario1().run(system)
-		#UserScenario2().run(system)
+Gofed.subcommand("system", GofedSystem)
 
 if __name__ == "__main__":
 	Gofed.run()

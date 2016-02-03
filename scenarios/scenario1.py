@@ -19,17 +19,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-from scenarios.scenario import Scenario
+import sys
+from scenario import Scenario
 
 class UserScenario1(Scenario):
-	def run(self, system):
-		data = system.get_project_api("k8s", "commit")
-		print "Running user scenario 1"
-		out1 = system.action1()
-		print "Action1 output: %s" % out1
-		in1 = "(%s - %s)" % (out1, data)
-		print "Action2 input: %s" % in1
-		out2 = system.action2(in1)
-		print "Action2 output: %s" % out2
-		return out2
+	def main(self):
+		with self.get_system() as system:
+			print system.call.api_file("foo")
+			print "Running user scenario 1"
+		return 0
+
+if __name__ == '__main__':
+	sys.exit(1)
 
