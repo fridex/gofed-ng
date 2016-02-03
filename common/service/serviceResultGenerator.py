@@ -48,7 +48,7 @@ class ServiceResultGenerator(object):
 		self._stats['finished'] = get_time_str()
 
 	def log_result(self, result):
-		if type(result) is not dict and type(result) is not str and type(result) is not list:
+		if type(result) is not dict and type(result) is not str and type(result) is not list and type(result) is not type(True):
 			raise ValueError("Action should return serializable object, one of dict, list, string", type(result))
 
 		self._stats['result'] = result
