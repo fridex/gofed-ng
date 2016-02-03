@@ -62,7 +62,7 @@ class FileStorageService(StorageService):
 		'''
 		Store a file
 		@param blob: a file content to store
-		@return: id of the file and time for which the file is accessible
+		@return: a file id
 		'''
 		h = blob_hash(blob)
 		dst = os.path.join(self.upload_dir, h)
