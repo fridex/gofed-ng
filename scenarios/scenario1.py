@@ -22,7 +22,7 @@
 import sys
 from scenario import Scenario
 
-class UserScenario1(Scenario):
+class Scenario1(Scenario):
 	def main(self):
 		with self.get_system() as system:
 			print system.call.api_file("foo")

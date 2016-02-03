@@ -176,6 +176,25 @@ class GofedBootstrap(cli.Application):
 
 		return service_classes
 
+	def _generate_scenarios(self):
+		log.info("Generating scenarios")
+		content = ""
+
+		for f in os.listdir('scenarios'):
+			if f == 'scenario.py' or f == '__init__.py' or f.endswith('.pyc'):
+				continue
+			if not os.path.isfile(os.path.join('scenarios', f)):
+				continue
+
+			scenario_name = f[:-len('.py')]
+			scenario_class = scenario_name[0].upper() + scenario_name[1:]
+
+			content += 'from scenarios.%s import %s\n' % (scenario_name, scenario_class)
+			content += 'GofedSystem.subcommand("%s", %s)\n' % (scenario_name, scenario_class)
+
+		with open(os.path.join('subcommand', 'load_scenarios.py'), 'w') as f:
+			f.write(content)
+
 	def _make_header(self, services):
 		ret = { }
 
@@ -301,6 +320,8 @@ class GofedBootstrap(cli.Application):
 				with open(self.output_file, "w") as f:
 					f.write(ret)
 				self._copy_system_json(self.output_file, services)
+
+			self._generate_scenarios()
 
 		return 0
 

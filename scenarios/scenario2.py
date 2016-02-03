@@ -22,7 +22,7 @@
 import sys
 from scenario import Scenario
 
-class UserScenario2(Scenario):
+class Scenario2(Scenario):
 	def main(self):
 		with self.get_system() as system:
 			print "Running user scenario 2"
