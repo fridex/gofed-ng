@@ -55,7 +55,9 @@ class GofedBootstrap(cli.Application):
 
 		funcs = [f for f in node.body if isinstance(f, ast.FunctionDef)]
 		for action in funcs:
-			if action.name.startswith('exposed_') and len(action.name) > len('exposed_'):
+			if action.name.startswith('exposed_') \
+					and len(action.name) > len('exposed_') \
+					and action.name != 'exposed_download':
 				log.info("Found action '%s'..." % action.name)
 
 				item = {}
@@ -135,7 +137,7 @@ class GofedBootstrap(cli.Application):
 
 				for s_def in service['defs']:
 					for s_def2 in service2['defs']:
-						if s_def['name'] == s_def2['name']:
+						if s_def['name'] == s_def2['name'] and s_def['name'] != 'download':
 							raise ValueError("Cannot expose same action twice, action '%s' from '%s' already exposed by class '%s'"
 									% (s_def['name'], service['name'], service2['name']))
 
@@ -158,7 +160,6 @@ class GofedBootstrap(cli.Application):
 				ret['computational'].append(item)
 			else:
 				ret['storages'].append(item)
-
 
 		return ret
 

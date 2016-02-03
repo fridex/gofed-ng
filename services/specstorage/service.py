@@ -36,6 +36,8 @@ from common.service.serviceEnvelope import ServiceEnvelope
 DEFAULT_SPEC_TREE_DIR="specs/"
 PKGDB_API_URL="https://admin.fedoraproject.org/pkgdb/api/packages/?&pattern=golang-*"
 
+# TODO: timed update
+
 class SpecStorageService(StorageService):
 	''' Golang spec files access and information retrieving '''
 
@@ -78,10 +80,7 @@ class SpecStorageService(StorageService):
 		service_name = cls.get_service_name()
 
 		if service_name in config:
-			tree_dir = config[service_name].get('spec-tree-dir')
-
-		if tree_dir is None:
-			tree_dir = DEFAULT_SPEC_TREE_DIR
+			tree_dir = config[service_name].get('spec-tree-dir', DEFAULT_SPEC_TREE_DIR)
 
 		if not os.path.isdir(tree_dir):
 			log.info("Creating tree dir '%s'" % tree_dir)
@@ -111,70 +110,19 @@ class SpecStorageService(StorageService):
 		except Exception as e:
 			raise ValueError("No such branch '%s'" % branch)
 
-	def _get_specmodel(self, package, branch = None):
-		self._prepare_repo(package, branch)
-
-		path = os.path.join(self.tree_dir, package)
-		specfile = os.path.join(path, package + '.spec')
-
-		parser = SpecFileParser(SpecModelWriter())
-		parser.init(specfile)
-		renderer = SpecFileRenderer(parser.get_model_writer().get_model())
-
-		return renderer
-
 	def exposed_get_spec_listing(self):
 		'''
 		Get listing of all Golang projects packaged in Fedora
-		@return list of packages in Fedora Package DB with some additional metadata (upstream, description, ...)
+		@return: list of packages in Fedora Package DB with some additional metadata (upstream, description, ...)
 		'''
 		return self.packages
-
-	def exposed_get_spec_requires(self, package, branch = None):
-		'''
-		Get all requires for package
-		@param package: golang package packaged in Fedora
-		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
-		@return list of requires
-		'''
-		ret = StringIO.StringIO()
-		model = self._get_specmodel(package, branch)
-		return "TODO"
-		model.requires_show(ret)
-		return ret.getvalue()
-
-	def exposed_get_spec_buildrequires(self, package, branch = None):
-		'''
-		Get all buildrequires for package
-		@param package: golang package packaged in Fedora
-		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
-		@return list of buildrequires
-		'''
-		ret = StringIO.StringIO()
-		model = self._get_specmodel(package, branch)
-		return "TODO"
-		model.buildrequires_show(ret)
-		return ret.getvalue()
-
-	def exposed_get_spec_packages(self, package, branch = None):
-		'''
-		Get all packages (e.g. devel, ...) of a package
-		@param package: golang package packaged in Fedora
-		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
-		@return list of packages
-		'''
-		ret = StringIO.StringIO()
-		model = self._get_specmodel(package, branch)
-		return "TODO"
-		model.package_show(ret)
-		return ret.getvalue()
 
 	def exposed_get_spec(self, package, branch = None):
 		'''
 		Get raw spec file of a package
 		@param package: golang package packaged in Fedora
 		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
-		@return raw spec file
+		@return: raw spec file
 		'''
 		self._prepare_repo(package, branch)
 
@@ -190,7 +138,7 @@ class SpecStorageService(StorageService):
 		Get list of downstream patches of a package
 		@param package: golang package packaged in Fedora
 		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
-		@return list of downstream patches
+		@return: list of downstream patches
 		'''
 		ret = []
 
@@ -214,7 +162,7 @@ class SpecStorageService(StorageService):
 		@param package: golang package packaged in Fedora
 		@param patch_name: patch name
 		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
-		@return raw downstream patch
+		@return: raw downstream patch
 		'''
 		self._prepare_repo(package, branch)
 
@@ -225,6 +173,34 @@ class SpecStorageService(StorageService):
 			ret = f.read()
 
 		return ret
+
+	def exposed_get_spec_file_id(self, package, branch = None):
+		'''
+		Get a file id of a spec file
+		@param package: golang package packaged in Fedora
+		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
+		@return: raw downstream patch
+		'''
+		self._prepare_repo(package, branch)
+		return "TODO"
+
+	def exposed_get_spec_patch_id(self, package, patch_name, branch = None):
+		'''
+		Get a file id of a downstream patch
+		@param package: golang package packaged in Fedora
+		@param patch_name: patch name
+		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
+		@return: raw downstream patch
+		'''
+		self._prepare_repo(package, branch)
+		return "TODO"
+
+	def exposed_download(self, file_id):
+		'''
+		Download a file referenced by file id
+		@param file_id: a file to be downloaded
+		'''
+		return "TODO"
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(SpecStorageService)
