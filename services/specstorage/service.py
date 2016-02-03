@@ -24,10 +24,6 @@ import os
 import gitapi
 import urllib2
 import json
-import StringIO
-from specker.modules.specFileParser import SpecFileParser
-from specker.modules.specFileRenderer import SpecFileRenderer
-from specker.modules.specModelWriter import SpecModelWriter
 from common.helpers.output import log
 from common.helpers.utils import json_pretty_format, runcmd
 from common.service.storageService import StorageService
@@ -37,6 +33,7 @@ DEFAULT_SPEC_TREE_DIR="specs/"
 PKGDB_API_URL="https://admin.fedoraproject.org/pkgdb/api/packages/?&pattern=golang-*"
 
 # TODO: timed update
+# TODO: locks when doing stuff with git
 
 class SpecStorageService(StorageService):
 	''' Golang spec files access and information retrieving '''
@@ -78,9 +75,7 @@ class SpecStorageService(StorageService):
 	@classmethod
 	def signal_startup(cls, config):
 		service_name = cls.get_service_name()
-
-		if service_name in config:
-			tree_dir = config[service_name].get('spec-tree-dir', DEFAULT_SPEC_TREE_DIR)
+		tree_dir = config.get('spec-tree-dir', DEFAULT_SPEC_TREE_DIR)
 
 		if not os.path.isdir(tree_dir):
 			log.info("Creating tree dir '%s'" % tree_dir)
