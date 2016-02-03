@@ -81,7 +81,7 @@ class ServiceResultObject(object):
 		if len(args) > 0:
 			self._args = []
 			for arg in args:
-				if len(arg) < _MAX_STORE_SIZE:
+				if len(str(arg)) < _MAX_STORE_SIZE:
 					self._args.append(str(arg))
 				else:
 					self._args.append("<BLOB>")
@@ -94,7 +94,7 @@ class ServiceResultObject(object):
 		if kwargs is not None:
 			self._kwargs = {}
 			for key, val in kwargs.iteritems():
-				if len(val) > _MAX_STORE_SIZE:
+				if len(str(val)) > _MAX_STORE_SIZE:
 					self._kwargs[key] = "<BLOB>"
 				else:
 					self._kwargs[key] = val
