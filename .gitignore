@@ -5,3 +5,6 @@ gofed.conf
 services/*/common
 services/*/system.json
 services/*/service.conf
+
+# service relevant
+services/specstorage/specs/
