@@ -115,6 +115,26 @@ class Service(RpycService):
 	def get_service_version(cls):
 		return VERSION
 
+	@classmethod
+	def get_host(cls):
+		# TODO: improve - use conn?
+		remote = cls._config.get('remote')
+
+		if remote == 'False':
+			return 'localhost'
+
+		return cls._config.get('host')
+
+	@classmethod
+	def get_port(cls):
+		# TODO: improve - use conn?
+		remote = cls._config.get('remote')
+
+		if remote == 'False':
+			return 'localhost'
+
+		return cls._config.get('port')
+
 	def exposed_version(self):
 		return self.__class__.get_service_version()
 
