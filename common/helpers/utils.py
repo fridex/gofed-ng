@@ -23,6 +23,8 @@ import sys
 import os
 import getpass
 import json
+import re
+from datetime import timedelta
 from subprocess import PIPE, Popen
 from time import gmtime, strftime
 
@@ -59,6 +61,21 @@ def runcmd(cmd, cwd = "."):
 		raise RuntimeError(stderr)
 
 	return stdout, stderr, rt
+
+def parse_timedelta(time_str):
+	# thanks to
+	# http://stackoverflow.com/questions/4628122/how-to-construct-a-timedelta-object-from-a-simple-string
+	regex = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')
+	parts = regex.match(time_str)
+	if not parts:
+		return
+	parts = parts.groupdict()
+	time_params = {}
+	for (name, param) in parts.iteritems():
+		if param:
+			time_params[name] = int(param)
+	return timedelta(**time_params)
+
 
 if __name__ == '__main__':
 	sys.exit(1)
