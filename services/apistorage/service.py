@@ -19,10 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
 from pymongo import MongoClient
-from common.helpers.output import log
-from common.helpers.utils import json_pretty_format
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 
@@ -31,10 +28,8 @@ DEFAULT_DATABASE_PORT = 27017
 DEFAULT_DATABASE_NAME = 'gofed'
 DEFAULT_DATABASE_COLLECTION = 'api'
 
-# TODO: locking in threads
-
 class ApiStorageService(StorageService):
-	''' Service for retrieving API of projects'''
+	''' Retrieving API of projects'''
 
 	@classmethod
 	def signal_startup(cls, config):
@@ -58,7 +53,8 @@ class ApiStorageService(StorageService):
 		ret = []
 		filtering = {'commit': 0, '_id': 0, 'api': 0, 'meta': 0}
 
-		for item in self.api.find({}, filtering):
+		cursor = self.api.find({}, filtering)
+		for item in cursor:
 			ret.append(item['project'])
 
 		return ret
@@ -72,23 +68,25 @@ class ApiStorageService(StorageService):
 		ret = []
 		filtering = {'_id': 0, 'api': 0, 'project': 0, 'meta': 0}
 
-		for item in self.api.find({'project': project}, filtering):
+		cursor = self.api.find({'project': project}, filtering)
+		for item in cursor:
 			ret.append(item['commit'])
 
 		return ret
 
 	def exposed_get_api_project(self, project, commit):
 		'''
-		API of given project in specified commit
+		API of the given project in specified commit
 		@param project: project name
-		@param commit: commit of project, if omitted, currend HEAD is used
-		@return: API of the project
+		@param commit: commit hash
+		@return: API of the project with analysis metadata
 		'''
 		ret = []
 		filtering = { 'commit': 0, '_id': 0, 'project': 0 }
 
-		for item in self.api.find({'project': project, 'commit': commit}, filtering):
-			ret.append(item['api'])
+		cursor = self.api.find({'project': project, 'commit': commit}, filtering)
+		for item in cursor:
+			ret.append({'api': item['api'], 'meta': item['meta']})
 
 		return ret
 
