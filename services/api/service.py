@@ -19,19 +19,19 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
+import os
 from common.helpers.output import log
 from common.helpers.utils import json_pretty_format
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 
 class ApiService(ComputationalService):
-	''' Service for retrieving API of projects'''
+	''' API analysis '''
 
 	@classmethod
 	def signal_startup(cls, config):
-		log.info("Custom config sections: " + json_pretty_format(config))
 		log.info("got startup signal")
+		log.info("config sections: " + json_pretty_format(config))
 
 	@classmethod
 	def signal_termination(cls):
@@ -39,6 +39,9 @@ class ApiService(ComputationalService):
 
 	def signal_init(self):
 		log.info("got init signal")
+
+	def signal_destruct(self):
+		log.info("got destruct signal")
 
 	def signal_connect(self):
 		log.info("got connect signal")
@@ -49,14 +52,23 @@ class ApiService(ComputationalService):
 	def signal_process(self):
 		log.info("got process signal")
 
-	def signal_processed(self):
+	def signal_processed(self, was_error):
 		log.info("got processed signal")
 
-	def exposed_api_file(self, file_id):
+	def exposed_api(self, file_id):
 		'''
-		Get API of file
-		@param file_id: the project file
-		@return: exported API
+		Get API of a file
+		@param file_id: file to be analysed
+		@return: list of exported API
+		'''
+		return "TODO"
+
+	def exposed_apidiff(self, api1, api2):
+		'''
+		Make a diff of APIs
+		@param api1: the first API
+		@param api2: the second API
+		@return: list of API differences
 		'''
 		return "TODO"
 
