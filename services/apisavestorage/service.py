@@ -19,10 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
 from pymongo import MongoClient
-from common.helpers.output import log
-from common.helpers.utils import json_pretty_format
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 
@@ -31,14 +28,11 @@ DEFAULT_DATABASE_PORT = 27017
 DEFAULT_DATABASE_NAME = 'gofed'
 DEFAULT_DATABASE_COLLECTION = 'api'
 
-# TODO: locking in threads
-
 class ApiSaveStorageService(StorageService):
 	''' Service for storing API of projects'''
 
 	@classmethod
 	def signal_startup(cls, config):
-		print cls.get_service_name()
 		cls.host = config.get('database-host', DEFAULT_DATABASE_HOST)
 		cls.port = int(config.get('database-port', DEFAULT_DATABASE_PORT))
 		cls.name = config.get('database-name', DEFAULT_DATABASE_NAME)
@@ -69,7 +63,6 @@ class ApiSaveStorageService(StorageService):
 		self.api.insert(item)
 
 		return True
-
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(ApiSaveStorageService)
