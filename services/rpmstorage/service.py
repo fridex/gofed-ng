@@ -19,19 +19,21 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
 from common.helpers.output import log
 from common.helpers.utils import json_pretty_format
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 
+DEFAULT_RPM_DIR = 'rpms'
+
 class RpmStorageService(StorageService):
-	''' Service for storing various files in system '''
+	''' RPMs provider '''
 
 	@classmethod
 	def signal_startup(cls, config):
-		log.info("Custom config sections: " + json_pretty_format(config))
 		log.info("got startup signal")
+		log.info("custom config sections: " + json_pretty_format(config))
+		cls.rpm_dir = config.get('rpm-dir', DEFAULT_RPM_DIR)
 
 	@classmethod
 	def signal_termination(cls):
@@ -39,6 +41,7 @@ class RpmStorageService(StorageService):
 
 	def signal_init(self):
 		log.info("got init signal")
+		self.rpm_dir = self.__class__.rpm_dir
 
 	def signal_connect(self):
 		log.info("got connect signal")
@@ -52,12 +55,13 @@ class RpmStorageService(StorageService):
 	def signal_processed(self):
 		log.info("got processed signal")
 
-	def exposed_get_rpm_file_id(self, package, fedora_release = None):
+	def exposed_get_rpm(self, package, arch = None, fedora_release = None):
 		'''
-		Get RPM file
+		Get an RPM file id
 		@param package: package name
-		@param fedora_release: fedora release, if omitted rawhide is used
-		@return: file
+		@param arch: Fedora architecture identifier, if omitted "x86_64" is used
+		@param fedora_release: Fedora release, if omitted "rawhide" is used
+		@return: file id
 		'''
 		return "TODO"
 
@@ -65,7 +69,7 @@ class RpmStorageService(StorageService):
 		'''
 		Retrieve file stored in the service
 		@param file_id: id of the file that will be downloaded
-		@return: file
+		@return: file content
 		'''
 		return "TODO"
 
