@@ -91,7 +91,7 @@ class ServiceEnvelope(cli.Application):
 	def signal_handler(sig, frame):
 		if ServiceEnvelope.worker_pid != 0:
 			os.kill(ServiceEnvelope.worker_pid, signal.SIGTERM)
-			ServiceEnvelope.SERVICE_CLASS.signal_termination()
+			ServiceEnvelope.SERVICE_CLASS.on_termination()
 
 	def run_worker_process(self):
 		setup_logger(self.quiet, self.logfile)
@@ -122,7 +122,6 @@ class ServiceEnvelope(cli.Application):
 
 		service_cls = ServiceEnvelope.SERVICE_CLASS
 		service_cls.on_startup(self.conf, self.system_json)
-		service_cls.signal_startup(self.conf.get(service_cls.get_service_name()))
 
 		ServiceEnvelope.worker_pid = os.fork()
 

@@ -37,14 +37,15 @@ class ServiceWrapper(object):
 	def __getattr__(self, name):
 		if self._instance is None:
 			# conn parameter is because of local connection
-			self._cls.signal_startup(self._system.get_config().get(self._service_name))
+			self._cls.on_startup(self._system.get_config().get(self._service_name))
 			self._instance = self._cls(conn = None, system = self._system)
 
 		exposed_name = "exposed_" + name
 		return self._instance._rpyc_getattr(exposed_name)
 
 	def __del__(self):
-		self._cls.signal_termination()
+		del self._instance
+		self._cls.on_termination()
 
 if __name__ == "__main__":
 	sys.exit(1)
