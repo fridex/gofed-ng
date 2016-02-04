@@ -78,7 +78,7 @@ class TarballStorageService(StorageService):
 
 		return f_id
 
-	def exposed_get_tarball_file_id(self, package_name, commit):
+	def exposed_get_tarball(self, package_name, commit):
 		'''
 		Get tarball file id
 		@param package_name: package name in Fedora

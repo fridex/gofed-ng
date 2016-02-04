@@ -106,7 +106,7 @@ class SpecStorageService(StorageService):
 		'''
 		return self.packages
 
-	def exposed_get_spec(self, package, branch = None):
+	def exposed_get_spec_raw(self, package, branch = None):
 		'''
 		Get raw spec file of a package
 		@param package: golang package packaged in Fedora
@@ -147,7 +147,7 @@ class SpecStorageService(StorageService):
 
 		return ret
 
-	def exposed_get_spec_patch(self, package, patch_name, branch = None):
+	def exposed_get_spec_patch_raw(self, package, patch_name, branch = None):
 		'''
 		Get a downstream patch of a package
 		@param package: golang package packaged in Fedora
@@ -166,7 +166,7 @@ class SpecStorageService(StorageService):
 
 		return ret
 
-	def exposed_get_spec_file_id(self, package, branch = None):
+	def exposed_get_spec(self, package, branch = None):
 		'''
 		Get a file id of a spec file
 		@param package: golang package packaged in Fedora
@@ -175,7 +175,7 @@ class SpecStorageService(StorageService):
 		'''
 		return "TODO"
 
-	def exposed_get_spec_patch_id(self, package, patch_name, branch = None):
+	def exposed_get_spec_patch(self, package, patch_name, branch = None):
 		'''
 		Get a file id of a downstream patch
 		@param package: golang package packaged in Fedora
