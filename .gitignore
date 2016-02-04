@@ -5,6 +5,7 @@ gofed.conf
 services/*/common
 services/*/system.json
 services/*/service.conf
+subcommand/load_scenarios.py
 
 # service relevant
 services/apidiff/tmp/
