@@ -19,25 +19,26 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys, os
-import urllib2
+import os, urllib2
 from common.helpers.output import log
 from common.service.file import file_id, blob_hash
-from common.helpers.utils import json_pretty_format, package2repo
+from common.helpers.utils import package2repo
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 
 DEFAULT_TARBALL_DIR = 'tarballs'
 
 class TarballStorageService(StorageService):
-	''' Service for storing various files in system '''
+	''' Accessing upstream tarballs '''
 
 	@classmethod
 	def signal_startup(cls, config):
 		cls.tarball_dir = config.get('tarball-dir', DEFAULT_TARBALL_DIR)
 
 		if not os.path.isdir(cls.tarball_dir):
+			log.info("Creating tarball dir '%s'" % cls.tarball_dir)
 			os.mkdir(cls.tarball_dir)
+		log.info("Using tarball dir '%s'" % cls.tarball_dir)
 
 	def signal_init(self):
 		self.tarball_dir = self.__class__.tarball_dir
@@ -54,8 +55,10 @@ class TarballStorageService(StorageService):
 		h = blob_hash(blob)
 
 		dst = os.path.join(self.tarball_dir, self._get_file_name(package_name, commit))
-		with open(dst, 'wb') as f:
-			f.write(blob)
+
+		with self.get_lock():
+			with open(dst, 'wb') as f:
+				f.write(blob)
 
 		return dst, h
 
@@ -70,11 +73,14 @@ class TarballStorageService(StorageService):
 	def _get_tarball_file_id(self, package_name, commit):
 		path = os.path.join(self.tarball_dir, self._get_file_name(package_name, commit))
 
-		return file_id(self, path, -1)
+		with self.get_lock():
+			f_id = file_id(self, path, -1)
+
+		return f_id
 
 	def exposed_get_tarball_file_id(self, package_name, commit):
 		'''
-		Get tarball file
+		Get tarball file id
 		@param package_name: package name in Fedora
 		@param commit: a commit in the project
 		@return: file id
@@ -83,7 +89,11 @@ class TarballStorageService(StorageService):
 			return self._get_tarball_file_id(package_name, commit)
 		else:
 			file_path, h = self._download_tarball(package_name, commit)
-			return file_id(self, file_path, -1, h)
+
+			with self.get_lock():
+				f_id = file_id(self, file_path, -1, h)
+
+			return f_id
 
 	def exposed_download(self, file_id):
 		'''
@@ -95,8 +105,9 @@ class TarballStorageService(StorageService):
 		filename = os.path.basename(file_id['identifier'])
 		file_path = os.path.join(self.tarball_dir, filename)
 
-		with open(file_path, 'rb') as f:
-			content = f.read()
+		with self.get_lock():
+			with open(file_path, 'rb') as f:
+				content = f.read()
 
 		return content
 
