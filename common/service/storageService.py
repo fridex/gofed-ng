@@ -20,10 +20,19 @@
 # ####################################################################
 
 import sys
+from threading import Lock
 from service import Service
+from common.system.system import System
 
 class StorageService(Service):
-	pass
+	@classmethod
+	def on_startup(cls, config, system_json):
+		# TODO: config is not accessible when local
+		cls._system = System(config, system_json, service = True)
+		cls._config = config
+		cls._lock = Lock()
+
+		cls.signal_startup(config.get(cls.get_service_name()))
 
 if __name__ == "__main__":
 	sys.exit(1)

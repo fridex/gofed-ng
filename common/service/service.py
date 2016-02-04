@@ -20,6 +20,7 @@
 # ####################################################################
 
 import sys
+from threading import Lock
 from rpyc import Service as RpycService
 from common.helpers.version import VERSION
 from common.service.actionWrapper import ActionWrapper
@@ -48,11 +49,12 @@ class Service(RpycService):
 
 		self.signal_init()
 
+	def __del__(self):
+		self.signal_destruct()
+
 	@classmethod
-	def on_startup(cls, config, system_json):
-		# TODO: config is not accessible when local
-		cls._system = System(config, system_json, service = True)
-		cls._config = config
+	def on_termination(cls):
+		cls.signal_termination()
 
 	def on_connect(self):
 		if self.is_remote():
@@ -60,6 +62,7 @@ class Service(RpycService):
 		self.signal_connect()
 
 	def on_disconnect(self):
+		self.signal_destruct()
 		self.signal_disconnect()
 
 	def _rpyc_getattr(self, name):
@@ -78,6 +81,15 @@ class Service(RpycService):
 
 		return getattr(self.__class__, name)
 
+	def get_lock(self):
+		return self.__class__._lock
+
+	def acquire_lock(self):
+		self.__class__._lock.acquire()
+
+	def release_lock(self):
+		self.__class__._lock.release()
+
 	@classmethod
 	def signal_startup(cls, config):
 		pass
@@ -89,6 +101,9 @@ class Service(RpycService):
 	def signal_init(self):
 		pass
 
+	def signal_destruct(self):
+		pass
+
 	def signal_connect(self):
 		pass
 
@@ -98,7 +113,7 @@ class Service(RpycService):
 	def signal_process(self):
 		pass
 
-	def signal_processed(self):
+	def signal_processed(self, was_error):
 		pass
 
 	def is_local(self):
