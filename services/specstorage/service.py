@@ -19,11 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
-import os
-import gitapi
-import urllib2
-import json
+import os, gitapi, urllib2, json
 from common.helpers.output import log
 from common.helpers.utils import json_pretty_format, runcmd
 from common.service.storageService import StorageService
@@ -33,10 +29,9 @@ DEFAULT_SPEC_TREE_DIR="specs/"
 PKGDB_API_URL="https://admin.fedoraproject.org/pkgdb/api/packages/?&pattern=golang-*"
 
 # TODO: timed update
-# TODO: locks when doing stuff with git
 
 class SpecStorageService(StorageService):
-	''' Golang spec files access and information retrieving '''
+	''' Specfiles provider '''
 
 	@classmethod
 	def _fedora_pkgdb_packages_list(cls):
@@ -80,8 +75,7 @@ class SpecStorageService(StorageService):
 		if not os.path.isdir(tree_dir):
 			log.info("Creating tree dir '%s'" % tree_dir)
 			os.mkdir(tree_dir)
-		else:
-			log.info("Using tree dir '%s'" % tree_dir)
+		log.info("Using tree dir '%s'" % tree_dir)
 
 		packages = cls._fedora_pkgdb_packages_list()
 		cls._make_tree_dir(tree_dir, packages)
@@ -107,8 +101,8 @@ class SpecStorageService(StorageService):
 
 	def exposed_get_spec_listing(self):
 		'''
-		Get listing of all Golang projects packaged in Fedora
-		@return: list of packages in Fedora Package DB with some additional metadata (upstream, description, ...)
+		Get listing of all available specfiles
+		@return: list of specfiles in Fedora Package DB with some additional metadata (upstream, description, ...)
 		'''
 		return self.packages
 
@@ -119,12 +113,14 @@ class SpecStorageService(StorageService):
 		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
 		@return: raw spec file
 		'''
-		self._prepare_repo(package, branch)
 
 		path = os.path.join(self.tree_dir, package)
 		specfile = os.path.join(path, package + '.spec')
-		with open(specfile, "r") as f:
-			ret = f.read()
+
+		with self.get_lock():
+			self._prepare_repo(package, branch)
+			with open(specfile, "r") as f:
+				ret = f.read()
 
 		return ret
 
@@ -137,17 +133,17 @@ class SpecStorageService(StorageService):
 		'''
 		ret = []
 
-		self._prepare_repo(package, branch)
-
 		path = os.path.join(self.tree_dir, package)
 
-		for f in os.listdir(path):
-			file_path = os.path.join(path, f)
-			if not os.path.isfile(file_path):
-				continue
+		with self.get_lock():
+			self._prepare_repo(package, branch)
+			for f in os.listdir(path):
+				file_path = os.path.join(path, f)
+				if not os.path.isfile(file_path):
+					continue
 
-			if f.endswith('.patch'):
-				ret.append(f)
+				if f.endswith('.patch'):
+					ret.append(f)
 
 		return ret
 
@@ -159,13 +155,14 @@ class SpecStorageService(StorageService):
 		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
 		@return: raw downstream patch
 		'''
-		self._prepare_repo(package, branch)
 
 		path = os.path.join(self.tree_dir, package)
 		patch_path = os.path.join(path, patch_name)
 
-		with open(patch_path, "r") as f:
-			ret = f.read()
+		with self.get_lock():
+			self._prepare_repo(package, branch)
+			with open(patch_path, "r") as f:
+				ret = f.read()
 
 		return ret
 
@@ -174,9 +171,8 @@ class SpecStorageService(StorageService):
 		Get a file id of a spec file
 		@param package: golang package packaged in Fedora
 		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
-		@return: raw downstream patch
+		@return: file id
 		'''
-		self._prepare_repo(package, branch)
 		return "TODO"
 
 	def exposed_get_spec_patch_id(self, package, patch_name, branch = None):
@@ -185,9 +181,8 @@ class SpecStorageService(StorageService):
 		@param package: golang package packaged in Fedora
 		@param patch_name: patch name
 		@param branch: Fedora branch (e.g. "f23", "rawhide"), if omitted, rawhide is used
-		@return: raw downstream patch
+		@return: file id
 		'''
-		self._prepare_repo(package, branch)
 		return "TODO"
 
 	def exposed_download(self, file_id):
