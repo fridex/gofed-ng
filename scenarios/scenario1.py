@@ -23,10 +23,28 @@ import sys
 from scenario import Scenario
 
 class Scenario1(Scenario):
-	def main(self):
+	''' API diff analysis example '''
+	def main(self, project_file1, project_file2):
 		with self.get_system() as system:
-			print system.call.api_file("foo")
-			print "Running user scenario 1"
+
+			with open(project_file1, 'r') as f:
+				file1 = system.async_call.upload(f.read())
+
+			with open(project_file2, 'r') as f:
+				file2 = system.async_call.upload(f.read())
+
+			file1.result_wait()
+			file2.result_wait()
+
+			api1 = system.async_call.api_file(file1['result'])
+			api2 = system.async_call.api_file(file2['result'])
+
+			api1.result_wait()
+			api2.result_wait()
+
+			result = system.call.apidiff(api1['result'], api2['result'])
+			print result
+
 		return 0
 
 if __name__ == '__main__':
