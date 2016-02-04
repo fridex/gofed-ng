@@ -19,14 +19,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
-import os
-import time
-import urllib2
+import os, time, urllib2
 from dateutil.parser import parse as datetime_parse
 from common.service.file import file_id, blob_hash
 from common.helpers.output import log
-from common.helpers.utils import json_pretty_format, parse_timedelta
+from common.helpers.utils import parse_timedelta
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 
@@ -34,7 +31,7 @@ DEFAULT_UPLOAD_DIR = 'uploads'
 DEFAULT_FILE_LIFETIME = '2h'
 
 class FileStorageService(StorageService):
-	''' Service for storing various files in system '''
+	''' Service for storing various files within the system '''
 
 	@classmethod
 	def signal_startup(cls, config):
@@ -50,24 +47,26 @@ class FileStorageService(StorageService):
 		self.upload_dir = self.__class__.upload_dir
 		self.file_lifetime = self.__class__.file_lifetime
 
-	def exposed_store_file_url(self, url):
+	def exposed_upload_url(self, url):
 		'''
-		Store file by URL - file will be downloaded
-		@return: id of the file and time for which the file is accessible
+		Store file by URL - file will be downloaded and exposed to the system
+		@return: file id
 		'''
 		response = urllib2.urlopen(url)
 		return self.exposed_upload(response.read())
 
 	def exposed_upload(self, blob):
 		'''
-		Store a file
-		@param blob: a file content to store
-		@return: a file id
+		Upload file to the system
+		@param blob: a file content to be store
+		@return: file id
 		'''
 		h = blob_hash(blob)
 		dst = os.path.join(self.upload_dir, h)
-		with open(dst, 'wb') as f:
-			f.write(blob)
+
+		with self.get_lock():
+			with open(dst, 'wb') as f:
+				f.write(blob)
 
 		creation_time = datetime_parse(time.ctime(os.path.getctime(dst)))
 		valid_until = creation_time + self.file_lifetime
@@ -78,18 +77,21 @@ class FileStorageService(StorageService):
 		'''
 		Download a file
 		@param file_id: a file to be downloaded
+		@return: file content
 		'''
 		# avoid getting files from the local system
-		# TODO: check if this service
-		log.info("downloading '%s'" % str(file_id))
+		if not file_id['service'] == self.get_service_name:
+			raise ValueError("File not from this service")
+
 		filename = os.path.basename(file_id['identifier'])
 		file_path = os.path.join(self.upload_dir, filename)
 
-		with open(file_path, 'rb') as f:
-			content = f.read()
+		with self.get_lock():
+			log.info("downloading '%s'" % str(file_path))
+			with open(file_path, 'rb') as f:
+				content = f.read()
 
 		return content
-
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(FileStorageService)
