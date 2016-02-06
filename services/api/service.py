@@ -61,6 +61,8 @@ class ApiService(ComputationalService):
 		@param file_id: file to be analysed
 		@return: list of exported API
 		'''
+		with self.get_system() as system:
+			system.download(file_id, self.get_tmp_filename())
 		return "TODO"
 
 	def exposed_apidiff(self, api1, api2):
