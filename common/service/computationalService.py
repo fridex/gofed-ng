@@ -21,6 +21,7 @@
 
 import sys, os
 from threading import Lock
+from tempfile import NamedTemporaryFile
 from service import Service
 from common.system.system import System
 from common.helpers.output import log
@@ -46,6 +47,12 @@ class ComputationalService(Service):
 
 	def get_tmp_dir(self):
 		return self.__class__.tmp_dir
+
+	def get_tmp_filename(self):
+		return NamedTemporaryFile(dir = self.get_tmp_dir(), delete = False).name
+
+	def get_system(self):
+		return self.__class__._system
 
 if __name__ == "__main__":
 	sys.exit(1)
