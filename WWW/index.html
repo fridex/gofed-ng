@@ -25,37 +25,37 @@
           <li class="sidebar-brand">
             <a href="/">gofed system</a>
           </li>
-          <li>
+          <li id="nav-overview" class="active">
             <a href="#overview">Overview</a>
           </li>
-          <li>
+          <li id="nav-architecture">
             <a href="#architecture">Architecture</a>
           </li>
-          <li>
+          <li id="nav-configuration">
             <a href="#configuration">Installation & Configuration</a>
           </li>
-          <li>
+          <li id="nav-howto-scenario">
             <a href="#howto-scenario">Scenario How To</a>
           </li>
-          <li>
+          <li id="nav-howto-service">
             <a href="#howto-service">Service How To</a>
           </li>
-          <li>
+          <li id="nav-internals">
             <a href="#internals">Under the Hood</a>
           </li>
-          <li>
+          <li id="nav-api">
             <a href="#api">System API</a>
           </li>
-          <li>
+          <li id="nav-testsuite">
             <a href="#testsuite">Testsuite</a>
           </li>
-          <li>
+          <li id="nav-source">
             <a href="#source">Source Code</a>
           </li>
-          <li>
+          <li id="nav-doc">
              <a href="#doc">Developer's DOC</a>
           </li>
-          <li>
+          <li id="nav-contact">
             <a href="#contact">Contact</a>
           </li>
         </ul>
@@ -96,6 +96,9 @@
 
         $('html, body').animate({ scrollTop: 0 }, 'slow');
 
+        $(".sidebar-nav").find(".active").removeClass("active");
+        $('#nav-' + hash + ' a').addClass('active');
+
         if (hash == "overview")
           content = 'overview.html';
         else if (hash == "api")
@@ -120,8 +123,10 @@
           content = 'source.html';
         else if (hash == "configuration")
           content = 'configuration.html';
-        else
+        else {
           content = 'overview.html';
+          $('#nav-overview a').addClass('active');
+        }
 
         $("#content").hide().load(content).fadeIn('1300');
 

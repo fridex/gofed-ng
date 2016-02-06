@@ -57,6 +57,7 @@
     margin: 0;
     padding: 0;
     list-style: none;
+    border: none;
 }
 
 .sidebar-nav li {
@@ -76,9 +77,21 @@
     background: rgba(255,255,255,0.2);
 }
 
+.action a:hover {
+    text-color: #555;
+    font-weight: bold;
+    background: #00f;
+}
+
 .sidebar-nav li a:active,
 .sidebar-nav li a:focus {
     text-decoration: none;
+}
+
+.sidebar-nav .active {
+    text-color: #000;
+    font-weight: bold;
+    background: #fff;
 }
 
 .sidebar-nav > .sidebar-brand {
