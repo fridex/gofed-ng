@@ -60,7 +60,7 @@
           </li>
         </ul>
       </div>
-      <div id="under-construction" class="alert alert-success" role="alert" style="position: fixed; z-index: 999; box-shadow: 10px 10px 5px grey;">
+      <div id="under-construction" class="alert alert-success hidden" role="alert" style="position: fixed; z-index: 999; left: -100%; box-shadow: 10px 10px 5px grey;">
         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
         <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
         This page and its content is under heavy development, so changes are
@@ -128,7 +128,11 @@
         return true;
       });
 
-      $(document).ready(function(){$("#under-construction").animate({left: '52%', top: '5%', duration: 5000}); });
+      $(document).ready(function(){
+        setTimeout(function() {
+          $("#under-construction").removeClass("hidden").animate({left: '52%', top: '5%', duration: 50000})
+        }, 1500);
+      });
     });
   </script>
 
