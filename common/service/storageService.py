@@ -28,7 +28,7 @@ class StorageService(Service):
 	@classmethod
 	def on_startup(cls, config, system_json):
 		# TODO: config is not accessible when local
-		cls._system = System(config, system_json, service = True)
+		cls._system = None # We don't want to use system
 		cls._config = config
 		cls._lock = Lock()
 
