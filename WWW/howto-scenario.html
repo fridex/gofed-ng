@@ -1,0 +1,199 @@
+<h2>Developing a Scenario</h2>
+
+<p>
+Before proceeding, please make sure you are familiar with basic gofed-ng <a
+href="#architecture">terminology</a>, <a href="#configuration">installation
+and configuration</a>.
+
+<hr />
+<h3>Scenario Inputs</h3>
+
+<p>
+First, let's focus on a scenario inputs. A scenario is accessed by a gofed's
+subcommand <code>gofed system &lt;SCENARIO_NAME&gt;</code>. To list all
+available scenarios, run <code>gofed system --help</code>.
+
+<p>
+To run a scenario, system has to be initialized. <code>System</code> class needs
+configuration to know which services should be run locally or remotely. If there
+is no direct IP:port service location in the configuration file, the system has
+to know where the registry is located in order to query services location.
+
+<p>
+Another input file is <code>system.json</code> file, which has mappings of all
+available actions to services.
+
+<h3>How To Write a Scenario</h3>
+
+<p>
+Writing a scenario is as easy as firring up your favorite Python editor. Let's
+immediately dive into the code:
+
+<pre><code class="python">
+from scenario import Scenario
+
+class Example(Scenario):
+	''' Example API diff scenario '''
+	def main(self, project_file1, project_file2):
+		with self.get_system() as system:
+
+			with open(project_file1, 'r') as f:
+				remote_file1 = system.async_call.upload(f.read())
+
+			with open(project_file2, 'r') as f:
+				remote_file2 = system.async_call.upload(f.read())
+
+			remote_file1.result_wait()
+			remote_file2.result_wait()
+
+			api1 = system.call.api(remote_file1['result'])
+			api2 = system.call.api(remote_file2['result'])
+
+			api1.result_wait()
+			api2.result_wait()
+
+			ret = system.call.apidiff(api1['result'], api2['result'])
+			print ret['result']
+
+		return 0
+
+</code></pre>
+
+<p>
+Now save the source code to <code>scenarios/example.py</code>. It is important
+to name the file as class name (without uppercase first character) to let
+automated system generated all files needed to run the scenario. To generate all
+necessary files to integrate your scenario to the gofed-ng, just run:
+
+<code><pre>
+$ ./bootstrap.py
+</pre></code>
+
+<p>
+Now you are ready to run the scenario:
+<code><pre>
+$ ./gofed.py system example file1.tar.gz file2.srpm
+</pre></code>
+Voilà! Now you see API differences of projects.
+
+<div class="alert alert-danger" role="alert">
+  Always name scenario source files after scenario class names without uppercase
+  characters. Automated system will integrate your scenarios automatically and
+  you will make source tree cleaner.
+</div>
+
+<h4>Understanding the Source Code</h4>
+
+<p>
+As you can see, scenarios are very generic. All file-specific operations,
+communication and flow handling is left on the system itself.
+
+<p>
+If we look closer at the source code, every system action call is called on
+object <code>system.async_call</code> and <code>system.call</code>. There
+is used context manager for <code>System</code> instance to ensure a correct
+system termination.
+
+<div class="alert alert-danger" role="alert">
+  Always run scenario with the context manager (the <code>with</code>
+  statemenet) for <code>System</code> instance.  <code>System</code> will do
+  clean up for you.
+</div>
+
+<p>
+As can be seen, there are synchronous and asynchronous operations. You can wait
+for the result, you can get the result, and you can pass the result. The result
+is represented by <code>ServiceResultObject</code>. Each service provides
+metadata of an action call and client collects metadata of the action call as
+well. You can view these metada by printing <code>ServiceResultObject</code>
+instance, here is a result sample:
+
+<pre><code class="json">
+{
+  <span class="text-muted">// client call metadata</span>
+  "action": "upload",
+  "args": [
+    "%lt;BLOB%gt;"
+  ],
+  "async": true,
+  "async callback": null,
+  "error": false,
+  "expired": false,
+  "expiry": null,
+  "local": false,
+  "result_ready": true,
+  "service_name": "FILESTORAGE",
+  <span class="text-muted">// service response</span>
+  "response": {
+    "aliases": [
+      "FILESTORAGE"
+    ],
+    "connected": "2016-02-04 20:50:25",
+    "finished": "2016-02-04 20:51:32",
+    "hostname": "vorkstejsn.brq.redhat.com",
+    "result": {
+       <span class="text-muted">% stripped file id %</span>
+    },
+    "service": "FILESTORAGE",
+    "started": "2016-02-04 20:50:25",
+    "version": "git-54be331f"
+  }
+}
+</pre></code>
+
+<p>
+As you can see, this is a result of <code>system.async_call.upload()</code>
+operation. The actual result is <i>file id</i>, to locate file in the whole
+system.  List of actions you can call via <code>system.call</code> and
+<code>system.async_call</code> can be found in <a href="#api">System API</a>
+section.
+
+<div class="alert alert-danger" role="alert">
+  Provide a <i>docstring</i> for scenarios. This <i>docstring</i> is shown when
+  <code>--help</code> is supplied from command line.
+</div>
+
+<p>
+Just note that synchronous calls operations block until a result is not ready,
+asynchronous calls continue execution on the client side.
+
+<h3>Available System & Action Methods</h3>
+
+<p>
+Calls on actions and system itself (<code>call</code> can be substituted with
+<code>async_call</code> as well):
+
+<ul>
+	<li><code>system.download(file_id)</code> - retrieve a file from the system
+	(file can be stored on any <code>StorageService</code>)</li>
+	<li><code>system.call.action.is_remote()</code> - test if action is called on a remote service</li>
+	<li><code>system.call.action.is_local()</code> - test if action is called on a local service instance</li>
+</ul>
+
+<p>
+Calls on <code>ServiceResultObject</code> (assume <code>ret</code> is a result of a call):
+<ul>
+	<li><code>ret.is_local()</code> - true if an action was executed on a local service instance</li>
+	<li><code>ret.is_remote()</code> - true if an action was executed on a remote service</li>
+	<li><code>ret.is_async()</code> - true if an action was asynchronous (run via <code>system.async_call.action()</code>)</li>
+	<li><code>ret.is_expired()</code> - true if an action expired</li>
+	<li><code>ret.error()</code> - true if an error occurred (on the communication layer, only for asynchronous actions)</li>
+	<li><code>ret.result_ready()</code> - true if a result is ready</li>
+	<li><code>ret.result_wait()</code> - wait until result is not ready (blocks execution)</li>
+	<li><code>ret.set_expiry(t)</code> - set expiry time in seconds for asynchronous calls</li>
+	<li><code>ret.set_async_callback(func)</code> - set asynchronous callback</li>
+</ul>
+
+<script src="js/highlight.pack.js"></script>
+<script type="text/javascript">
+  jQuery(function($) {
+    $(document).ready(function() {
+      $('pre code').each(function(i, block) {
+        hljs.highlightBlock(block);
+      });
+    });
+  });
+</script>
+
+
+

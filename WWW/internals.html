@@ -1,0 +1,57 @@
+<h2>Internals of gofed-ng</h2>
+
+<p>
+This page is a brief overview of gofed communication layer internals.
+If you want more details, dive into the <a href="#source">source code</a>. The
+gofed-ng application uses modules, which are developed separately to make code
+clean, allow maximum module re-usage and be able to track issues on as small
+parts as possible. The philosophy behind the project is same as for Unix: "Small
+is beautiful!" and "Make each program do one thing well.".
+
+<h3>Client</h3>
+
+<p>
+There is nothing special on the client side. It uses <code>System</code> class to
+encapsulate all the communication.
+
+<h3>Registry</h3>
+
+<p>
+There was used <a href="http://rpyc.readthedocs.org/en/latest/">RPyC</a>
+registry.
+
+<h3>Services</h3>
+
+<p>
+<code>CompuatationalServices</code> and <code>StorageServices</code> are
+encapsulated with <code>ServiceEnvelope</code>, which does all routine work for
+services such as configuration file parsing, command line arguments handling,
+service instantiating etc. Moreover, it notifies services about start up and
+termination to correctly handle service signals <code>signal_startup()</code> and
+<code>signal_terminate()</code>.
+
+<p>
+After all routine work was done, <code>ServiceEnvelope</code> forks and execs
+a worker. A child process is done because of correct signals handling for worker
+and clean up.
+
+<p>
+The worker is represented by <code>CompuatationalServices</code> or
+<code>StorageServices</code> class based on the service type. Every time
+a connection is made, worker instantiates <code>CompuatationalServices</code> or
+<code>StorageServices</code> object to serve requests. Every object instance
+represents one connection with a remote. After the connection is closed, object
+is destructed. Every instance runs in a separate thread.
+
+<p>
+If a service is run locally, it uses <code>ServiceWrapper</code> class to simulate
+remote connection for a service.
+
+<h3>System</h3>
+
+<p>
+The key idea of gofed-ng is in <code>System</code> class. <code>System</code>
+encapsulates all the communication, serialization, object instantiation, action
+calls etc.  It uses <code>Communication</code> class in order to represent
+a communication with remotes or instances of local services.
+

@@ -1,0 +1,486 @@
+<h2>Developing a Service</h2>
+
+<p>
+Before proceeding, please make sure you are familiar with basic gofed-ng <a
+href="#architecture">terminology</a>, <a href="#configuration">installation
+and configuration</a>.
+
+<hr />
+<h3>How a Service Works</h3>
+
+<p>
+Let's look at service inputs to understand how a service works. A service, which
+runs as a standalone application uses <code>SectionEnvelope</code> to cover all
+the necessary things, such as configuration file parsing or <code>System</code>
+instantiation.
+
+<p>
+The <code>ServiceEnvelope</code> parses the configuration file and instantiates
+<code>System</code> to be able to access all storages within the system, if
+necessary. Thus a generic configuration file is automatically generated during
+bootstrapping. You can define your own configuration key - value tuples, if you
+need to by providing <code>service.conf.extended</code> file in the root of the
+service directory.
+
+<p>
+The <code>ServiceEnvelope</code> collects all the information provided by
+service implementation such as version, name and description, so you can inspect
+service by simple hitting <code>python service.py --info</code>.
+
+<p>
+A service can use other services by calling its own <code>System</code>
+instance or services can be instantiated locally without needs to use network,
+do serialization and other overheads necessary to call a remote service. This
+gives you a power to scale performance. To sum it up, you can selectively select
+which services will be run as one process (you can group them together) and
+which should be called remotely by passing the same configuration options like
+on the client (you can do this on the client as well).
+
+
+<h3>Computational services</h3>
+
+<p>
+Okay, now you are familiar with all the theory. A service implementation can
+look like this:
+
+<pre><code class="python">
+import os
+from common.service.computationalService import ComputationalService
+from common.service.serviceEnvelope import ServiceEnvelope
+
+class ExampleService(ComputationalService):
+	''' An example service '''
+
+	def signal_init(self):
+		self.tmpfile = None
+
+	def signal_destruct(self):
+		if self.tmpfile is not None:
+			os.remove(self.tmpfile)
+
+	def exposed_action(self, file_id, param):
+		'''
+		An example of an exposed action to a client
+		@param file_id: id of a file in the system
+		@param param: filename
+		@return: file content
+		'''
+
+		self.tmpfile = os.path.join(self.get_tmp_dir(), os.path.basename(param))
+
+		with self.get_lock():
+			self.get_system().download(file_id, self.tmpfile)
+			with open(self.tmpfile, "r") as f:
+				content = f.read()
+
+		return content
+
+if __name__ == "__main__":
+	ServiceEnvelope.serve(ExampleService)
+
+</code></pre>
+
+<p>
+This service would possibly not be used, but we can demonstrate how to implement
+a service. As you already know, there are two types of services in the system
+- <code>ComputationalService</code> and <code>StorageService</code>. On the
+first code example, we defined a computational service by inheriting
+<code>ComputationalService</code> class.
+
+<p>
+Both service types use a signaling mechanism. There is a set of predefined
+signals, which are sent to the service instance or it's class. Signals, which
+are sent to service class - e.g. <code>signal_startup()</code> and
+<code>signal_termination()</code> are not related to the interaction with
+a client. These signals are sent when a service is starting up and terminating.
+Signals, which are sent to the service class instance are related to client
+interaction. The service class instance represents one particular connection
+with the client (or with service when the service calls another service). A list
+of all supported signals can be seen at the end of this page.
+
+<div class="alert alert-danger" role="alert">
+  Use defined signals when writing a scenario. Try to avoid using Python
+  methods such as <code>__init__()</code>. Services are wrappers, which ensure
+  that your service is communicating with the system correctly. Reserved names
+  for methods:
+  <ul>
+    <li>methods starting with "on_" prefix, such as <code>on_connect()</code></li>
+    <li>built in Python methods, such as <code>__init__()</code></li>
+  </ul>
+</div>
+
+<p>
+In the example, we have defined <code>signal_init()</code>, which is called when
+there will be instantiated an object of the service class type. We simply
+defined a <code>tmpfile</code> attribute in order to carry information about
+the temporary file created by the service. This file is removed when the service
+object is going to be destructed. Using these methods, we are able to keep state
+of service node clean - if you remember, a <code>ComputationalService</code>
+does not have a persistent state.
+
+<p>
+We have defined <code>exposed_action()</code>, which is the action that can be
+used by a client. Note the "<strong>exposed_</strong>" prefix. When you define
+methods, that are prefixed with "exposed_", these (and only these!) methods will
+be available to client calls. These methods are automatically analysed and added
+to the <a href="#api">System API</a> when bootstrapping so clients can use it.
+As you already know, this system API is distributed via autogenerated
+<code>system.json</code> file, so clients (and services) know what actions are
+provided by which services.
+
+<p>
+If you look at the <code>exposed_action()</code> implementation, it uses
+inherited methods. Depending on the actual <code>Service</code> type
+(<code>ComputationalService</code> or <code>StorageService</code>), there is
+a set of predefined methods which are available. Basically these methods are
+useful repeating routines. Look at the end of this page to see the listing.
+
+<div class="alert alert-danger" role="alert">
+  Each service instance runs in a separate thread, so use already implemented
+  thread locking mechanism to avoid multi-thread related issues.
+</div>
+
+<p>
+A service should take care of possible security issues. In the example, the
+client can supply whatever string to access a file (e.g. "../../../.ssh/id_rsa")
+and access whatever file an attacker wants - so <strong>be careful</strong>.
+
+<div class="alert alert-danger" role="alert">
+  Be careful with services, always watch out what you are doing to avoid
+  security issues. Take care of locking as well. Use the context manager to
+  correctly handle thread locking.
+</div>
+
+<p>
+You can now save your first service to a file. Each service has its own
+directory in <code>services/</code> directory in the root of git gofed-ng tree.
+There are strict rules about service directory naming, service naming and
+service files location. This rules help us to run automated analysis and do all
+the dirty work for you, so obey them.
+
+<div class="alert alert-danger" role="alert">
+  <ul>
+     <li>
+       Each service should be placed in a separate directory within
+       <code>services/</code> directory.
+     </li>
+
+     <li>
+       A service implementation should go to <code>service.py</code> file in the
+       service directory.
+     </li>
+
+     <li>
+       The service directory name has to conform to service class name without
+       "Service" suffix and all lowercase (e.g. implementation of
+       <code>ExampleStorageService</code> should go to
+       <code>services/examplestorage/service.py</code>).
+     </li>
+
+     <li>
+       Each service class should be derived from <code>StorageService</code> or
+       <code>ComputationalService</code>, but not from both.
+     </li>
+
+     <li>
+       There can be exposed only one action of its name in the whole system to
+       be able to locate service by action name uniquely.
+     </li>
+  </ul>
+</div>
+
+<p>
+If you have saved your <code>ExampleService</code> to related file in
+appropriate direcotry (<code>service/example/service.py</code>), you can run
+<code>bootstrap.py</code> script to run service analysis and attach service to
+the system. You can define <code>services/example/service.conf.extended</code>
+as well if you want to extend basic service configuration file with your own key
+- value tuples.
+
+<h3>Storage services</h3>
+
+<p>
+Now you know how to write a <code>ComputationalService</code>. Writing
+a <code>StorageService</code> is as easy as writing computational one, look:
+
+<pre><code class="python">
+import os
+from common.service.storageService import StorageService
+from common.service.serviceEnvelope import ServiceEnvelope
+
+DEFAULT_MY_TMP_DIR = 'tmp'
+
+class ExampleStorageService(StorageService):
+	''' An example storage service '''
+
+	@classmethod
+	def signal_startup(cls, config):
+		cls.tmpdir = config.get('my-tmp-dir', DEFAULT_MY_TMP_DIR)
+
+	def get_my_tmp_dir(self):
+		return self.__class__.tmpdir
+
+	def exposed_download(self, file_id):
+		'''
+		An example of download method of a storage service
+		@param file_id: id of a file in the system
+		@return: file content
+		'''
+
+		self.tmpfile = os.path.join(self.get_tmp_dir(), os.path.basename(param))
+
+		with self.get_lock():
+			self.get_system().download(file_id, self.tmpfile)
+			with open("/home/fpokorny/file.txt", "r") as f:
+				content = f.read()
+
+		return content
+
+if __name__ == "__main__":
+	ServiceEnvelope.serve(ExampleStorageService)
+
+</code></pre>
+
+<div class="alert alert-danger" role="alert">
+  Provide a <i>docstring</i> for exposed methods and service class. These
+  <i>docstrings</i> is automatically parsed and is a part of auto-generated
+  documentation and other parts of gofed-ng.
+</div>
+
+<p>
+The only difference is type of super class in the inheritance
+- <code>StorageService</code>. You can also see how to handle extended
+configuration. The configuration file with all the necessary parts is auto
+generated while bootstrapping, but you can extend it by your own values.
+<pre><code>
+$ cat services/example/service.conf.extended
+tmp-dir = tmp
+$
+
+</pre></code>
+
+<h4>How Files are Handled</h4>
+
+To shrink transmission overload as much as possible, the system itself uses
+only file ids instead of transferring whole blobs. A file id uniquely identifies
+a file within the whole system and you can see it as a "pointer to a file". You
+can make a file id by calling <code>get_file_id()</code> function on service
+side. If you look at results, there is a control checksum generated, so if you
+want to ensure, that a file is a file you have, you can just request a file id
+and check checksums match.
+
+The <code>System</code> has its built-in support for file ids. You can request
+a file id by calling appropriate service action which delivers a file id. If you
+want to download a file from the system referenced by the file id, simple call
+<code>system.download(file_id, dst)</code> either on client or computational
+service side. The <code>System</code> instance will correctly handle file
+location traversal and the download process.
+
+You can download files on computational services, do analysis or whatever you
+need to do with the file to get appropriate results. But remember, that there is
+no mechanism how to expose files on computational services. You can save file in
+the file storage by calling <code>system.call.upload(blob)</code> implemented in
+<code>FileStorageService</code>, if system runs this service and return file id
+to a client. <code>FileStorageService</code> is considered to be a temporary
+storage for files, so client has to decide based on scenario, what to do with
+the file.
+
+<p>
+Hurray! Now you should be ready to develop your own services! You can have
+a look at <a
+href="https://github.com/gofed/gofed-ng/tree/master/services">already
+implemented services on our github</a> and get the inspiration. Keeping fingers
+crossed with your service implementation ☺.
+
+<h3>List of Service Signals</h3>
+
+<table class="table table-striped">
+  <tr>
+    <th>
+      Signal
+    </th>
+    <th class="text-center">
+      Local
+    </th>
+    <th class="text-center">
+      Remote
+    </th>
+    <th class="text-center">
+      Explanation
+    </th>
+  </tr>
+  <tr>
+    <td>
+      <code>
+       @classmethod<br/>
+       signal_startup(config)
+      </code>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td>
+      Signal sent when a service is starting up. When a remote service is
+      starting up, this signal is sent by starting process, which then forks the
+      worker. Parameter <code>config</code> is a dictionary representing
+      key-values from the configuration file. This is the first signal called so
+      there are no <code>ComputationalService</code> nor
+      <code>StorageService</code> class objects instantiated.
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <code>signal_init()</code>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td>
+      Signal sent when a <code>StorageService</code> or
+      <code>ComputationalService</code> is instantiated.
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <code>signal_connect()</code>
+    </td>
+    <td class="text-center">
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td>
+      Signal sent when a client is successfully connected.
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <code>signal_process()</code>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td>
+      Signal sent before an action is going to be processed.
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <code>signal_processed(was_error)</code>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td>
+       Signal sent when an action was evaluated. Parameter
+       <code>was_error</code> is true, if the action raised an exception, which
+       was not handled in action execution.
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <code>signal_disconnect()</code>
+    </td>
+    <td class="text-center">
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td>
+      A signal called when a clients disconnects from a service.
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <code>signal_destruct()</code>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td>
+      Signal called, when the <code>StorageService</code> or the
+      <code>ComputationalService</code> object is going to be destructed.
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <code>
+        @classmethod
+        signal_termination()
+      </code>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td class="text-center">
+      <div><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></div>
+    </td>
+    <td>
+       A signal called when a service is goint to be terminated. All
+       instantiated <code>StorageService</code> class or
+       <code>ComputationalService</code> class are already destructed.
+    </td>
+  </tr>
+
+</table>
+
+<h3>Built-in Generic Service Methods</h3>
+
+<p>
+This is a list of all service methods available to
+<code>ComputationalService</code> and <code>StorageService</code>:
+<ul>
+  <li><code>is_local()</code> - true if a service runs locally</li>
+  <li><code>is_remote()</code> - true if a service runs remotely</li>
+  <li><code>get_service_version()</code> - get version of a service</li>
+  <li><code>get_service_name()</code> - get name of a service</li>
+  <li><code>get_host()</code> - get host on which service runs ("localhost") if the service runs locally)</li>
+  <li><code>get_port()</code> - get port on which service runs (<code>None</code> if a service runs locally)</li>
+  <li><code>get_lock()</code> - get thread lock (use with <code>with</code> - context manager)</li>
+  <li><code>acquire_lock()</code> - acquire the thread lock (use <code>get_lock()</code> with context manager instead)</li>
+  <li><code>release_lock()</code> - release the thread lock (use <code>get_lock()</code> with context manager instead)</li>
+</ul>
+
+<h3>Built-in <code>ComputationalService</code> Methods</h3>
+
+<p>
+This is a list of all available methods for computational services.
+<ul>
+  <li><code>get_tmp_dir()</code> - get temporary directory path (used for downloaded files)</li>
+  <li><code>get_tmp_filename()</code> - get a unique temporary file name</li>
+  <li><code>get_system()</code> - get <code>System</code> instance</li>
+</ul>
+
+<script src="js/highlight.pack.js"></script>
+<script type="text/javascript">
+  jQuery(function($) {
+    $(document).ready(function() {
+      $('pre code').each(function(i, block) {
+        hljs.highlightBlock(block);
+      });
+    });
+  });
+</script>
+

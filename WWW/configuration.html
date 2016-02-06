@@ -1,0 +1,75 @@
+<h2>Installation & Configuraion</h2>
+
+This section discusses about gofed-ng installation and configuration.
+Make sure that you are familiar with basic idea, terminology and goals behind
+gofed-ng listed in section <a href="#architecture">Architecture</a> before
+proceeding.
+
+<h3>How To Run gofed-ng</h3>
+
+<h4>Packaged gofed-ng</h4>
+
+If you want to run gofed-ng, you have to install it first. The easiest way how
+to do it is to let your package manager do the dirty work for you. You can
+install gofed-ng by running (on Fedora 23):
+
+<pre><code class="bash">
+$ sudo dnf install -y gofed
+</code></pre>
+
+After successful installation, you should have ready to run gofed application in
+your <code>$PATH</code>. Let's try it out:
+
+<pre><code class="bash">
+$ gofed --help
+</code></pre>
+
+Now you are ready to use gofed-ng system. If you have special needs, you can
+configure your gofed-ng as desired.
+
+<h4>Git Repo gofed-ng</h4>
+
+If you want latest-greatest version of gofed-ng or you do not have gofed in
+repositories, you can clone gofed-ng git repository:
+
+<code><pre class="bash">
+$ git clone https://github.com/gofed/gofed-ng
+</code></pre>
+
+After cd'ing to your cloned git repo run <code>make</code> to download necessary
+modules, generate needed files and install dependencies.
+
+<code><pre class="bash">
+$ make
+</code></pre>
+
+Now you are ready to run services located at <code>services/</code> directory, the
+registry and the client.
+
+<code><pre class="bash">
+$ ./registry
+</code></pre>
+
+<code><pre class="bash">
+$ ./gofed --help
+</code></pre>
+
+<h3>system.json</h3>
+
+<p>
+After bootstrapping your gofed, you should have <code>system.json</code> file
+located on top of your git tree. This file is auto-generated based on your
+gofed-ng services. This file holds mapping, documentation and actions of
+services. You can look at the latest system.json file at <a
+href="/system.json">system.json</a>, which is periodically updated. This json
+file is also used to generate API listing in section <a href="#api">System
+API</a>.
+
+
+<h3>Configuration</h3>
+
+<p>
+Configuration for each service is auto-generated while bootstrapping as well as
+for gofed-ng client.  You can review the current gofed-ng configuration file to
+see all available configuration options.
+
