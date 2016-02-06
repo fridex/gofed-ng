@@ -80,7 +80,7 @@ class FileStorageService(StorageService):
 		@return: file content
 		'''
 		# avoid getting files from the local system
-		if not file_id['service'] == self.get_service_name:
+		if not file_id['service'] == self.get_service_name():
 			raise ValueError("File not from this service")
 
 		filename = os.path.basename(file_id['identifier'])
