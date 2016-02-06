@@ -36,7 +36,6 @@ which services will be run as one process (you can group them together) and
 which should be called remotely by passing the same configuration options like
 on the client (you can do this on the client as well).
 
-
 <h3>Computational services</h3>
 
 <p>
@@ -261,6 +260,7 @@ $
 
 <h4>How Files are Handled</h4>
 
+<p>
 To shrink transmission overload as much as possible, the system itself uses
 only file ids instead of transferring whole blobs. A file id uniquely identifies
 a file within the whole system and you can see it as a "pointer to a file". You
@@ -269,6 +269,7 @@ side. If you look at results, there is a control checksum generated, so if you
 want to ensure, that a file is a file you have, you can just request a file id
 and check checksums match.
 
+<p>
 The <code>System</code> has its built-in support for file ids. You can request
 a file id by calling appropriate service action which delivers a file id. If you
 want to download a file from the system referenced by the file id, simple call
@@ -276,6 +277,7 @@ want to download a file from the system referenced by the file id, simple call
 service side. The <code>System</code> instance will correctly handle file
 location traversal and the download process.
 
+<p>
 You can download files on computational services, do analysis or whatever you
 need to do with the file to get appropriate results. But remember, that there is
 no mechanism how to expose files on computational services. You can save file in
