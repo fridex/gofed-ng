@@ -29,7 +29,19 @@
             <a href="#overview">Overview</a>
           </li>
           <li>
-            <a href="#howto">How To</a>
+            <a href="#architecture">Architecture</a>
+          </li>
+          <li>
+            <a href="#configuration">Installation & Configuration</a>
+          </li>
+          <li>
+            <a href="#howto-scenario">Scenario How To</a>
+          </li>
+          <li>
+            <a href="#howto-service">Service How To</a>
+          </li>
+          <li>
+            <a href="#internals">Under the Hood</a>
           </li>
           <li>
             <a href="#api">System API</a>
@@ -41,15 +53,21 @@
             <a href="#source">Source Code</a>
           </li>
           <li>
-             <a href="#doc">Source Code DOC</a>
-          </li>
-          <li>
-            <a href="#architecture">Architecture</a>
+             <a href="#doc">Developer's DOC</a>
           </li>
           <li>
             <a href="#contact">Contact</a>
           </li>
         </ul>
+      </div>
+      <div class="alert alert-success" role="alert" style="position: fixed; top: 5%; right: 1%; z-index: 999; box-shadow: 10px 10px 5px grey;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        This page and its content is under heavy development, so changes are
+        reserved. <br />
+        If you have any questions or you want to take part in
+        development, feel free to contact me via e-mail:
+        <a href="mailto:fpokorny@redhat.com?Subject=gofed-ng%20communication%20layer">fpokorny [AT] redhat.com</a>
       </div>
       <!-- Content -->
       <div id="page-content-wrapper">
@@ -74,26 +92,36 @@
       $(window).on('hashchange load', function() {
         var hash = location.hash.replace( /^#/, '' );
 
-         if (hash == "overview")
-           $('#content').load('overview.html');
-         else if (hash == "api")
-           $('#content').load('api.html');
-         else if (hash == "howto")
-           $('#content').load('howto.html');
-         else if (hash == "contact")
-           $('#content').load('contact.html');
-         else if (hash == "architecture")
-           $('#content').load('architecture.html');
-         else if (hash == "doc")
-           $('#content').load('doc.html');
-         else if (hash == "testsuite")
-           $('#content').load('testsuite.html');
-         else if (hash == "source")
-           $('#content').load('source.html');
-         else
-           $('#content').load('overview.html');
+        $('html, body').animate({ scrollTop: 0 }, 'slow');
 
-         return true;
+        if (hash == "overview")
+          $('#content').load('overview.html');
+        else if (hash == "api")
+          $('#content').load('api.html');
+        else if (hash == "howto")
+          $('#content').load('howto.html');
+        else if (hash == "howto-scenario")
+          $('#content').load('howto-scenario.html');
+        else if (hash == "howto-service")
+          $('#content').load('howto-service.html');
+        else if (hash == "contact")
+          $('#content').load('contact.html');
+        else if (hash == "architecture")
+          $('#content').load('architecture.html');
+        else if (hash == "internals")
+          $('#content').load('internals.html');
+        else if (hash == "doc")
+          $('#content').load('doc.html');
+        else if (hash == "testsuite")
+          $('#content').load('testsuite.html');
+        else if (hash == "source")
+          $('#content').load('source.html');
+        else if (hash == "configuration")
+          $('#content').load('configuration.html');
+        else
+          $('#content').load('overview.html');
+
+        return true;
       })
     });
   </script>

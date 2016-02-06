@@ -1,6 +1,7 @@
 <h2>Architecture of the gofed-ng system</h2>
 
-There are three main components in the gofed-ng system:
+The gofed-ng system is a distributed system used for analysing, data storing and
+data retrieving.  There are three main components in the gofed-ng system:
 
 <ul>
   <li>a client</li>
@@ -8,28 +9,120 @@ There are three main components in the gofed-ng system:
   <li>services</li>
 </ul>
 
-<img src="img/architecture.png" class="img-responsive img-thumbnail" alt="Architecture of the gofed-ng system" />
+<h3>Terminology</h3>
+
+<dl>
+  <dt>service</dt>
+  <dd>
+    A service which is offered to a client. Services expose <i>actions</i>. See
+    <i>Services</i> subsection bellow for more info.
+  </dd>
+
+  <dt>system</dt>
+  <dd>
+    Also referred as a "gofed-ng system", is a set of services available in the
+    system.
+  </dd>
+
+  <dt>action</dt>
+  <dd>
+    Uniquely identified exposed function by a service in the system. It is
+    uniquely identified by its signature (<a href="#api">system API</a>). The
+    action is indivisible from semantical point of view (examples: get tarball,
+    get project API, etc.).
+  </dd>
+
+  <dt>scenario</dt>
+  <dd>
+    It can be seen as an algorithm (a recipe) which consists of a sequence of
+    <i>actions</i> which have to be evaluated in order to get outcome.
+    A scenario has its input (e.g. tarballs, package name, etc.) and the outcome
+    (e.g. list of dependencies for given package, etc.). Scenarios are
+    implemented on the client side.
+  </dd>
+</dl>
 
 <h3>Client</h3>
 
-TODO: configuration, selective remote/local, ...
+<p>
+Let's look at gofed-ng system like on an orchestra. There are musicians, who
+know how to play one particular instrument (services), but there has to be
+a conductor who would sync all the musicians and tell them what to do when in
+order to make music. In the gofed-ng system, the client is the conductor and
+implements algorithm (artwork) which has to be evaluated in order to get
+appropriate results.
+
+<p>
+The algorithm is represented in scenarios. A scenario calls actions from <a
+href="#api">gofed-ng system API</a>. The system implementation encapsulates all
+the communication, object instantiations and all the other things which are
+transparent for a user who wants to evaluate a scenario.
+
+<p>
+If you want to go deeper, let's have a look at <a href="#howto-scenario">how to
+write a scenario</a>.
 
 <h3>Registry</h3>
 
-TODO: DPD, keep-alive, UDP
+<p>
+A registry is the main point of contact. If you do distributed computation,
+you don't want to know where is every node situated. Moreover, location of
+services can change from time to time, thus registry was introduced.
+
+<p>
+The registry is a node in the distributed system, which holds information needed
+to locate a service. Basically it stores a tuple (service name, IP, port). If
+a service wants to expose actions to a user, it registers itself in the
+registry. If a client wants to use a service and it does not know it's location,
+it asks the registry.
+
+<p>
+The registry is responsible for detecting dead nodes. It periodically pings
+registered services. If the registry does not get a response from a service, it
+automatically deletes the service from the registry to avoid offering dead
+services to clients.
 
 <h3>Services</h3>
 
+<p>
+A service provides some benefits to the system. They can provide computational
+power, up to date analysis or precomputed data. There are two main types of
+services in the gofed-ng system:
 <ul>
-  <li>a computational service</li>
   <li>a storage service</li>
+  <li>a computational service</li>
 </ul>
-
-<h4>Computational Services</h4>
-
-TODO: only computation, can use storages
 
 <h4>Storage Services</h4>
 
-TODO: only storage
+<p>
+Storage services provide data for the system. These data can be of various type
+- a database holding analysis output, files, rpms, specfiles, etc.  Storage
+services are end nodes in term that they cannot contact any other nodes
+in the system (so the system cannot stuck in a dead lock).
+
+<p>
+A storage service which offers binary data units (e.g. tarballs, specfiles,
+rpms, etc.) uses <i>file ids</i>.  Because of distributed computations, a client
+can request a <i>file id</i>, which uniquely represents a file in the system.
+This file id can be then used to reference the file unit in the whole system
+- not only on client side, but on computational services as well. This optimizes
+data transmissions in the system.
+
+<h4>Computational Services</h4>
+
+<p>
+A computational service is a service, which offers computational power or up to
+date analysis for a client. It is stateless. It can download files referenced by
+<i>file ids</i>, do analysis on it, modify it, but the actual files and data
+results are not stored on the service. At the end, every downloaded file is
+deleted.
+
+<p>
+On the other hand, they can contact storage services to retrieve data from. They
+cannot contact other computational services to prevent from dead locks.
+
+<div class="text-center">
+  <img src="img/architecture.png" class="img-responsive img-thumbnail" alt="Architecture of the gofed-ng system" />
+</div>
 
