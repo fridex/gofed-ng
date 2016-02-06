@@ -63,8 +63,11 @@ class ServiceResultObject(object):
 			ret['async callback'] = str(self._async_callback) if self._async_callback is not None else None
 			ret['expiry'] = self._expiry
 
-		if self.result_ready():
+		if self.result_ready() and not self.is_async():
 			ret['response'] = json.loads(self._call_result)
+
+		if self.result_ready() and self.is_async():
+			ret['response'] = json.loads(self._call_result.value)
 
 		return json_pretty_format(ret)
 
