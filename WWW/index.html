@@ -97,31 +97,33 @@
         $('html, body').animate({ scrollTop: 0 }, 'slow');
 
         if (hash == "overview")
-          $('#content').load('overview.html');
+          content = 'overview.html';
         else if (hash == "api")
-          $('#content').load('api.html');
+          content = 'api.html';
         else if (hash == "howto")
-          $('#content').load('howto.html');
+          content = 'howto.html';
         else if (hash == "howto-scenario")
-          $('#content').load('howto-scenario.html');
+          content= 'howto-scenario.html';
         else if (hash == "howto-service")
-          $('#content').load('howto-service.html');
+          content = 'howto-service.html';
         else if (hash == "contact")
-          $('#content').load('contact.html');
+          content = 'contact.html';
         else if (hash == "architecture")
-          $('#content').load('architecture.html');
+          content = 'architecture.html';
         else if (hash == "internals")
-          $('#content').load('internals.html');
+          content = 'internals.html';
         else if (hash == "doc")
-          $('#content').load('doc.html');
+          content = 'doc.html';
         else if (hash == "testsuite")
-          $('#content').load('testsuite.html');
+          content = 'testsuite.html';
         else if (hash == "source")
-          $('#content').load('source.html');
+          content = 'source.html';
         else if (hash == "configuration")
-          $('#content').load('configuration.html');
+          content = 'configuration.html';
         else
-          $('#content').load('overview.html');
+          content = 'overview.html';
+
+        $("#content").hide().load(content).fadeIn('1300');
 
         return true;
       });
