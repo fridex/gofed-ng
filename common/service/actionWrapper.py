@@ -32,10 +32,12 @@ class ActionWrapper(object):
 		exception = None
 		self._prehook()
 		self._stats_logger.log_process_time()
-		try:
-			result = self._action(*args, **dict(kwargs))
-		except Exception as e:
-			exception = e
+		result = self._action(*args, **dict(kwargs))
+		# TODO:
+		#try:
+		#	result = self._action(*args, **dict(kwargs))
+		#except Exception as e:
+		#	exception = e
 		self._stats_logger.log_processed_time()
 		self._posthook(exception is not None)
 
