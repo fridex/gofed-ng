@@ -30,21 +30,30 @@ class Connection(object):
 		self._service_name = service_name
 		self._connection = None
 		self._instance = None
+		self.host = host
+		self.port = port
 
 		if host:
 			assert port is not None
-			self._connect(host, port)
+			self._connect()
+			self._local = False
 		else:
 			self._instantiate(system)
+			self._local = True
 
-	def _connect(self, host, port):
-		self._connection = rpyc.connect(host, port)
+	def _connect(self):
+		self._connection = rpyc.connect(self.host, self.port)
+
+	def _get_connection(self):
+		if self._connection is None or self._connection.closed:
+			self._connect()
+		return self._connection.root
 
 	def _instantiate(self, system):
 		self._instance = ServiceWrapper(self._service_name, SystemWrapper(system))
 
 	def is_local(self):
-		return self._connection is None
+		return self._local
 
 	def is_remote(self):
 		return not self.is_local()
@@ -54,13 +63,13 @@ class Connection(object):
 			if self.is_local():
 				getattr(self._instance, action_name)
 			else:
-				return getattr(self._connection.root, action_name)
+				return getattr(self._get_connection(), action_name)
 		else:
 			if self.is_local():
 				# TODO: bind to object
 				return ServiceResultObject(self._service_name, action_name, self, getattr(self._instance, action_name))
 			else:
-				action = getattr(self._connection.root, action_name)
+				action = getattr(self._get_connection(), action_name)
 				if async is True:
 					return ServiceResultObject(self._service_name, action_name, self, rpyc.async(action), async = True)
 				else:
