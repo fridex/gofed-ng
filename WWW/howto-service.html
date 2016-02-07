@@ -57,10 +57,9 @@ class ExampleService(ComputationalService):
 		if self.tmpfile is not None:
 			os.remove(self.tmpfile)
 
-	def exposed_action(self, file_id, param):
+	def exposed_action(self, param):
 		'''
 		An example of an exposed action to a client
-		@param file_id: id of a file in the system
 		@param param: filename
 		@return: file content
 		'''
@@ -68,7 +67,6 @@ class ExampleService(ComputationalService):
 		self.tmpfile = os.path.join(self.get_tmp_dir(), os.path.basename(param))
 
 		with self.get_lock():
-			self.get_system().download(file_id, self.tmpfile)
 			with open(self.tmpfile, "r") as f:
 				content = f.read()
 
@@ -225,12 +223,11 @@ class ExampleStorageService(StorageService):
 		@param file_id: id of a file in the system
 		@return: file content
 		'''
-
-		self.tmpfile = os.path.join(self.get_tmp_dir(), os.path.basename(param))
+		filename = os.path.basename(file_id['identifier'])
+		file_path = os.path.join(self.get_my_tmp_dir(), filename)
 
 		with self.get_lock():
-			self.get_system().download(file_id, self.tmpfile)
-			with open("/home/fpokorny/file.txt", "r") as f:
+			with open(file_path, 'rb') as f:
 				content = f.read()
 
 		return content
@@ -253,7 +250,7 @@ configuration. The configuration file with all the necessary parts is auto
 generated while bootstrapping, but you can extend it by your own values.
 <pre><code>
 $ cat services/example/service.conf.extended
-tmp-dir = tmp
+my-tmp-dir = tmp
 $
 
 </pre></code>
