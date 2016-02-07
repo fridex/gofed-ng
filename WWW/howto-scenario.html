@@ -46,8 +46,8 @@ class Example(Scenario):
 			remote_file1.result_wait()
 			remote_file2.result_wait()
 
-			api1 = system.call.api(remote_file1['result'])
-			api2 = system.call.api(remote_file2['result'])
+			api1 = system.async_call.api(remote_file1['result'])
+			api2 = system.async_call.api(remote_file2['result'])
 
 			api1.result_wait()
 			api2.result_wait()
