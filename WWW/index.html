@@ -128,7 +128,7 @@
           $('#nav-overview a').addClass('active');
         }
 
-        $("#content").empty().hide().load(content).fadeIn('5000');
+        $("#content").empty().hide().load(content, function() { $("#content").fadeIn('5000'); });
 
         return true;
       });
