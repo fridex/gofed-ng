@@ -46,6 +46,9 @@
           <li id="nav-api">
             <a href="#api">System API</a>
           </li>
+          <li id="nav-status">
+            <a href="#status">Current Status</a>
+          </li>
           <li id="nav-testsuite">
             <a href="#testsuite">Testsuite</a>
           </li>
@@ -123,6 +126,8 @@
           content = 'source.html';
         else if (hash == "configuration")
           content = 'configuration.html';
+        else if (hash == "status")
+          content = 'status.html';
         else {
           content = 'overview.html';
           $('#nav-overview a').addClass('active');

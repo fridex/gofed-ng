@@ -18,7 +18,9 @@
 # ####################################################################
 
 import sys, os
+import json
 from plumbum import cli
+from common.helpers.utils import get_user, get_hostname, json_pretty_format, get_time_str
 from common.system.system import System
 from common.helpers.version import VERSION
 
@@ -32,6 +34,37 @@ class GofedSystem(cli.Application):
 			help = "system.json file for gofed system",
 			default = DEFAULT_SYSTEM_JSON_PATH)
 
+	status = cli.Flag("--status",
+			help = "generate a status.json file")
+
+	def _generate_status(self):
+		ret = {
+			"author": get_user(),
+			"generated": get_time_str(),
+			"gofed_version": VERSION,
+			"hostname": get_hostname(),
+			"topology": [ ]
+		}
+		system = System(None, self.get_system_json_path())
+
+		for service_name in system.get_services_list():
+			for response in system.get_service_location(service_name):
+				ret['topology'].append({
+					'service': service_name,
+					'host': response[0],
+					'port': response[1],
+					'type': 'computational' if system.is_computational(service_name) else 'storage'
+				})
+
+		# TODO: give actual ip and port
+		ret['topology'].append({
+			'type': 'registry',
+			'ip': 'localhost',
+			'port': 18811,
+		})
+
+		print json_pretty_format(ret)
+
 	def get_config(self):
 		return self.parent.get_config()
 
@@ -39,7 +72,9 @@ class GofedSystem(cli.Application):
 		return self.system_json_path
 
 	def main(self):
-		if self.nested_command is None:
+		if self.status and not self.nested_command:
+			self._generate_status()
+		elif self.nested_command is None:
 			self.help()
 			return 1
 

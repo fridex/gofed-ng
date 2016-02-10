@@ -44,14 +44,14 @@ class System(object):
 		else:
 			return getattr(System, name)
 
-	def _get_service_location(self, service_name):
+	def get_service_location(self, service_name):
+		# TODO: pass config
 		service = RegistryClient.query(service_name)
 
 		if len(service) < 1:
 			raise Exception("Service not found in Registry")
 
-		idx = int(random.random() * len(service)) # try to do load balancing if possible
-		return service[idx]
+		return service
 
 	def _establish_connection(self, service_name):
 		host = None
@@ -67,7 +67,7 @@ class System(object):
 
 		if remote is True:
 			if not host or not port:
-				reg = self._get_service_location(service_name)
+				reg = self.get_service_location(service_name)[0]
 				host = reg[0]
 				port = reg[1]
 
@@ -107,6 +107,13 @@ class System(object):
 				return True
 
 		return False
+
+	def get_services_list(self):
+		ret = []
+		for service in self._system['services']['storages'] + self._system['services']['computational']:
+			ret.append(service['name'])
+
+		return ret
 
 	def get_service(self, action):
 		for storage in self._system['services']['storages']:
