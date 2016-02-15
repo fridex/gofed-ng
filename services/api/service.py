@@ -24,6 +24,7 @@ from common.helpers.output import log
 from common.helpers.utils import json_pretty_format
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
+from common.service.fileAction import fileAction
 
 class ApiService(ComputationalService):
 	''' API analysis '''
@@ -55,6 +56,7 @@ class ApiService(ComputationalService):
 	def signal_processed(self, was_error):
 		log.info("got processed signal")
 
+	@fileAction
 	def exposed_api(self, file_id):
 		'''
 		Get API of a file

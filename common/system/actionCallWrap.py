@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/python
 # -*- coding: utf-8 -*-
 # ####################################################################
 # gofed-ng - Golang system
@@ -20,28 +20,24 @@
 # ####################################################################
 
 import sys
-from scenario import Scenario
+from common.system.fileId import FileId
 
-class Scenario1(Scenario):
-	''' API diff analysis example '''
-	def main(self, project_file1, project_file2):
-		with self.get_system() as system:
+def actionCallWrap(func):
+	def wrapper(*args, **kwargs):
+		new_args = []
+		for arg in args:
+			if isinstance(arg, FileId):
+				new_args.append(arg.get_raw())
+			else:
+				new_args.append(arg)
 
-			with open(project_file1, 'r') as f:
-				file1 = system.async_call.upload(f.read())
+		for key, value in kwargs.iteritems():
+			if isinstance(value, FileId):
+				kwargs[key] = value.get_raw()
 
-			with open(project_file2, 'r') as f:
-				file2 = system.async_call.upload(f.read())
+		return func(*tuple(new_args), **kwargs)
+ 	return wrapper
 
-			api1 = system.async_call.api(file1.get_result())
-			api2 = system.async_call.api(file2.get_result())
-
-			apidiff = system.call.apidiff(api1.get_result(), api2.get_result())
-
-			print apidiff.get_result()
-
-		return 0
-
-if __name__ == '__main__':
+if __name__ == "__main__":
 	sys.exit(1)
 

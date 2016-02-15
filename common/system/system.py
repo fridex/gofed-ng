@@ -27,6 +27,7 @@ from common.helpers.output import log # TODO: use log
 from common.registry.registryClient import RegistryClient
 from common.system.connectionCall import ConnectionCallSync, ConnectionCallAsync
 from common.system.connection import Connection
+from common.system.fileId import FileId
 
 class System(object):
 	def __init__(self, config, system_json_file, service = False):
@@ -88,9 +89,9 @@ class System(object):
 
 	def download(self, file_id, path):
 		# TODO: check IP/port
-		conn = self.get_connection(file_id['service'])
+		conn = self.get_connection(file_id.get_service_name())
 		call = conn.get_action('download', async = False)
-		blob = call(file_id)
+		blob = call(file_id.get_raw())
 		with open(path, 'wb') as f:
 			f.write(blob)
 

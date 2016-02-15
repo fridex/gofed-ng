@@ -22,6 +22,9 @@
 import sys
 import json
 from common.helpers.utils import json_pretty_format
+from common.helpers.file import is_file_id
+from common.system.fileId import FileId
+from common.system.actionCallWrap import actionCallWrap
 
 _MAX_STORE_SIZE = 128
 
@@ -39,6 +42,7 @@ class ServiceResultObject(object):
 		self._kwargs = None
 		self._async_callback = None
 		self._expiry = None
+		self._file_id = None
 
 	def __str__(self):
 		ret = {
@@ -71,15 +75,20 @@ class ServiceResultObject(object):
 
 		return json_pretty_format(ret)
 
-	def __getitem__(self, key):
+	def get_raw(self):
+		self.result_wait()
 		if self._parsed_response is None:
 			if self.is_async():
 				self._parsed_response = json.loads(self._call_result.value)
 			else:
 				self._parsed_response = json.loads(self._call_result)
 
-		return self._parsed_response[key]
+		return self._parsed_response
 
+	def get_raw_result(self):
+		return self.get_raw()['result']
+
+	@actionCallWrap
 	def __call__(self, *args, **kwargs):
 		if len(args) > 0:
 			self._args = []
@@ -146,6 +155,19 @@ class ServiceResultObject(object):
 			self._async_callback = callback
 			self._call_result.add_callback(callback)
 
+	def get_result(self):
+		self.result_wait()
+
+		if self._file_id is None:
+			if is_file_id(self.get_raw_result()):
+				self._file_id = FileId(self.get_raw_result())
+			else:
+				self._file_id = False
+
+		if self._file_id is not False:
+			return self._file_id
+		else:
+			return self.get_raw_result()
 
 if __name__ == "__main__":
 	sys.exit(1)

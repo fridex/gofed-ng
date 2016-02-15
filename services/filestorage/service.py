@@ -26,6 +26,7 @@ from common.helpers.output import log
 from common.helpers.utils import parse_timedelta
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
+from common.service.fileAction import fileAction
 
 DEFAULT_UPLOAD_DIR = 'uploads'
 DEFAULT_FILE_LIFETIME = '2h'
@@ -73,6 +74,7 @@ class FileStorageService(StorageService):
 
 		return file_id(self, dst, str(valid_until), h)
 
+	@fileAction
 	def exposed_download(self, file_id):
 		'''
 		Download a file
@@ -80,10 +82,10 @@ class FileStorageService(StorageService):
 		@return: file content
 		'''
 		# avoid getting files from the local system
-		if not file_id['service'] == self.get_service_name():
+		if not file_id.get_service_name() == self.get_service_name():
 			raise ValueError("File not from this service")
 
-		filename = os.path.basename(file_id['identifier'])
+		filename = os.path.basename(file_id.get_raw()['identifier'])
 		file_path = os.path.join(self.upload_dir, filename)
 
 		with self.get_lock():

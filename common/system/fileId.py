@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/python
 # -*- coding: utf-8 -*-
 # ####################################################################
 # gofed-ng - Golang system
@@ -20,28 +20,46 @@
 # ####################################################################
 
 import sys
-from scenario import Scenario
+import datetime
+from dateutil.parser import parse as datetime_parse
 
-class Scenario1(Scenario):
-	''' API diff analysis example '''
-	def main(self, project_file1, project_file2):
-		with self.get_system() as system:
+class FileId(object):
+	def __init__(self, file_id):
+		self._file_id = file_id
 
-			with open(project_file1, 'r') as f:
-				file1 = system.async_call.upload(f.read())
+	def get_service_name(self):
+		return self._file_id['service']
 
-			with open(project_file2, 'r') as f:
-				file2 = system.async_call.upload(f.read())
+	def get_service_host(self):
+		return self._file_id['host']
 
-			api1 = system.async_call.api(file1.get_result())
-			api2 = system.async_call.api(file2.get_result())
+	def get_service_port(self):
+		return self._file_id['port']
 
-			apidiff = system.call.apidiff(api1.get_result(), api2.get_result())
+	def get_valid_date(self):
+		if self._file_id['valid_until'] == -1:
+			return float("infinity");
+		else:
+			return datetime_parse(self._file_id['valid_until'])
 
-			print apidiff.get_result()
+	def get_hash(self):
+		return self._file_id['sha1']
 
-		return 0
+	def get_size(self):
+		return self._file_id['size']
 
-if __name__ == '__main__':
+	def is_valid(self):
+		valid_until = self.get_valid_date()
+
+		if valid_until == float("infinity"):
+			return True
+
+		current_date = datetime.datetime.now()
+		return valid_until > current_date
+
+	def get_raw(self):
+		return self._file_id
+
+if __name__ == "__main__":
 	sys.exit(1)
 

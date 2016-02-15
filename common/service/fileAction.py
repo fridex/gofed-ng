@@ -20,27 +20,24 @@
 # ####################################################################
 
 import sys
-from scenario import Scenario
+from common.helpers.file import is_file_id
+from common.system.fileId import FileId
 
-class Scenario1(Scenario):
-	''' API diff analysis example '''
-	def main(self, project_file1, project_file2):
-		with self.get_system() as system:
+def fileAction(func):
+	def wrapper(*args, **kwargs):
+		new_args = []
+		for arg in args:
+			if is_file_id(arg):
+				new_args.append(FileId(arg))
+			else:
+				new_args.append(arg)
 
-			with open(project_file1, 'r') as f:
-				file1 = system.async_call.upload(f.read())
+		for key, value in kwargs.iteritems():
+			if is_file_id(value):
+				kwargs[key] = FileId(value)
 
-			with open(project_file2, 'r') as f:
-				file2 = system.async_call.upload(f.read())
-
-			api1 = system.async_call.api(file1.get_result())
-			api2 = system.async_call.api(file2.get_result())
-
-			apidiff = system.call.apidiff(api1.get_result(), api2.get_result())
-
-			print apidiff.get_result()
-
-		return 0
+		return func(*tuple(new_args), **kwargs)
+ 	return wrapper
 
 if __name__ == '__main__':
 	sys.exit(1)
