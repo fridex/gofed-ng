@@ -21,7 +21,7 @@
 
 import os, time, urllib2
 from dateutil.parser import parse as datetime_parse
-from common.service.file import file_id, blob_hash
+from common.helpers.file import file_id, blob_hash
 from common.helpers.output import log
 from common.helpers.utils import parse_timedelta
 from common.service.storageService import StorageService

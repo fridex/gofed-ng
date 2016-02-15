@@ -21,7 +21,7 @@
 
 import os, urllib2
 from common.helpers.output import log
-from common.service.file import file_id, blob_hash
+from common.helpers.file import file_id, blob_hash
 from common.helpers.utils import package2repo
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
