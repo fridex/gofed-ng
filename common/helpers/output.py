@@ -28,7 +28,7 @@ class LoggerSingleton(object):
 	def __init__(self):
 		pass
 
-	def init(self, configfile = None, verbose = False):
+	def init(self, configfile = None, verbose = False, name = ""):
 		if LoggerSingleton._instance is None:
 			level = logging.INFO if verbose is True else logging.WARNING
 			if configfile is not None:
@@ -36,7 +36,7 @@ class LoggerSingleton(object):
 			else:
 				# use the default stream
 				logging.basicConfig(level = level)
-			LoggerSingleton._instance = logging.getLogger(__name__)
+			LoggerSingleton._instance = logging.getLogger(name)
 
 	def __getattr__(self, attr):
 		if attr == 'init':
@@ -50,7 +50,6 @@ class LoggerSingleton(object):
 
 	def close(self):
 		logging.shutdown()
-
 
 log = LoggerSingleton()
 

@@ -121,8 +121,14 @@ class ServiceEnvelope(cli.Application):
 
 		self.conf = config2dict(self.conf)
 
-		log.init(configfile = self.logfile if self.logfile != '-' else None, verbose = not self.quiet)
-		log.critical("Service starting at %s" % get_time_str())
+		cls = ServiceEnvelope.SERVICE_CLASS
+		configfile = self.logfile if self.logfile != '-' else None
+		verbose = not self.quiet
+		name = cls.get_service_name()
+		version = cls.get_service_version()
+
+		log.init(configfile, verbose, name)
+		log.critical("Service starting at %s, version is %s" % (get_time_str(), version))
 
 		service_cls = ServiceEnvelope.SERVICE_CLASS
 		service_cls.on_startup(self.conf, self.system_json)
