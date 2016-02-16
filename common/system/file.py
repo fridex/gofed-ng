@@ -23,9 +23,27 @@ import sys
 import magic
 
 class File(object):
-	def __init__(self, path):
+	def __init__(self, path, file_id):
 		self._path = path
+		self._file_id = file_id
 		raise NotImplementedError()
+
+	@staticmethod
+	def get_representation(path, file_id):
+		m = magic.from_file(path)
+
+		if RpmFile.magic_match(m):
+			return RpmFile(path, file_id)
+		elif SrpmFile.magic_match(m):
+			return SrpmFile(path, file_id)
+		elif TarballFile.magic_match(m):
+			return TarballFile(path, file_id)
+		else:
+			raise ValueError("Unknown file with magic %s", (m,))
+
+	@classmethod
+	def magic_match(cls, m):
+		raise NotImplementedError
 
 	def get_path(self):
 		self._path
@@ -35,6 +53,11 @@ class File(object):
 
 	def _get_raw_type(self):
 		return magic.from_file(self._path)
+
+# Fix circular deps
+from common.system.rpmFile import RpmFile
+from common.system.srpmFile import SrpmFile
+from common.system.tarballFile import TarballFile
 
 if __name__ == "__main__":
 	sys.exit(1)

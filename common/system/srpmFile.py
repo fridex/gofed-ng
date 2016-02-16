@@ -22,16 +22,23 @@
 import sys
 import tarfile
 from common.system.file import File
-from common.system.extractedFile import ExtractedFile
+from common.system.extractedSrpmFile import ExtractedSrpmFile
+from common.helpers.utils import runpipe
 
 class SrpmFile(File):
-	def __init__(self, path):
+	def __init__(self, path, file_id):
 		# example output:
 		#   'RPM v3.0 src'
+		self._path = path
+		self._file_id = file_id
 		self._type = self._get_raw_type().split(' ')
 		if self._type[0] != 'RPM' or self._type[2] != 'src':
 			raise ValueError("Not an src.rpm file %s" % (path,))
-		self._path = path
+
+	@classmethod
+	def magic_match(cls, m):
+		m = m.split(' ')
+		return m[0] == 'RPM' and m[2] == 'src'
 
 	def get_srpm_version(self):
 		return self._type[1]
@@ -39,10 +46,13 @@ class SrpmFile(File):
 	def get_type(self):
 		return 'src.rpm'
 
-	def unpack(self, dst_path = "."):
-		t = tarfile.open(self._path, 'r')
-		t.extractall(dst_path)
-		return ExtractedFile(dst_path, self)
+	def unpack(self, dst_path):
+		cmd1 = ["rpm2cpio", self._path]
+		cmd2 = ["cpio", "-idmv"]
+
+		runpipe([cmd1, cmd2], dst_path)
+
+		return ExtractedSrpmFile(dst_path, self)
 
 if __name__ == "__main__":
 	sys.exit(1)

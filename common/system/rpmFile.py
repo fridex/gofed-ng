@@ -21,17 +21,25 @@
 
 import sys
 import tarfile
+import subprocess
 from common.system.file import File
-from common.system.extractedFile import ExtractedFile
+from common.system.extractedRpmFile import ExtractedRpmFile
+from common.helpers.utils import runpipe
 
 class RpmFile(File):
-	def __init__(self, path):
+	def __init__(self, path, file_id):
 		# example output:
 		#   'RPM v3.0 bin i386/x86_64 kernel-modules-extra-4.2.3-300.fc23'
+		self._path = path
+		self._file_id = file_id
 		self._type = self._get_raw_type().split(' ')
 		if self._type[0] != 'RPM' or self._type[2] != 'bin':
 			raise ValueError("Not an rpm file %s" % (path,))
-		self._path = path
+
+	@classmethod
+	def magic_match(cls, m):
+		m = m.split(' ')
+		return m[0] == 'RPM' and m[2] == 'bin'
 
 	def get_rpm_version(self):
 		return self._type[1]
@@ -39,10 +47,13 @@ class RpmFile(File):
 	def get_type(self):
 		return 'rpm'
 
-	def unpack(self, dst_path = None):
-		t = tarfile.open(self._path, 'r')
-		t.extractall(dst_path)
-		return ExtractedFile(dst_path, self)
+	def unpack(self, dst_path):
+		cmd1 = ["rpm2cpio", self._path]
+		cmd2 = ["cpio", "-idmv"]
+
+		runpipe([cmd1, cmd2], dst_path)
+
+		return ExtractedRpmFile(dst_path, self)
 
 if __name__ == "__main__":
 	sys.exit(1)
