@@ -19,12 +19,18 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import os
+import os, shutil
 from common.helpers.output import log
 from common.helpers.utils import json_pretty_format
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
+from common.system.extractedRpmFile import ExtractedRpmFile
+from common.system.extractedSrpmFile import ExtractedSrpmFile
+from common.system.extractedTarballFile import ExtractedTarballFile
+
+from gofedlib.gosymbolsextractor import api
+from gofedlib.goapidiff import apidiff
 
 class ApiService(ComputationalService):
 	''' API analysis '''
@@ -51,9 +57,21 @@ class ApiService(ComputationalService):
 		log.info("got disconnect signal")
 
 	def signal_process(self):
+		self.tmpfile_path = None
+		self.extracted1_path = None
+		self.extracted2_path = None
 		log.info("got process signal")
 
 	def signal_processed(self, was_error):
+		if self.tmpfile_path is not None:
+			os.remove(self.tmpfile_path)
+
+		if self.extracted1_path is not None:
+			shutil.rmtree(self.extracted1_path)
+
+		if self.extracted2_path is not None:
+			shutil.rmtree(self.extracted2_path)
+
 		log.info("got processed signal")
 
 	@action
@@ -63,9 +81,25 @@ class ApiService(ComputationalService):
 		@param file_id: file to be analysed
 		@return: list of exported API
 		'''
+		self.tmpfile_path = self.get_tmp_filename()
 		with self.get_system() as system:
-			system.download(file_id, self.get_tmp_filename())
-		return "TODO"
+			f = system.download(file_id, self.tmpfile_path)
+
+		self.extracted1_path = self.get_tmp_dirname()
+		d = f.unpack(self.extracted1_path)
+
+		if isinstance(d, ExtractedRpmFile):
+			src_path = d.get_content_path()
+		elif isinstance(d, ExtractedTarballFile):
+			src_path = d.get_path()
+		elif isinstance(d, ExtractedSrpmFile):
+			# we have to unpack tarball first
+			t = d.get_tarball()
+			self.extracted2_path = self.get_tmp_dirname()
+			d = f.unpack(self.extracted2_path)
+			src_path = d.get_path()
+
+		return api(src_path)
 
 	@action
 	def apidiff(self, api1, api2):
@@ -75,7 +109,7 @@ class ApiService(ComputationalService):
 		@param api2: the second API
 		@return: list of API differences
 		'''
-		return "TODO"
+		return apidiff(api1, api2)
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(ApiService)
