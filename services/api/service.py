@@ -24,7 +24,7 @@ from common.helpers.output import log
 from common.helpers.utils import json_pretty_format
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
-from common.service.fileAction import fileAction
+from common.service.action import action
 
 class ApiService(ComputationalService):
 	''' API analysis '''
@@ -56,8 +56,8 @@ class ApiService(ComputationalService):
 	def signal_processed(self, was_error):
 		log.info("got processed signal")
 
-	@fileAction
-	def exposed_api(self, file_id):
+	@action
+	def api(self, file_id):
 		'''
 		Get API of a file
 		@param file_id: file to be analysed
@@ -67,7 +67,8 @@ class ApiService(ComputationalService):
 			system.download(file_id, self.get_tmp_filename())
 		return "TODO"
 
-	def exposed_apidiff(self, api1, api2):
+	@action
+	def apidiff(self, api1, api2):
 		'''
 		Make a diff of APIs
 		@param api1: the first API

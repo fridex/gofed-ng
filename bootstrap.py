@@ -51,17 +51,21 @@ class GofedBootstrap(cli.Application):
 			help = "Do not generate service and client configs", group = "Services")
 
 	def _get_exposed_funcs(self, node, path, method = False):
+		def is_action(action):
+			for dec in action.decorator_list:
+				if dec.id == 'action':
+					return True
+			return False
+
 		ret = []
 
 		funcs = [f for f in node.body if isinstance(f, ast.FunctionDef)]
 		for action in funcs:
-			if action.name.startswith('exposed_') \
-					and len(action.name) > len('exposed_') \
-					and action.name != 'exposed_download':
+			if is_action(action):
 				log.info("Found action '%s'..." % action.name)
 
 				item = {}
-				item['name'] = action.name[len('exposed_'):]
+				item['name'] = action.name
 				item['args'] = []
 				item['doc'] = ast.get_docstring(action, clean = True)
 				if not item['doc']:

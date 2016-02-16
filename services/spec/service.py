@@ -27,6 +27,7 @@ from specker.modules.specModelWriter import SpecModelWriter
 from common.helpers.output import log
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
+from common.service.action import action
 
 class SpecService(ComputationalService):
 	''' Specfile analysing and processing '''
@@ -38,7 +39,8 @@ class SpecService(ComputationalService):
 		if self.tmp_file is not None:
 			os.remove(self.tmp_file)
 
-	def exposed_get_spec_requires(self, specfile_id):
+	@action
+	def get_spec_requires(self, specfile_id):
 		'''
 		Get all requires for a package
 		@param specfile_id: a file id of a specfile stored in the system
@@ -46,7 +48,8 @@ class SpecService(ComputationalService):
 		'''
 		return "TODO"
 
-	def exposed_get_spec_buildrequires(self, specfile_id):
+	@action
+	def get_spec_buildrequires(self, specfile_id):
 		'''
 		Get all buildrequires for a package
 		@param specfile_id: a file id of a file stored in the system
@@ -54,7 +57,8 @@ class SpecService(ComputationalService):
 		'''
 		return "TODO"
 
-	def exposed_get_spec_packages(self, specfile_id):
+	@action
+	def get_spec_packages(self, specfile_id):
 		'''
 		Get all packages (e.g. devel, ...) of a package
 		@param specfile_id: a file id of a file stored in the system

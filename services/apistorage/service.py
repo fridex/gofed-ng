@@ -22,6 +22,7 @@
 from pymongo import MongoClient
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
+from common.service.action import action
 
 DEFAULT_DATABASE_HOST = 'localhost'
 DEFAULT_DATABASE_PORT = 27017
@@ -45,7 +46,8 @@ class ApiStorageService(StorageService):
 	def signal_init(self):
 		self.api = self.__class__.api
 
-	def exposed_get_api_project_listing(self):
+	@action
+	def get_api_project_listing(self):
 		'''
 		Listing of all available projects with analyzed API
 		@return: list of all available projects
@@ -59,7 +61,8 @@ class ApiStorageService(StorageService):
 
 		return ret
 
-	def exposed_get_api_commit_listing(self, project):
+	@action
+	def get_api_commit_listing(self, project):
 		'''
 		Get all available commits of a project
 		@param project: project name
@@ -74,7 +77,8 @@ class ApiStorageService(StorageService):
 
 		return ret
 
-	def exposed_get_api_project(self, project, commit):
+	@action
+	def get_api_project(self, project, commit):
 		'''
 		API of the given project in specified commit
 		@param project: project name

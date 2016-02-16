@@ -28,7 +28,7 @@ class ActionWrapper(object):
 		self._prehook = prehook
 		self._posthook = posthook
 
-	def action_call(self, *args, **kwargs):
+	def __call__(self, *args, **kwargs):
 		exception = None
 		self._prehook()
 		self._stats_logger.log_process_time()
@@ -41,16 +41,14 @@ class ActionWrapper(object):
 		self._stats_logger.log_processed_time()
 		self._posthook(exception is not None)
 
-		if exception is not None:
-			raise exception
+		#if exception is not None:
+		#	raise exception
 		self._stats_logger.log_result(result)
 
-		if self._action.__name__ == 'exposed_download':
+		if self._action.__name__ == 'download':
 			return result
 		else:
 			return self._stats_logger.dump()
-
-	__call__ = action_call # make myself act like a function
 
 if __name__ == "__main__":
 	sys.exit(1)

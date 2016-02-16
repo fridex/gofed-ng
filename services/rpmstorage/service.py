@@ -23,6 +23,7 @@ from common.helpers.output import log
 from common.helpers.utils import json_pretty_format
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
+from common.service.action import action
 
 DEFAULT_RPM_DIR = 'rpms'
 
@@ -55,7 +56,8 @@ class RpmStorageService(StorageService):
 	def signal_processed(self):
 		log.info("got processed signal")
 
-	def exposed_get_rpm(self, package, arch = None, fedora_release = None):
+	@action
+	def get_rpm(self, package, arch = None, fedora_release = None):
 		'''
 		Get an RPM file id
 		@param package: package name
@@ -65,7 +67,8 @@ class RpmStorageService(StorageService):
 		'''
 		return "TODO"
 
-	def exposed_download(self, file_id):
+	@action
+	def download(self, file_id):
 		'''
 		Retrieve file stored in the service
 		@param file_id: id of the file that will be downloaded

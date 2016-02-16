@@ -108,7 +108,8 @@ class ServiceEnvelope(cli.Application):
 		t = ThreadPoolServer(ServiceEnvelope.SERVICE_CLASS, hostname = self.host, port = self.port,
 			reuse_addr = True, ipv6 = self.ipv6,
 			registrar = self.registrar, auto_register = self.auto_register,
-			nbThreads = self.max_client_count, requestBatchSize = self.max_requests_per_client)
+			nbThreads = self.max_client_count, requestBatchSize = self.max_requests_per_client,
+			protocol_config = {'exposed_prefix': '', 'logger': None}) # TODO: add logger based on config
 		t.start()
 
 	def main(self):

@@ -25,6 +25,7 @@ from common.helpers.file import file_id, blob_hash
 from common.helpers.utils import package2repo
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
+from common.service.action import action
 
 DEFAULT_TARBALL_DIR = 'tarballs'
 
@@ -78,7 +79,8 @@ class TarballStorageService(StorageService):
 
 		return f_id
 
-	def exposed_get_tarball(self, package_name, commit):
+	@action
+	def get_tarball(self, package_name, commit):
 		'''
 		Get tarball file id
 		@param package_name: package name in Fedora
@@ -95,7 +97,8 @@ class TarballStorageService(StorageService):
 
 			return f_id
 
-	def exposed_download(self, file_id):
+	@action
+	def download(self, file_id):
 		'''
 		Retrieve file stored in the service
 		@param file_id: id of the file that will be downloaded

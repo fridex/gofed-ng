@@ -26,6 +26,7 @@ from common.helpers.version import VERSION
 from common.service.actionWrapper import ActionWrapper
 from common.service.serviceResultGenerator import ServiceResultGenerator
 from common.system.system import System
+from common.service.action import action
 
 class Service(RpycService):
 	def __init__(self, conn, system = None):
@@ -66,20 +67,17 @@ class Service(RpycService):
 		self.signal_disconnect()
 
 	def _rpyc_getattr(self, name):
-		return ActionWrapper(
-				super(Service, self)._rpyc_getattr(name),
-				self._result,
-				prehook = self.signal_process,
-				posthook = self.signal_processed
-			)
-
-	def __getattr__(self, name):
-		if not name.startswith('exposed_'):
-			exposed_name = "exposed_" + name
-			if hasattr(self, exposed_name) and callable(getattr(self, exposed_name)):
-				getattr(self.__class__, exposed_name)
-
-		return getattr(self.__class__, name)
+		func = getattr(self, name)
+		if hasattr(func, 'action') and func.action is True:
+			return ActionWrapper(
+					func,
+					self._result,
+					prehook = self.signal_process,
+					posthook = self.signal_processed
+				)
+		else:
+			raise AttributeError("Service '%s' does not expose action '%s'" %
+					(self.get_service_name(), name))
 
 	def get_lock(self):
 		return self.__class__._lock
@@ -120,7 +118,7 @@ class Service(RpycService):
 		try:
 			self._conn
 			return False
-		except NameError:
+		except:
 			return True
 
 	def is_remote(self):
@@ -149,9 +147,6 @@ class Service(RpycService):
 			return 'localhost'
 
 		return cls._config.get('port')
-
-	def exposed_version(self):
-		return self.__class__.get_service_version()
 
 	def version(self):
 		return self.__class__.get_service_version()

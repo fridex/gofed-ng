@@ -19,11 +19,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
+import sys, functools
 from common.helpers.file import is_file_id
 from common.system.fileId import FileId
 
-def fileAction(func):
+def action(func):
+	@functools.wraps(func)
 	def wrapper(*args, **kwargs):
 		new_args = []
 		for arg in args:
@@ -37,7 +38,9 @@ def fileAction(func):
 				kwargs[key] = FileId(value)
 
 		return func(*tuple(new_args), **kwargs)
- 	return wrapper
+
+	wrapper.action = True
+	return wrapper
 
 if __name__ == '__main__':
 	sys.exit(1)

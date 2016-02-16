@@ -22,6 +22,7 @@
 from pymongo import MongoClient
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
+from common.service.action import action
 
 DEFAULT_DATABASE_HOST = 'localhost'
 DEFAULT_DATABASE_PORT = 27017
@@ -45,7 +46,8 @@ class ApiSaveStorageService(StorageService):
 	def signal_init(self):
 		self.api = self.__class__.api
 
-	def exposed_store_api(self, project, commit, api, meta):
+	@action
+	def store_api(self, project, commit, api, meta):
 		'''
 		Store API of a project
 		@param project: project name

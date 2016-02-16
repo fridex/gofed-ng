@@ -26,7 +26,7 @@ from common.helpers.output import log
 from common.helpers.utils import parse_timedelta
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
-from common.service.fileAction import fileAction
+from common.service.action import action
 
 DEFAULT_UPLOAD_DIR = 'uploads'
 DEFAULT_FILE_LIFETIME = '2h'
@@ -48,7 +48,8 @@ class FileStorageService(StorageService):
 		self.upload_dir = self.__class__.upload_dir
 		self.file_lifetime = self.__class__.file_lifetime
 
-	def exposed_upload_url(self, url):
+	@action
+	def upload_url(self, url):
 		'''
 		Store file by URL - file will be downloaded and exposed to the system
 		@return: file id
@@ -56,12 +57,14 @@ class FileStorageService(StorageService):
 		response = urllib2.urlopen(url)
 		return self.exposed_upload(response.read())
 
-	def exposed_upload(self, blob):
+	@action
+	def upload(self, blob):
 		'''
 		Upload file to the system
 		@param blob: a file content to be store
 		@return: file id
 		'''
+		log.info("uploading")
 		h = blob_hash(blob)
 		dst = os.path.join(self.upload_dir, h)
 
@@ -74,8 +77,8 @@ class FileStorageService(StorageService):
 
 		return file_id(self, dst, str(valid_until), h)
 
-	@fileAction
-	def exposed_download(self, file_id):
+	@action
+	def download(self, file_id):
 		'''
 		Download a file
 		@param file_id: a file to be downloaded
