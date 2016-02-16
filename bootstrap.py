@@ -19,16 +19,18 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import os, sys, ast, json, shutil
+import os, sys, ast, json, shutil, logging
 from plumbum import cli
 from jinja2 import Environment, FileSystemLoader
-from common.helpers.output import log
 from common.helpers.utils import get_user, get_hostname, get_time_str, json_pretty_format, get_githead
 from common.helpers.version import VERSION
 from shutil import copyfile
 
 SYSTEM_JSON = 'system.json'
 SERVICE_DIR = 'services/'
+
+logging.basicConfig(level = logging.INFO)
+log = logging.getLogger(__file__)
 
 class GofedBootstrap(cli.Application):
 	DESCRIPTION = "A gofed system bootstrap script"
