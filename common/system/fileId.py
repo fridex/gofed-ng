@@ -19,13 +19,39 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
+import sys, os
 import datetime
 from dateutil.parser import parse as datetime_parse
+from common.helpers.file import file_hash
 
 class FileId(object):
 	def __init__(self, file_id):
 		self._file_id = file_id
+
+	@staticmethod
+	def construct(service, path, valid_until, hash_ = None):
+		ret = {
+			'identifier': path,
+			'service': service.get_service_name(),
+			# TODO: return actual host
+			'host': service.get_host(),
+			# TODO: return actual port
+			'port': service.get_port(),
+			'valid_until': valid_until,
+			'sha1': file_hash(path) if hash_ is None else hash_,
+			'size': os.path.getsize(path)
+		}
+
+		return ret
+
+	@staticmethod
+	def is_file_id(d):
+		if not isinstance(d, dict):
+			return False
+
+		# let's make it dummy way for now
+		return 'identifier' in d and 'service' in d and 'host' in d and 'port' in d \
+				and 'valid_until' in d and 'sha1' in d
 
 	def get_service_name(self):
 		return self._file_id['service']
@@ -35,6 +61,9 @@ class FileId(object):
 
 	def get_service_port(self):
 		return self._file_id['port']
+
+	def get_identifier(self):
+		return self._file_id['identifier']
 
 	def get_valid_date(self):
 		if self._file_id['valid_until'] == -1:

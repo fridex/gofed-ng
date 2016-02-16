@@ -40,29 +40,6 @@ def blob_hash(blob):
 	h.update(blob)
 	return base64.b64encode(h.digest())
 
-def file_id(service, path, valid_until, hash_ = None):
-	ret = {
-		'identifier': path,
-		'service': service.get_service_name(),
-		# TODO: return actual host
-		'host': service.get_host(),
-		# TODO: return actual port
-		'port': service.get_port(),
-		'valid_until': valid_until,
-		'sha1': file_hash(path) if hash_ is None else hash_,
-		'size': os.path.getsize(path)
-	}
-
-	return ret
-
-def is_file_id(d):
-	if not isinstance(d, dict):
-		return False
-
-	# let's make it dummy way for now
-	return 'identifier' in d and 'service' in d and 'host' in d and 'port' in d \
-			and 'valid_until' in d and 'sha1' in d
-
 if __name__ == "__main__":
 	sys.exit(1)
 

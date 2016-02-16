@@ -21,12 +21,13 @@
 
 import os, time, urllib2
 from dateutil.parser import parse as datetime_parse
-from common.helpers.file import file_id, blob_hash
+from common.helpers.file import blob_hash
 from common.helpers.output import log
 from common.helpers.utils import parse_timedelta
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
+from common.system.fileId import FileId
 
 DEFAULT_UPLOAD_DIR = 'uploads'
 DEFAULT_FILE_LIFETIME = '2h'
@@ -75,7 +76,7 @@ class FileStorageService(StorageService):
 		creation_time = datetime_parse(time.ctime(os.path.getctime(dst)))
 		valid_until = creation_time + self.file_lifetime
 
-		return file_id(self, dst, str(valid_until), h)
+		return FileId.construct(self, dst, str(valid_until), h)
 
 	@action
 	def download(self, file_id):

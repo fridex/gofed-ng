@@ -21,11 +21,12 @@
 
 import os, urllib2
 from common.helpers.output import log
-from common.helpers.file import file_id, blob_hash
+from common.helpers.file import blob_hash
 from common.helpers.utils import package2repo
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
+from common.system.fileId import FileId
 
 DEFAULT_TARBALL_DIR = 'tarballs'
 
@@ -75,7 +76,7 @@ class TarballStorageService(StorageService):
 		path = os.path.join(self.tarball_dir, self._get_file_name(package_name, commit))
 
 		with self.get_lock():
-			f_id = file_id(self, path, -1)
+			f_id = FileId.construct(self, path, -1)
 
 		return f_id
 
@@ -93,7 +94,7 @@ class TarballStorageService(StorageService):
 			file_path, h = self._download_tarball(package_name, commit)
 
 			with self.get_lock():
-				f_id = file_id(self, file_path, -1, h)
+				f_id = FileId.construct(self, file_path, -1, h)
 
 			return f_id
 
@@ -104,8 +105,8 @@ class TarballStorageService(StorageService):
 		@param file_id: id of the file that will be downloaded
 		@return: file
 		'''
-		log.info("downloading '%s'" % str(file_id))
-		filename = os.path.basename(file_id['identifier'])
+		log.info("downloading '%s'" % file_id.get_identifier())
+		filename = os.path.basename(file_id.get_identifier())
 		file_path = os.path.join(self.tarball_dir, filename)
 
 		with self.get_lock():

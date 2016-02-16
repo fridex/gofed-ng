@@ -22,7 +22,6 @@
 import sys
 import json
 from common.helpers.utils import json_pretty_format
-from common.helpers.file import is_file_id
 from common.system.fileId import FileId
 from common.system.actionCallWrap import actionCallWrap
 
@@ -159,7 +158,7 @@ class ServiceResultObject(object):
 		self.result_wait()
 
 		if self._file_id is None:
-			if is_file_id(self.get_raw_result()):
+			if FileId.is_file_id(self.get_raw_result()):
 				self._file_id = FileId(self.get_raw_result())
 			else:
 				self._file_id = False

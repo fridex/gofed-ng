@@ -20,7 +20,6 @@
 # ####################################################################
 
 import sys, functools
-from common.helpers.file import is_file_id
 from common.system.fileId import FileId
 
 def action(func):
@@ -28,13 +27,13 @@ def action(func):
 	def wrapper(*args, **kwargs):
 		new_args = []
 		for arg in args:
-			if is_file_id(arg):
+			if FileId.is_file_id(arg):
 				new_args.append(FileId(arg))
 			else:
 				new_args.append(arg)
 
 		for key, value in kwargs.iteritems():
-			if is_file_id(value):
+			if FileId.is_file_id(value):
 				kwargs[key] = FileId(value)
 
 		return func(*tuple(new_args), **kwargs)
