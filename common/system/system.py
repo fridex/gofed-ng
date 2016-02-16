@@ -28,6 +28,7 @@ from common.registry.registryClient import RegistryClient
 from common.system.connectionCall import ConnectionCallSync, ConnectionCallAsync
 from common.system.connection import Connection
 from common.system.fileId import FileId
+from common.system.file import File
 
 class System(object):
 	def __init__(self, config, system_json_file, service = False):
@@ -94,6 +95,7 @@ class System(object):
 		blob = call(file_id.get_raw())
 		with open(path, 'wb') as f:
 			f.write(blob)
+		return File.get_representation(path, file_id)
 
 	def is_storage(self, service_name):
 		for storage in self._system['services']['storages']:
