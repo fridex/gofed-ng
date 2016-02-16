@@ -53,9 +53,26 @@ def get_githead():
 
 def runcmd(cmd, cwd = "."):
 	''' Run command `cmd' in working directory `cwd' '''
-	process = Popen(cmd, stderr=PIPE, stdout=PIPE, cwd=cwd, close_fds=True)
+	process = Popen(cmd, stderr = PIPE, stdout = PIPE, cwd = cwd, close_fds = True)
 	stdout, stderr = process.communicate()
 	rt = process.returncode
+
+	if rt != 0:
+		raise RuntimeError(stderr)
+
+	return stdout, stderr, rt
+
+def runpipe(cmds, cwd = "."):
+	p1 = Popen(cmds[0], stdin = None, stdout = PIPE, stderr = PIPE, cwd = cwd)
+	prev = p1
+
+	for cmd in cmds[1:]:
+		p = Popen(cmd, stdin = prev.stdout, stdout = PIPE, stderr = PIPE, cwd = cwd)
+		prev = p
+
+	stdout, stderr = p.communicate()
+	p.wait()
+	rt = p.returncode
 
 	if rt != 0:
 		raise RuntimeError(stderr)
