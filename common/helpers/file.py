@@ -20,7 +20,6 @@
 import sys
 import os
 import hashlib
-import base64
 
 _BLOCKSIZE = 65535
 
@@ -33,12 +32,12 @@ def file_hash(path):
 			h.update(buf)
 			buf = f.read(_BLOCKSIZE)
 
-	return base64.b64encode(h.digest())
+	return h.hexdigest()
 
 def blob_hash(blob):
 	h = hashlib.sha1()
 	h.update(blob)
-	return base64.b64encode(h.digest())
+	return h.hexdigest()
 
 if __name__ == "__main__":
 	sys.exit(1)
