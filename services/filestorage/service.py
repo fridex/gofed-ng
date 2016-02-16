@@ -56,7 +56,7 @@ class FileStorageService(StorageService):
 		@return: file id
 		'''
 		response = urllib2.urlopen(url)
-		return self.exposed_upload(response.read())
+		return self.upload(response.read())
 
 	@action
 	def upload(self, blob):
