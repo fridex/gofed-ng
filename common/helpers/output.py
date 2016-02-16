@@ -20,46 +20,39 @@
 # ####################################################################
 
 import sys
+import logging
 
-class _Logger(object):
+class LoggerSingleton(object):
+	_instance = None
+
 	def __init__(self):
-		self._warn_log = sys.stderr
-		self._err_log = sys.stderr
-		self._info_log = sys.stderr
+		pass
 
-	def set_warn_logfile(self, logfile):
-		self._warn_log = logfile
+	def init(self, configfile = None, verbose = False):
+		if LoggerSingleton._instance is None:
+			level = logging.INFO if verbose is True else logging.WARNING
+			if configfile is not None:
+				logging.basicConfig(level = level, filename = configfile)
+			else:
+				# use the default stream
+				logging.basicConfig(level = level)
+			LoggerSingleton._instance = logging.getLogger(__name__)
 
-	def set_err_logfile(self, logfile):
-		self._err_log = logfile
+	def __getattr__(self, attr):
+		if attr == 'init':
+			return self.init
+		elif attr == 'close':
+			return self.shutdown
 
-	def set_info_logfile(self, logfile):
-		self._info_log = logfile
+		if LoggerSingleton._instance is None:
+			self.init()
+		return getattr(self._instance, attr)
 
-	def set_logfile(self, logfile):
-		self.set_warn_logfile(logfile)
-		self.set_err_logfile(logfile)
-		self.set_info_logfile(logfile)
+	def close(self):
+		logging.shutdown()
 
-	def error(self, s):
-		if self._err_log.isatty():
-			self._err_log.write("\033[91m!ERR:\033[0m %s\n" % s)
-		else:
-			self._err_log.write("!ERR: %s\n" % s)
 
-	def warn(self, s):
-		if self._warn_log.isatty():
-			self._warn_log.write("\033[93mWARN:\033[0m %s\n" % s)
-		else:
-			self._warn_log.write("WARN: %s\n" % s)
-
-	def info(self, s):
-		if self._info_log.isatty():
-			self._info_log.write("\033[92mINFO:\033[0m %s\n" % s)
-		else:
-			self._info_log.write("INFO: %s\n" % s)
-
-log = _Logger()
+log = LoggerSingleton()
 
 if __name__ == '__main__':
 	sys.exit(1)

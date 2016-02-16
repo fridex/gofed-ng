@@ -27,7 +27,7 @@ from rpyc.utils.registry import REGISTRY_PORT
 from rpyc.utils.registry import UDPRegistryClient, TCPRegistryClient, REGISTRY_PORT
 from rpyc.lib import setup_logger
 from common.helpers.output import log
-from common.helpers.utils import config2dict
+from common.helpers.utils import config2dict, get_time_str
 
 try:
 	from configparser import ConfigParser
@@ -94,7 +94,7 @@ class ServiceEnvelope(cli.Application):
 			ServiceEnvelope.SERVICE_CLASS.on_termination()
 
 	def run_worker_process(self):
-		setup_logger(self.quiet, self.logfile)
+		setup_logger(self.quiet, log)
 
 		if self.registry_type == "UDP":
 			if self.registry_host is None:
@@ -121,6 +121,9 @@ class ServiceEnvelope(cli.Application):
 
 		self.conf = config2dict(self.conf)
 
+		log.init(configfile = self.logfile if self.logfile != '-' else None, verbose = not self.quiet)
+		log.critical("Service starting at %s" % get_time_str())
+
 		service_cls = ServiceEnvelope.SERVICE_CLASS
 		service_cls.on_startup(self.conf, self.system_json)
 
@@ -137,6 +140,10 @@ class ServiceEnvelope(cli.Application):
 					pass
 			except Exception:
 				pass
+
+			# finish logging and ensure that all messages are flushed
+			log.critical("Service terminated at %s" % get_time_str())
+			log.close()
 
 if __name__ == "__main__":
 	sys.exit(1)
