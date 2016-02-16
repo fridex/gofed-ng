@@ -19,28 +19,27 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
+import sys, os
 import tarfile
-from common.system.file import File
+from common.system.extractedFile import ExtractedFile
 
-class ExtractedFile(File):
+class ExtractedRpmFile(ExtractedFile):
 	def __init__(self, path, origin):
 		self._path = path
 		# store a ref to origin (e.g. parent) -- the file which was extracted to
 		# this file
 		self._origin = origin
-		raise NotImplementedError()
 
-	def get_type(self):
-		return self._origin.get_type()
+	def get_content_path(self):
+		# just for now, but this can be easily extended
+		content = os.path.join(self.get_path(), 'usr/share/gocode')
+		return content
 
-	def get_path(self):
-		return self._path
-
-	def get_origin(self):
-		return self._origin
+	def get_licenses_path(self):
+		return os.path.join(self.get_path(), 'licenses')
 
 	def pack(self, dst_path = None):
+		# TODO: Implement
 		raise NotImplementedError()
 
 if __name__ == "__main__":

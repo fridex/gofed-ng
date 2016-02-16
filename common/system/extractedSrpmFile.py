@@ -19,28 +19,42 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
+import sys, os
 import tarfile
-from common.system.file import File
+from common.system.extractedFile import ExtractedFile
+from common.system.tarballFile import TarballFile
 
-class ExtractedFile(File):
+class ExtractedSrpmFile(ExtractedFile):
 	def __init__(self, path, origin):
 		self._path = path
 		# store a ref to origin (e.g. parent) -- the file which was extracted to
 		# this file
 		self._origin = origin
-		raise NotImplementedError()
 
-	def get_type(self):
-		return self._origin.get_type()
+	def get_patches(self):
+		ret = []
+		for f in os.listdir(self.get_path()):
+			if f.endswith(".patch"):
+				ret.append(os.path.join(self.get_path()), f)
 
-	def get_path(self):
-		return self._path
+		return ret
 
-	def get_origin(self):
-		return self._origin
+	def get_tarball(self):
+		for f in os.listdir(self.get_path()):
+			if f.endswith(".tar.gz") or f.endswith(".zip"):
+				return TarballFile(os.path.join(self.get_path(), f), self)
+
+		raise ValueError("No tarball found")
+
+	def get_spec_path(self):
+		for f in os.listdir(self.get_path()):
+			if f.endswith(".spec"):
+				return os.path.join(self.get_path(), f)
+
+		raise ValueError("No specfile found")
 
 	def pack(self, dst_path = None):
+		# TODO: implement
 		raise NotImplementedError()
 
 if __name__ == "__main__":

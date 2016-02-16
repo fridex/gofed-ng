@@ -21,24 +21,16 @@
 
 import sys
 import tarfile
-from common.system.file import File
+from common.system.extractedFile import ExtractedFile
 
-class ExtractedFile(File):
+# TODO: implement
+
+class ExtractedTarballFile(ExtractedFile):
 	def __init__(self, path, origin):
 		self._path = path
 		# store a ref to origin (e.g. parent) -- the file which was extracted to
 		# this file
 		self._origin = origin
-		raise NotImplementedError()
-
-	def get_type(self):
-		return self._origin.get_type()
-
-	def get_path(self):
-		return self._path
-
-	def get_origin(self):
-		return self._origin
 
 	def pack(self, dst_path = None):
 		raise NotImplementedError()
