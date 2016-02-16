@@ -1,3 +1,6 @@
 [submodule "services/spec/specker"]
 	path = services/spec/specker
 	url = https://github.com/gofed/specker
+[submodule "services/api/gofedlib"]
+	path = services/api/gofedlib
+	url = https://github.com/gofed/lib.git
