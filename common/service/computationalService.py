@@ -25,6 +25,7 @@ from tempfile import NamedTemporaryFile
 from service import Service
 from common.system.system import System
 from common.helpers.output import log
+import tempfile
 
 DEFAULT_TMP_DIR = 'tmp'
 
@@ -50,6 +51,11 @@ class ComputationalService(Service):
 
 	def get_tmp_filename(self):
 		return NamedTemporaryFile(dir = self.get_tmp_dir(), delete = False).name
+
+	def get_tmp_dirname(self):
+		# ensure that we are working with absolute paths
+		tmpdir =  tempfile.mkdtemp(dir = self.get_tmp_dir())
+		return os.path.join(os.getcwd(), tmpdir)
 
 	def get_system(self):
 		return self.__class__._system
