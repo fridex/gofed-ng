@@ -57,7 +57,7 @@ class RpmStorageService(StorageService):
 		log.info("got processed signal")
 
 	@action
-	def get_rpm(self, package, arch = None, fedora_release = None):
+	def rpm_get(self, package, arch = None, fedora_release = None):
 		'''
 		Get an RPM file id
 		@param package: package name
