@@ -30,7 +30,7 @@ from common.system.fileId import FileId
 
 DEFAULT_TARBALL_DIR = 'tarballs'
 
-class TarballStorageService(StorageService):
+class GoTarballStorageService(StorageService):
 	''' Accessing upstream tarballs '''
 
 	@classmethod
@@ -81,7 +81,7 @@ class TarballStorageService(StorageService):
 		return f_id
 
 	@action
-	def get_tarball(self, package_name, commit):
+	def gotarball_get(self, package_name, commit):
 		'''
 		Get tarball file id
 		@param package_name: package name in Fedora
@@ -116,5 +116,5 @@ class TarballStorageService(StorageService):
 		return content
 
 if __name__ == "__main__":
-	ServiceEnvelope.serve(TarballStorageService)
+	ServiceEnvelope.serve(GoTarballStorageService)
 
