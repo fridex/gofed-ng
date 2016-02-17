@@ -35,7 +35,7 @@ class DepsService(ComputationalService):
 		@param file_id: file to be analysed
 		@return: list of dependencies
 		'''
-		pass
+		return "TODO"
 
 	@action
 	def deps_diff(self, deps1, deps2):
@@ -45,7 +45,7 @@ class DepsService(ComputationalService):
 		@param deps2: the second dependency list
 		@return: list of dependency differences
 		'''
-		pass
+		return "TODO"
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(DepsService)
