@@ -40,7 +40,7 @@ class SpecService(ComputationalService):
 			os.remove(self.tmp_file)
 
 	@action
-	def get_spec_requires(self, specfile_id):
+	def spec_requires(self, specfile_id):
 		'''
 		Get all requires for a package
 		@param specfile_id: a file id of a specfile stored in the system
@@ -49,7 +49,7 @@ class SpecService(ComputationalService):
 		return "TODO"
 
 	@action
-	def get_spec_buildrequires(self, specfile_id):
+	def spec_buildrequires(self, specfile_id):
 		'''
 		Get all buildrequires for a package
 		@param specfile_id: a file id of a file stored in the system
@@ -58,10 +58,37 @@ class SpecService(ComputationalService):
 		return "TODO"
 
 	@action
-	def get_spec_packages(self, specfile_id):
+	def spec_packages(self, specfile_id):
 		'''
 		Get all packages (e.g. devel, ...) of a package
 		@param specfile_id: a file id of a file stored in the system
+		@return: list of packages
+		'''
+		return "TODO"
+
+	@action
+	def spec_requires_raw(self, specfile):
+		'''
+		Get all requires for a package
+		@param specfile: raw specfile content
+		@return: list of requires
+		'''
+		return "TODO"
+
+	@action
+	def spec_buildrequires_raw(self, specfile):
+		'''
+		Get all buildrequires for a package
+		@param specfile: raw specfile content
+		@return: list of buildrequires
+		'''
+		return "TODO"
+
+	@action
+	def spec_packages_raw(self, specfile):
+		'''
+		Get all packages (e.g. devel, ...) of a package
+		@param specfile: raw specfile content
 		@return: list of packages
 		'''
 		return "TODO"
