@@ -75,7 +75,7 @@ class ApiService(ComputationalService):
 		log.info("got processed signal")
 
 	@action
-	def api(self, file_id):
+	def api_analysis(self, file_id):
 		'''
 		Get API of a file
 		@param file_id: file to be analysed
@@ -102,7 +102,7 @@ class ApiService(ComputationalService):
 		return api(src_path)
 
 	@action
-	def apidiff(self, api1, api2):
+	def api_diff(self, api1, api2):
 		'''
 		Make a diff of APIs
 		@param api1: the first API
