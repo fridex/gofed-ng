@@ -1,2 +1,2 @@
 # Custom service configuration
-spec-dir = specs
+package-dir = packages

@@ -26,13 +26,13 @@ from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
 
-DEFAULT_SPEC_TREE_DIR="specs/"
+DEFAULT_SPEC_TREE_DIR="packages"
 PKGDB_API_URL="https://admin.fedoraproject.org/pkgdb/api/packages/?&pattern=golang-*"
 
 # TODO: timed update
 
-class SpecStorageService(StorageService):
-	''' Specfiles provider '''
+class GoPackageStorageService(StorageService):
+	''' Golang packages provider '''
 
 	@classmethod
 	def _fedora_pkgdb_packages_list(cls):
@@ -101,7 +101,7 @@ class SpecStorageService(StorageService):
 			raise ValueError("No such branch '%s'" % branch)
 
 	@action
-	def get_spec_listing(self):
+	def gopackage_listing(self):
 		'''
 		Get listing of all available specfiles
 		@return: list of specfiles in Fedora Package DB with some additional metadata (upstream, description, ...)
@@ -109,7 +109,7 @@ class SpecStorageService(StorageService):
 		return self.packages
 
 	@action
-	def get_spec_raw(self, package, branch = None):
+	def gopackage_get_raw(self, package, branch = None):
 		'''
 		Get raw spec file of a package
 		@param package: golang package packaged in Fedora
@@ -128,7 +128,7 @@ class SpecStorageService(StorageService):
 		return ret
 
 	@action
-	def get_spec_patch_listing(self, package, branch = None):
+	def gopackage_patch_listing(self, package, branch = None):
 		'''
 		Get list of downstream patches of a package
 		@param package: golang package packaged in Fedora
@@ -152,7 +152,7 @@ class SpecStorageService(StorageService):
 		return ret
 
 	@action
-	def get_spec_patch_raw(self, package, patch_name, branch = None):
+	def gopackage_get_patch_raw(self, package, patch_name, branch = None):
 		'''
 		Get a downstream patch of a package
 		@param package: golang package packaged in Fedora
@@ -172,7 +172,7 @@ class SpecStorageService(StorageService):
 		return ret
 
 	@action
-	def get_spec(self, package, branch = None):
+	def gopackage_get(self, package, branch = None):
 		'''
 		Get a file id of a spec file
 		@param package: golang package packaged in Fedora
@@ -182,7 +182,7 @@ class SpecStorageService(StorageService):
 		return "TODO"
 
 	@action
-	def get_spec_patch(self, package, patch_name, branch = None):
+	def gopackage_spec_patch(self, package, patch_name, branch = None):
 		'''
 		Get a file id of a downstream patch
 		@param package: golang package packaged in Fedora
@@ -201,5 +201,5 @@ class SpecStorageService(StorageService):
 		return "TODO"
 
 if __name__ == "__main__":
-	ServiceEnvelope.serve(SpecStorageService)
+	ServiceEnvelope.serve(GoPackageStorageService)
 
