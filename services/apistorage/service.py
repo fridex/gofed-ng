@@ -47,7 +47,7 @@ class ApiStorageService(StorageService):
 		self.api = self.__class__.api
 
 	@action
-	def get_api_project_listing(self):
+	def api_project_listing(self):
 		'''
 		Listing of all available projects with analyzed API
 		@return: list of all available projects
@@ -62,7 +62,7 @@ class ApiStorageService(StorageService):
 		return ret
 
 	@action
-	def get_api_commit_listing(self, project):
+	def api_commit_listing(self, project):
 		'''
 		Get all available commits of a project
 		@param project: project name
@@ -78,7 +78,7 @@ class ApiStorageService(StorageService):
 		return ret
 
 	@action
-	def get_api_project(self, project, commit):
+	def api_project(self, project, commit):
 		'''
 		API of the given project in specified commit
 		@param project: project name
@@ -93,6 +93,10 @@ class ApiStorageService(StorageService):
 			ret.append({'api': item['api'], 'meta': item['meta']})
 
 		return ret
+
+	@action
+	def api_package(self, package_name, distribution, version):
+		pass
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(ApiStorageService)
