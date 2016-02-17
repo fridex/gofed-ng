@@ -47,7 +47,7 @@ class ApiSaveStorageService(StorageService):
 		self.api = self.__class__.api
 
 	@action
-	def store_api(self, project, commit, api, meta):
+	def api_store_project(self, project, commit, api, meta):
 		'''
 		Store API of a project
 		@param project: project name
@@ -65,6 +65,10 @@ class ApiSaveStorageService(StorageService):
 		self.api.insert(item)
 
 		return True
+
+	@action
+	def api_store_package(self, package_name, distribution, version, meta):
+		pass
 
 if __name__ == "__main__":
 	ServiceEnvelope.serve(ApiSaveStorageService)
