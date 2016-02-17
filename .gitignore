@@ -6,12 +6,14 @@ services/*/common
 services/*/system.json
 services/*/service.conf
 subcommand/load_scenarios.py
+.ropeproject
+*.tar.gz
+*.zip
+*.rpm
+*.src.rpm
+*.spec
 
 # service relevant
-services/apidiff/tmp/
-services/api/tmp/
-services/filestorage/rpms/
-services/filestorage/uploads/
-services/specstorage/specs/
-services/spec/tmp/
-services/tarballstorage/tarballs/
+services/*/tmp/
+services/*/*.log
+
