@@ -63,7 +63,7 @@ class GofedBootstrap(cli.Application):
 
 		funcs = [f for f in node.body if isinstance(f, ast.FunctionDef)]
 		for action in funcs:
-			if is_action(action):
+			if is_action(action) and action.name != 'download':
 				log.info("Found action '%s'..." % action.name)
 
 				item = {}
