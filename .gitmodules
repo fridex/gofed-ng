@@ -4,3 +4,6 @@
 [submodule "services/api/gofedlib"]
 	path = services/api/gofedlib
 	url = https://github.com/gofed/lib.git
+[submodule "services/deps/gofedlib"]
+	path = services/deps/gofedlib
+	url = https://github.com/gofed/lib.git
