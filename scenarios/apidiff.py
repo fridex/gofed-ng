@@ -23,8 +23,8 @@ import sys
 from common.helpers.utils import json_pretty_format
 from scenario import Scenario
 
-class Scenario1(Scenario):
-	''' API diff analysis example '''
+class Apidiff(Scenario):
+	''' API diff analysis '''
 	def main(self, project_file1, project_file2):
 		with self.get_system() as system:
 
