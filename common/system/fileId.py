@@ -36,9 +36,7 @@ class FileId(object):
         ret = {
             'identifier': path,
             'service': service.get_service_name(),
-            # TODO: return actual host
             'host': service.get_host(),
-            # TODO: return actual port
             'port': service.get_port(),
             'valid_until': valid_until,
             'sha1': file_hash(path) if hash_ is None else hash_,
