@@ -34,7 +34,10 @@ class Service(RpycService):
     def __init__(self, conn, system=None):
         # conn has to be always supplied because of rpyc.Service __init__
         if conn is not None:  # remote service
+            self._remote = True
             super(Service, self).__init__(conn)
+        else:
+            self._remote = False
 
         self._result = ServiceResultGenerator()
         self._result.log_service_name(self.get_service_name())
@@ -117,14 +120,10 @@ class Service(RpycService):
         pass
 
     def is_local(self):
-        try:
-            self._conn
-            return False
-        except:
-            return True
+        return not self.is_remote()
 
     def is_remote(self):
-        return not self.is_local()
+        return self._remote
 
     @classmethod
     def get_service_version(cls):
