@@ -50,7 +50,6 @@ class TarballFile(File):
         return self._type[0].lower()
 
     def unpack(self, dst_path):
-        print self._type
         if self.get_tarball_type() == 'zip':
             z = zipfile.ZipFile(self._path, 'r')
             z.extractall(dst_path)
