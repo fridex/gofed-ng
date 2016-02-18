@@ -20,14 +20,34 @@
 # ####################################################################
 
 import os
-from common.helpers.output import log
+import shutil
+import json
+from common.helpers.utils import runcmd
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
+from common.system.extractedRpmFile import ExtractedRpmFile
+from common.system.extractedSrpmFile import ExtractedSrpmFile
+from common.system.extractedTarballFile import ExtractedTarballFile
 
 
 class LicenseService(ComputationalService):
     ''' Licensing analysis '''
+
+    def signal_init(self):
+        self.tmpfile_path = None
+        self.extracted1_path = None
+        self.extracted2_path = None
+
+    def signal_processed(self, was_error):
+        if self.tmpfile_path is not None:
+            os.remove(self.tmpfile_path)
+
+        if self.extracted1_path is not None:
+            shutil.rmtree(self.extracted1_path)
+
+        if self.extracted2_path is not None:
+            shutil.rmtree(self.extracted2_path)
 
     @action
     def license_analysis(self, file_id):
@@ -36,7 +56,26 @@ class LicenseService(ComputationalService):
         @param file_id: a file id of a file that needs to be analysed
         @return: list of all licenses found
         '''
-        return "TODO"
+        self.tmpfile_path = self.get_tmp_filename()
+        with self.get_system() as system:
+            f = system.download(file_id, self.tmpfile_path)
+
+        self.extracted1_path = self.get_tmp_dirname()
+        d = f.unpack(self.extracted1_path)
+
+        if isinstance(d, ExtractedRpmFile):
+            src_path = d.get_content_path()
+        elif isinstance(d, ExtractedTarballFile):
+            src_path = d.get_path()
+        elif isinstance(d, ExtractedSrpmFile):
+            # we have to unpack tarball first
+            t = d.get_tarball()
+            self.extracted2_path = self.get_tmp_dirname()
+            d = f.unpack(self.extracted2_path)
+            src_path = d.get_path()
+
+        stdout, _, _ = runcmd(["licenselib/cucos_license_check.py", src_path])
+        return json.loads(stdout)
 
     @action
     def license_diff(self, licenses1, licenses2):
