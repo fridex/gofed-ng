@@ -19,7 +19,7 @@
 
 import sys
 import os
-import json
+from common.helpers.output import log
 from plumbum import cli
 from common.helpers.utils import get_user, get_hostname, json_pretty_format, get_time_str
 from common.system.system import System
@@ -47,10 +47,15 @@ class GofedSystem(cli.Application):
             "hostname": get_hostname(),
             "topology": []
         }
-        system = System(None, self.get_system_json_path())
+        system = System(self.get_config(), self.get_system_json_path())
 
         for service_name in system.get_services_list():
-            for response in system.get_service_location(service_name):
+            try:
+                registry_response = system.get_service_location(service_name)
+            except Exception as e:
+                log.warning("Encountered error while querying for service '%s', skipping this service ('%s')"
+                            % (service_name, str(e)))
+            for response in registry_response:
                 ret['topology'].append({
                     'service': service_name,
                     'host': response[0],
@@ -58,11 +63,10 @@ class GofedSystem(cli.Application):
                     'type': 'computational' if system.is_computational(service_name) else 'storage'
                 })
 
-        # TODO: give actual ip and port
         ret['topology'].append({
             'type': 'registry',
-            'ip': 'localhost',
-            'port': 18811,
+            'host': system.get_registry_host(),
+            'port': system.get_registry_port()
         })
 
         print json_pretty_format(ret)

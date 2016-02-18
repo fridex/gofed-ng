@@ -47,7 +47,7 @@ function print_graph(links) {
       if (nodes['registry'] == undefined)
         nodes['registry'] = {name: 'registry'};
       link.source = nodes['registry'];
-      link.source.ip = link.ip;
+      link.source.host = link.host;
       link.source.type = link.type;
       link.source.port = link.port;
       link.target = nodes['registry'];
@@ -55,7 +55,7 @@ function print_graph(links) {
       link.source = nodes[link.service] || (nodes[link.service] = {name: link.service});
       link.source.port = link.port;
       link.source.type = link.type;
-      link.source.ip = link.ip;
+      link.source.host = link.host;
 
       link.target = nodes[link.host] || (nodes[link.host] = {name: link.host});
       link.target.type = 'host';
@@ -124,7 +124,7 @@ function print_graph(links) {
     } else if (d.type == 'host') {
       tooltip.text("A host running on " + d.name);
     } else if (d.type == 'registry') {
-      tooltip.text("Registry " + d.ip + ':' + d.port);
+      tooltip.text("Registry " + d.host + ':' + d.port);
     }
 
     left_offset = $('#current-status').offset().left;
