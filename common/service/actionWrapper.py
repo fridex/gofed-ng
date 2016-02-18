@@ -31,20 +31,16 @@ class ActionWrapper(object):
         self._posthook = posthook
 
     def __call__(self, *args, **kwargs):
-        exception = None
         self._prehook()
         self._stats_logger.log_process_time()
-        result = self._action(*args, **dict(kwargs))
-        # TODO:
-        # try:
-        #	result = self._action(*args, **dict(kwargs))
-        # except Exception as e:
-        #	exception = e
+        try:
+            result = self._action(*args, **dict(kwargs))
+        except:
+            exc_info = sys.exc_info()
+            self._posthook(was_error=True)
+            raise exc_info[0], exc_info[1], exc_info[2]
         self._stats_logger.log_processed_time()
-        self._posthook(exception is not None)
-
-        # if exception is not None:
-        #	raise exception
+        self._posthook(was_error=False)
         self._stats_logger.log_result(result)
 
         if self._action.__name__ == 'download':
