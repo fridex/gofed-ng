@@ -51,8 +51,13 @@ class System(object):
             return getattr(System, name)
 
     def get_service_location(self, service_name):
-        # TODO: pass config
-        service = RegistryClient.query(service_name)
+        registry_host = self._config.get("registry-host")
+        registry_port = self._config.get("registry-port")
+
+        if registry_host is None:
+            service = RegistryClient.query(service_name)
+        else:
+            service = RegistryClient.query(service_name, registry_host, int(registry_port))
 
         if len(service) < 1:
             raise Exception("Service not found in Registry")
