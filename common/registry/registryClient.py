@@ -24,11 +24,14 @@ from rpyc.utils.registry import REGISTRY_PORT, DEFAULT_PRUNING_TIMEOUT
 from rpyc.utils.registry import UDPRegistryClient, TCPRegistryClient
 from rpyc.lib import setup_logger
 
+REGISTRY_DEFAULT_HOST="localhost"
+REGISTRY_DEFAULT_PORT=REGISTRY_PORT
+
 
 class RegistryClient(object):
 
     @staticmethod
-    def query(service_name, host="localhost", port=REGISTRY_PORT,
+    def query(service_name, host=REGISTRY_DEFAULT_HOST, port=REGISTRY_DEFAULT_PORT,
               timeout=DEFAULT_PRUNING_TIMEOUT, logger=None, mode="UDP"):
         if logger:
             setup_logger(False, logger)

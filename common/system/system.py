@@ -26,7 +26,7 @@ import random
 import json
 from plumbum import SshMachine
 from common.helpers.output import log  # TODO: use log
-from common.registry.registryClient import RegistryClient
+from common.registry.registryClient import RegistryClient, REGISTRY_DEFAULT_HOST, REGISTRY_DEFAULT_PORT
 from common.system.connectionCall import ConnectionCallSync, ConnectionCallAsync
 from common.system.connection import Connection
 from common.system.fileId import FileId
@@ -50,14 +50,17 @@ class System(object):
         else:
             return getattr(System, name)
 
-    def get_service_location(self, service_name):
-        registry_host = self._config.get("registry-host")
-        registry_port = self._config.get("registry-port")
+    def get_registry_host(self):
+        return self._config.get("registry-host", REGISTRY_DEFAULT_HOST)
 
-        if registry_host is None:
-            service = RegistryClient.query(service_name)
-        else:
-            service = RegistryClient.query(service_name, registry_host, int(registry_port))
+    def get_registry_port(self):
+        return self._config.get("registry-port", REGISTRY_DEFAULT_PORT)
+
+    def get_service_location(self, service_name):
+        registry_host = self.get_registry_host()
+        registry_port = self.get_registry_port()
+
+        service = RegistryClient.query(service_name, registry_host, int(registry_port))
 
         if len(service) < 1:
             raise Exception("Service not found in Registry")
