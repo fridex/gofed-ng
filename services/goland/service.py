@@ -25,27 +25,27 @@ from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
 
+
 class GolandService(ComputationalService):
-	''' Golang specific service '''
+    ''' Golang specific service '''
 
-	@action
-	def golang_upstream2package(self, upstream_url):
-		'''
-		Convert an upstream URL to a package name packaged in Fedora
-		@param upstream_url: URL of a project
-		@return: package name in Fedora
-		'''
-		return "TODO"
+    @action
+    def golang_upstream2package(self, upstream_url):
+        '''
+        Convert an upstream URL to a package name packaged in Fedora
+        @param upstream_url: URL of a project
+        @return: package name in Fedora
+        '''
+        return "TODO"
 
-	@action
-	def golang_package2upstream(self, package_name):
-		'''
-		Convert a package name packaged in Fedora to upstream URL
-		@param upstream_url: URL of a project
-		@return: package name in Fedora
-		'''
-		return "TODO"
+    @action
+    def golang_package2upstream(self, package_name):
+        '''
+        Convert a package name packaged in Fedora to upstream URL
+        @param upstream_url: URL of a project
+        @return: package name in Fedora
+        '''
+        return "TODO"
 
 if __name__ == "__main__":
-	ServiceEnvelope.serve(GolandService)
-
+    ServiceEnvelope.serve(GolandService)

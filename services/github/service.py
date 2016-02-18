@@ -25,18 +25,18 @@ from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
 
-class GithubService(ComputationalService):
-	''' Github project analysis and statistics '''
 
-	@action
-	def github_liveness(self, url):
-		'''
-		Analyse a project liveness on github
-		@param url: github project url
-		@return: liveness score (needs to be designed)
-		'''
-		return "TODO"
+class GithubService(ComputationalService):
+    ''' Github project analysis and statistics '''
+
+    @action
+    def github_liveness(self, url):
+        '''
+        Analyse a project liveness on github
+        @param url: github project url
+        @return: liveness score (needs to be designed)
+        '''
+        return "TODO"
 
 if __name__ == "__main__":
-	ServiceEnvelope.serve(GithubService)
-
+    ServiceEnvelope.serve(GithubService)

@@ -26,28 +26,28 @@ from ConfigParser import ConfigParser
 
 DEFAULT_GOFED_CONFIG_PATH = "gofed.conf"
 
+
 class Gofed(cli.Application):
-	VERSION = VERSION
-	DESCRIPTION = "gofed - golang packaging and analysis tool"
+    VERSION = VERSION
+    DESCRIPTION = "gofed - golang packaging and analysis tool"
 
-	config_path = cli.SwitchAttr("--config", str,
-			help = "gofed config path",
-			default = DEFAULT_GOFED_CONFIG_PATH)
+    config_path = cli.SwitchAttr("--config", str,
+                                 help="gofed config path",
+                                 default=DEFAULT_GOFED_CONFIG_PATH)
 
-	def get_config(self):
-		return self.config
+    def get_config(self):
+        return self.config
 
-	def main(self):
-		if self.nested_command is None:
-			self.help()
-			return 1
+    def main(self):
+        if self.nested_command is None:
+            self.help()
+            return 1
 
-		conf = ConfigParser()
-		conf.read(self.config_path)
-		self.config = config2dict(conf)
+        conf = ConfigParser()
+        conf.read(self.config_path)
+        self.config = config2dict(conf)
 
 Gofed.subcommand("system", GofedSystem)
 
 if __name__ == "__main__":
-	Gofed.run()
-
+    Gofed.run()

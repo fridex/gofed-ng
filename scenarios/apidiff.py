@@ -23,26 +23,27 @@ import sys
 from common.helpers.utils import json_pretty_format
 from scenario import Scenario
 
+
 class Apidiff(Scenario):
-	''' API diff analysis '''
-	def main(self, project_file1, project_file2):
-		with self.get_system() as system:
+    ''' API diff analysis '''
 
-			with open(project_file1, 'r') as f:
-				file1 = system.async_call.upload(f.read())
+    def main(self, project_file1, project_file2):
+        with self.get_system() as system:
 
-			with open(project_file2, 'r') as f:
-				file2 = system.async_call.upload(f.read())
+            with open(project_file1, 'r') as f:
+                file1 = system.async_call.upload(f.read())
 
-			api1 = system.async_call.api(file1.get_result())
-			api2 = system.async_call.api(file2.get_result())
+            with open(project_file2, 'r') as f:
+                file2 = system.async_call.upload(f.read())
 
-			apidiff = system.call.apidiff(api1.get_result(), api2.get_result())
+            api1 = system.async_call.api(file1.get_result())
+            api2 = system.async_call.api(file2.get_result())
 
-			print json_pretty_format(apidiff.get_result())
+            apidiff = system.call.apidiff(api1.get_result(), api2.get_result())
 
-		return 0
+            print json_pretty_format(apidiff.get_result())
+
+        return 0
 
 if __name__ == '__main__':
-	sys.exit(1)
-
+    sys.exit(1)

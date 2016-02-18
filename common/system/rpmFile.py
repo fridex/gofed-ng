@@ -26,35 +26,36 @@ from common.system.file import File
 from common.system.extractedRpmFile import ExtractedRpmFile
 from common.helpers.utils import runpipe
 
+
 class RpmFile(File):
-	def __init__(self, path, file_id):
-		# example output:
-		#   'RPM v3.0 bin i386/x86_64 kernel-modules-extra-4.2.3-300.fc23'
-		self._path = path
-		self._file_id = file_id
-		self._type = self._get_raw_type().split(' ')
-		if self._type[0] != 'RPM' or self._type[2] != 'bin':
-			raise ValueError("Not an rpm file %s" % (path,))
 
-	@classmethod
-	def magic_match(cls, m):
-		m = m.split(' ')
-		return m[0] == 'RPM' and m[2] == 'bin'
+    def __init__(self, path, file_id):
+        # example output:
+        #   'RPM v3.0 bin i386/x86_64 kernel-modules-extra-4.2.3-300.fc23'
+        self._path = path
+        self._file_id = file_id
+        self._type = self._get_raw_type().split(' ')
+        if self._type[0] != 'RPM' or self._type[2] != 'bin':
+            raise ValueError("Not an rpm file %s" % (path,))
 
-	def get_rpm_version(self):
-		return self._type[1]
+    @classmethod
+    def magic_match(cls, m):
+        m = m.split(' ')
+        return m[0] == 'RPM' and m[2] == 'bin'
 
-	def get_type(self):
-		return 'rpm'
+    def get_rpm_version(self):
+        return self._type[1]
 
-	def unpack(self, dst_path):
-		cmd1 = ["rpm2cpio", self._path]
-		cmd2 = ["cpio", "-idmv"]
+    def get_type(self):
+        return 'rpm'
 
-		runpipe([cmd1, cmd2], dst_path)
+    def unpack(self, dst_path):
+        cmd1 = ["rpm2cpio", self._path]
+        cmd2 = ["cpio", "-idmv"]
 
-		return ExtractedRpmFile(dst_path, self)
+        runpipe([cmd1, cmd2], dst_path)
+
+        return ExtractedRpmFile(dst_path, self)
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

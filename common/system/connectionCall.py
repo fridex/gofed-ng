@@ -21,25 +21,30 @@
 
 import sys
 
-class ConnectionCall(object):
-	def __init__(self, system):
-		self._system = system
 
-		def __getattr__(self, action):
-			raise NotImplementedError()
+class ConnectionCall(object):
+
+    def __init__(self, system):
+        self._system = system
+
+        def __getattr__(self, action):
+            raise NotImplementedError()
+
 
 class ConnectionCallAsync(ConnectionCall):
-	def __getattr__(self, action):
-		service_name = self._system.get_service(action)['name']
-		connection = self._system.get_connection(service_name)
-		return connection.get_action(action, async = True)
+
+    def __getattr__(self, action):
+        service_name = self._system.get_service(action)['name']
+        connection = self._system.get_connection(service_name)
+        return connection.get_action(action, async=True)
+
 
 class ConnectionCallSync(ConnectionCall):
-	def __getattr__(self, action):
-		service_name = self._system.get_service(action)['name']
-		connection = self._system.get_connection(service_name)
-		return connection.get_action(action, async = False)
+
+    def __getattr__(self, action):
+        service_name = self._system.get_service(action)['name']
+        connection = self._system.get_connection(service_name)
+        return connection.get_action(action, async=False)
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

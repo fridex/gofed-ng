@@ -19,7 +19,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys, os
+import sys
+import os
 from threading import Lock
 from tempfile import NamedTemporaryFile
 from service import Service
@@ -29,37 +30,38 @@ import tempfile
 
 DEFAULT_TMP_DIR = 'tmp'
 
+
 class ComputationalService(Service):
-	@classmethod
-	def on_startup(cls, config, system_json):
-		# TODO: config is not accessible when local
-		cls._system = System(config, system_json, service = True)
-		cls._config = config
-		cls._lock = Lock()
 
-		cls.tmp_dir = config.get('tmp-dir', DEFAULT_TMP_DIR)
+    @classmethod
+    def on_startup(cls, config, system_json):
+        # TODO: config is not accessible when local
+        cls._system = System(config, system_json, service=True)
+        cls._config = config
+        cls._lock = Lock()
 
-		if not os.path.isdir(cls.tmp_dir):
-			log.info("Creating tree dir '%s'" % cls.tmp_dir)
-			os.mkdir(cls.tmp_dir)
-		log.info("Using temporary dir '%s'" % cls.tmp_dir)
+        cls.tmp_dir = config.get('tmp-dir', DEFAULT_TMP_DIR)
 
-		cls.signal_startup(config.get(cls.get_service_name()))
+        if not os.path.isdir(cls.tmp_dir):
+            log.info("Creating tree dir '%s'" % cls.tmp_dir)
+            os.mkdir(cls.tmp_dir)
+        log.info("Using temporary dir '%s'" % cls.tmp_dir)
 
-	def get_tmp_dir(self):
-		return self.__class__.tmp_dir
+        cls.signal_startup(config.get(cls.get_service_name()))
 
-	def get_tmp_filename(self):
-		return NamedTemporaryFile(dir = self.get_tmp_dir(), delete = False).name
+    def get_tmp_dir(self):
+        return self.__class__.tmp_dir
 
-	def get_tmp_dirname(self):
-		# ensure that we are working with absolute paths
-		tmpdir =  tempfile.mkdtemp(dir = self.get_tmp_dir())
-		return os.path.join(os.getcwd(), tmpdir)
+    def get_tmp_filename(self):
+        return NamedTemporaryFile(dir=self.get_tmp_dir(), delete=False).name
 
-	def get_system(self):
-		return self.__class__._system
+    def get_tmp_dirname(self):
+        # ensure that we are working with absolute paths
+        tmpdir = tempfile.mkdtemp(dir=self.get_tmp_dir())
+        return os.path.join(os.getcwd(), tmpdir)
+
+    def get_system(self):
+        return self.__class__._system
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

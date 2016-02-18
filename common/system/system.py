@@ -20,128 +20,131 @@
 # ####################################################################
 
 import sys
-import rpyc, importlib
-import random, json
+import rpyc
+import importlib
+import random
+import json
 from plumbum import SshMachine
-from common.helpers.output import log # TODO: use log
+from common.helpers.output import log  # TODO: use log
 from common.registry.registryClient import RegistryClient
 from common.system.connectionCall import ConnectionCallSync, ConnectionCallAsync
 from common.system.connection import Connection
 from common.system.fileId import FileId
 from common.system.file import File
 
+
 class System(object):
-	def __init__(self, config, system_json_file, service = False):
-		self._config = config
-		self._connections = {}
-		self._service = service
-		with open(system_json_file, 'r') as f:
-			self._system = json.load(f)
 
-	def __getattr__(self, name):
-		if name == 'async_call':
-			return ConnectionCallAsync(self)
-		elif name == 'call':
-			return ConnectionCallSync(self)
-		else:
-			return getattr(System, name)
+    def __init__(self, config, system_json_file, service=False):
+        self._config = config
+        self._connections = {}
+        self._service = service
+        with open(system_json_file, 'r') as f:
+            self._system = json.load(f)
 
-	def get_service_location(self, service_name):
-		# TODO: pass config
-		service = RegistryClient.query(service_name)
+    def __getattr__(self, name):
+        if name == 'async_call':
+            return ConnectionCallAsync(self)
+        elif name == 'call':
+            return ConnectionCallSync(self)
+        else:
+            return getattr(System, name)
 
-		if len(service) < 1:
-			raise Exception("Service not found in Registry")
+    def get_service_location(self, service_name):
+        # TODO: pass config
+        service = RegistryClient.query(service_name)
 
-		return service
+        if len(service) < 1:
+            raise Exception("Service not found in Registry")
 
-	def _establish_connection(self, service_name):
-		host = None
-		port = None
-		remote = True
+        return service
 
-		if self._config.get(service_name):
-			remote = self._config[service_name].get("remote") == 'True'
+    def _establish_connection(self, service_name):
+        host = None
+        port = None
+        remote = True
 
-			if remote is True:
-				host = self._config[service_name].get('host')
-				port = self._config[service_name].get('port')
+        if self._config.get(service_name):
+            remote = self._config[service_name].get("remote") == 'True'
 
-		if remote is True:
-			if not host or not port:
-				reg = self.get_service_location(service_name)[0]
-				host = reg[0]
-				port = reg[1]
+            if remote is True:
+                host = self._config[service_name].get('host')
+                port = self._config[service_name].get('port')
 
-			conn = Connection(service_name, host = host, port = port)
-		else:
-			conn = Connection(service_name, system = self)
+        if remote is True:
+            if not host or not port:
+                reg = self.get_service_location(service_name)[0]
+                host = reg[0]
+                port = reg[1]
 
-		return conn
+            conn = Connection(service_name, host=host, port=port)
+        else:
+            conn = Connection(service_name, system=self)
 
-	def get_connection(self, service_name):
-		conn = self._connections.get(service_name)
+        return conn
 
-		if not conn:
-			conn = self._establish_connection(service_name)
-			self._connections[service_name] = conn
+    def get_connection(self, service_name):
+        conn = self._connections.get(service_name)
 
-		return conn
+        if not conn:
+            conn = self._establish_connection(service_name)
+            self._connections[service_name] = conn
 
-	def download(self, file_id, path):
-		# TODO: check IP/port
-		conn = self.get_connection(file_id.get_service_name())
-		call = conn.get_action('download', async = False)
-		blob = call(file_id.get_raw())
-		with open(path, 'wb') as f:
-			f.write(blob)
-		return File.get_representation(path, file_id)
+        return conn
 
-	def is_storage(self, service_name):
-		for storage in self._system['services']['storages']:
-			if storage['name'] == service_name:
-				return True
+    def download(self, file_id, path):
+        # TODO: check IP/port
+        conn = self.get_connection(file_id.get_service_name())
+        call = conn.get_action('download', async=False)
+        blob = call(file_id.get_raw())
+        with open(path, 'wb') as f:
+            f.write(blob)
+        return File.get_representation(path, file_id)
 
-		return False
+    def is_storage(self, service_name):
+        for storage in self._system['services']['storages']:
+            if storage['name'] == service_name:
+                return True
 
-	def is_computational(self, service_name):
-		for computational in self._system['services']['computational']:
-			if computational['name'] == service_name:
-				return True
+        return False
 
-		return False
+    def is_computational(self, service_name):
+        for computational in self._system['services']['computational']:
+            if computational['name'] == service_name:
+                return True
 
-	def get_services_list(self):
-		ret = []
-		for service in self._system['services']['storages'] + self._system['services']['computational']:
-			ret.append(service['name'])
+        return False
 
-		return ret
+    def get_services_list(self):
+        ret = []
+        for service in self._system['services']['storages'] + self._system['services']['computational']:
+            ret.append(service['name'])
 
-	def get_service(self, action):
-		for storage in self._system['services']['storages']:
-			for a in storage['actions']:
-				if a['name'] == action:
-					return storage
-		if not self._service:
-			for computational in self._system['services']['computational']:
-				for a in computational['actions']:
-					if a['name'] == action:
-						return computational
-		raise ValueError("Action '%s' not found in system" % action)
+        return ret
 
-	def get_config(self):
-		return self._config
+    def get_service(self, action):
+        for storage in self._system['services']['storages']:
+            for a in storage['actions']:
+                if a['name'] == action:
+                    return storage
+        if not self._service:
+            for computational in self._system['services']['computational']:
+                for a in computational['actions']:
+                    if a['name'] == action:
+                        return computational
+        raise ValueError("Action '%s' not found in system" % action)
 
-	def __enter__(self):
-		return self
-		pass
+    def get_config(self):
+        return self._config
 
-	def __exit__(self, type, value, traceback):
-		# we have to call destruct explicitely to notify about correct signals
-		for connection in self._connections.values():
-			connection.destruct()
+    def __enter__(self):
+        return self
+        pass
+
+    def __exit__(self, type, value, traceback):
+        # we have to call destruct explicitely to notify about correct signals
+        for connection in self._connections.values():
+            connection.destruct()
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

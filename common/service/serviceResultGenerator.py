@@ -27,41 +27,42 @@ from common.helpers.utils import get_hostname, get_time_str
 
 # TODO: this could be extended with action logging to a file
 
+
 class ServiceResultGenerator(object):
 
-	def __init__(self):
-		self._stats = {'connected': None,
-				'started': None,
-				'finished': None,
-				'result': None,
-				'version': VERSION,
-				'hostname': get_hostname(),
-				}
+    def __init__(self):
+        self._stats = {'connected': None,
+                       'started': None,
+                       'finished': None,
+                       'result': None,
+                       'version': VERSION,
+                       'hostname': get_hostname(),
+                       }
 
-	def log_connect_time(self):
-		self._stats['connected'] = get_time_str()
+    def log_connect_time(self):
+        self._stats['connected'] = get_time_str()
 
-	def log_process_time(self):
-		self._stats['started'] = get_time_str()
+    def log_process_time(self):
+        self._stats['started'] = get_time_str()
 
-	def log_processed_time(self):
-		self._stats['finished'] = get_time_str()
+    def log_processed_time(self):
+        self._stats['finished'] = get_time_str()
 
-	def log_result(self, result):
-		if type(result) is not dict and type(result) is not str and type(result) is not list and type(result) is not type(True):
-			raise ValueError("Action should return serializable object, one of dict, list, string; got %s", type(result))
+    def log_result(self, result):
+        if type(result) is not dict and type(result) is not str and type(result) is not list and type(result) is not type(True):
+            raise ValueError(
+                "Action should return serializable object, one of dict, list, string; got %s", type(result))
 
-		self._stats['result'] = result
+        self._stats['result'] = result
 
-	def log_service_name(self, name):
-		self._stats['service'] = name
+    def log_service_name(self, name):
+        self._stats['service'] = name
 
-	def log_service_aliases(self, names):
-		self._stats['aliases'] = names
+    def log_service_aliases(self, names):
+        self._stats['aliases'] = names
 
-	def dump(self):
-		return json.dumps(self._stats)
+    def dump(self):
+        return json.dumps(self._stats)
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

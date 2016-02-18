@@ -19,29 +19,31 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys, os
+import sys
+import os
 import tarfile
 from common.system.extractedFile import ExtractedFile
 
+
 class ExtractedRpmFile(ExtractedFile):
-	def __init__(self, path, origin):
-		self._path = path
-		# store a ref to origin (e.g. parent) -- the file which was extracted to
-		# this file
-		self._origin = origin
 
-	def get_content_path(self):
-		# just for now, but this can be easily extended
-		content = os.path.join(self.get_path(), 'usr/share/gocode')
-		return content
+    def __init__(self, path, origin):
+        self._path = path
+        # store a ref to origin (e.g. parent) -- the file which was extracted to
+        # this file
+        self._origin = origin
 
-	def get_licenses_path(self):
-		return os.path.join(self.get_path(), 'licenses')
+    def get_content_path(self):
+        # just for now, but this can be easily extended
+        content = os.path.join(self.get_path(), 'usr/share/gocode')
+        return content
 
-	def pack(self, dst_path = None):
-		# TODO: Implement
-		raise NotImplementedError()
+    def get_licenses_path(self):
+        return os.path.join(self.get_path(), 'licenses')
+
+    def pack(self, dst_path=None):
+        # TODO: Implement
+        raise NotImplementedError()
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

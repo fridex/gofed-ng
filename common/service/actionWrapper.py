@@ -21,35 +21,36 @@
 
 import sys
 
+
 class ActionWrapper(object):
-	def __init__(self, action, stats_logger, prehook, posthook):
-		self._action = action
-		self._stats_logger = stats_logger
-		self._prehook = prehook
-		self._posthook = posthook
 
-	def __call__(self, *args, **kwargs):
-		exception = None
-		self._prehook()
-		self._stats_logger.log_process_time()
-		result = self._action(*args, **dict(kwargs))
-		# TODO:
-		#try:
-		#	result = self._action(*args, **dict(kwargs))
-		#except Exception as e:
-		#	exception = e
-		self._stats_logger.log_processed_time()
-		self._posthook(exception is not None)
+    def __init__(self, action, stats_logger, prehook, posthook):
+        self._action = action
+        self._stats_logger = stats_logger
+        self._prehook = prehook
+        self._posthook = posthook
 
-		#if exception is not None:
-		#	raise exception
-		self._stats_logger.log_result(result)
+    def __call__(self, *args, **kwargs):
+        exception = None
+        self._prehook()
+        self._stats_logger.log_process_time()
+        result = self._action(*args, **dict(kwargs))
+        # TODO:
+        # try:
+        #	result = self._action(*args, **dict(kwargs))
+        # except Exception as e:
+        #	exception = e
+        self._stats_logger.log_processed_time()
+        self._posthook(exception is not None)
 
-		if self._action.__name__ == 'download':
-			return result
-		else:
-			return self._stats_logger.dump()
+        # if exception is not None:
+        #	raise exception
+        self._stats_logger.log_result(result)
+
+        if self._action.__name__ == 'download':
+            return result
+        else:
+            return self._stats_logger.dump()
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

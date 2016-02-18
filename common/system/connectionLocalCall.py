@@ -21,27 +21,33 @@
 
 import sys
 
-class ConnectionLocallCall(object):
-	def __init__(self, system):
-		self._system = system
-		raise NotImplementedError()
 
-	def __getattr__(self, action):
-		service = self._system.get_service(action)
-		if not self._system.is_storage(service['name']):
-			raise ValueError("Cannot run action from computational service on computational service")
-		connection = self._system.get_connection(service['name'])
-		return connection.get_action(action, async = True)
+class ConnectionLocallCall(object):
+
+    def __init__(self, system):
+        self._system = system
+        raise NotImplementedError()
+
+    def __getattr__(self, action):
+        service = self._system.get_service(action)
+        if not self._system.is_storage(service['name']):
+            raise ValueError(
+                "Cannot run action from computational service on computational service")
+        connection = self._system.get_connection(service['name'])
+        return connection.get_action(action, async=True)
+
 
 class ConnectionLocalCallAsync(ConnectionLocallCall):
-	# We can extend the functionality with local threads?
-	def __init__(self, system):
-		self._system = system
+    # We can extend the functionality with local threads?
+
+    def __init__(self, system):
+        self._system = system
+
 
 class ConnectionLocalCallSync(ConnectionLocallCall):
-	def __init__(self, system):
-		self._system = system
+
+    def __init__(self, system):
+        self._system = system
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

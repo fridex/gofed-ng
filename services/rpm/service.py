@@ -25,18 +25,18 @@ from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
 
-class RpmService(ComputationalService):
-	''' RPM and Source RPM related analysis '''
 
-	@action
-	def rpm_lint(self, file_id):
-		'''
-		Run rpmlint on given rpm
-		@param file_id: id of a file to run rpmlint on
-		@return: rpmlint output
-		'''
-		return "TODO"
+class RpmService(ComputationalService):
+    ''' RPM and Source RPM related analysis '''
+
+    @action
+    def rpm_lint(self, file_id):
+        '''
+        Run rpmlint on given rpm
+        @param file_id: id of a file to run rpmlint on
+        @return: rpmlint output
+        '''
+        return "TODO"
 
 if __name__ == "__main__":
-	ServiceEnvelope.serve(RpmService)
-
+    ServiceEnvelope.serve(RpmService)

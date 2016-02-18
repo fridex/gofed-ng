@@ -21,14 +21,14 @@
 
 from utils import runcmd, get_githead
 
-def _get_version():
-	try:
-		stdout, stderr, rt = runcmd(['git', 'describe'])
-	except RuntimeError as e:
-		if str(e).startswith('fatal: No names found, cannot describe anything.'):
-			return 'git-' + get_githead()[:8]
 
-	return stdout
+def _get_version():
+    try:
+        stdout, stderr, rt = runcmd(['git', 'describe'])
+    except RuntimeError as e:
+        if str(e).startswith('fatal: No names found, cannot describe anything.'):
+            return 'git-' + get_githead()[:8]
+
+    return stdout
 
 VERSION = _get_version()
-

@@ -24,16 +24,17 @@ from threading import Lock
 from service import Service
 from common.system.system import System
 
-class StorageService(Service):
-	@classmethod
-	def on_startup(cls, config, system_json):
-		# TODO: config is not accessible when local
-		cls._system = None # We don't want to use system
-		cls._config = config
-		cls._lock = Lock()
 
-		cls.signal_startup(config.get(cls.get_service_name()))
+class StorageService(Service):
+
+    @classmethod
+    def on_startup(cls, config, system_json):
+        # TODO: config is not accessible when local
+        cls._system = None  # We don't want to use system
+        cls._config = config
+        cls._lock = Lock()
+
+        cls.signal_startup(config.get(cls.get_service_name()))
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

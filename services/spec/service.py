@@ -29,70 +29,70 @@ from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
 
+
 class SpecService(ComputationalService):
-	''' Specfile analysing and processing '''
+    ''' Specfile analysing and processing '''
 
-	def signal_init(self):
-		self.tmp_file = None
+    def signal_init(self):
+        self.tmp_file = None
 
-	def signal_destruct(self):
-		if self.tmp_file is not None:
-			os.remove(self.tmp_file)
+    def signal_destruct(self):
+        if self.tmp_file is not None:
+            os.remove(self.tmp_file)
 
-	@action
-	def spec_requires(self, specfile_id):
-		'''
-		Get all requires for a package
-		@param specfile_id: a file id of a specfile stored in the system
-		@return: list of requires
-		'''
-		return "TODO"
+    @action
+    def spec_requires(self, specfile_id):
+        '''
+        Get all requires for a package
+        @param specfile_id: a file id of a specfile stored in the system
+        @return: list of requires
+        '''
+        return "TODO"
 
-	@action
-	def spec_buildrequires(self, specfile_id):
-		'''
-		Get all buildrequires for a package
-		@param specfile_id: a file id of a file stored in the system
-		@return: list of buildrequires
-		'''
-		return "TODO"
+    @action
+    def spec_buildrequires(self, specfile_id):
+        '''
+        Get all buildrequires for a package
+        @param specfile_id: a file id of a file stored in the system
+        @return: list of buildrequires
+        '''
+        return "TODO"
 
-	@action
-	def spec_packages(self, specfile_id):
-		'''
-		Get all packages (e.g. devel, ...) of a package
-		@param specfile_id: a file id of a file stored in the system
-		@return: list of packages
-		'''
-		return "TODO"
+    @action
+    def spec_packages(self, specfile_id):
+        '''
+        Get all packages (e.g. devel, ...) of a package
+        @param specfile_id: a file id of a file stored in the system
+        @return: list of packages
+        '''
+        return "TODO"
 
-	@action
-	def spec_requires_raw(self, specfile):
-		'''
-		Get all requires for a package
-		@param specfile: raw specfile content
-		@return: list of requires
-		'''
-		return "TODO"
+    @action
+    def spec_requires_raw(self, specfile):
+        '''
+        Get all requires for a package
+        @param specfile: raw specfile content
+        @return: list of requires
+        '''
+        return "TODO"
 
-	@action
-	def spec_buildrequires_raw(self, specfile):
-		'''
-		Get all buildrequires for a package
-		@param specfile: raw specfile content
-		@return: list of buildrequires
-		'''
-		return "TODO"
+    @action
+    def spec_buildrequires_raw(self, specfile):
+        '''
+        Get all buildrequires for a package
+        @param specfile: raw specfile content
+        @return: list of buildrequires
+        '''
+        return "TODO"
 
-	@action
-	def spec_packages_raw(self, specfile):
-		'''
-		Get all packages (e.g. devel, ...) of a package
-		@param specfile: raw specfile content
-		@return: list of packages
-		'''
-		return "TODO"
+    @action
+    def spec_packages_raw(self, specfile):
+        '''
+        Get all packages (e.g. devel, ...) of a package
+        @param specfile: raw specfile content
+        @return: list of packages
+        '''
+        return "TODO"
 
 if __name__ == "__main__":
-	ServiceEnvelope.serve(SpecService)
-
+    ServiceEnvelope.serve(SpecService)

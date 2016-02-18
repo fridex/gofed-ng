@@ -22,19 +22,20 @@
 import sys
 from connectionLocalCall import ConnectionLocalCallSync, ConnectionLocalCallAsync
 
-class SystemWrapper(object):
-	def __init__(self, system):
-		self._system = system
-		pass
 
-	def __getattr__(self, name):
-		if name == 'async_call':
-			return ConnectionLocalCallAsync(self._system)
-		elif name == 'call':
-			return ConnectionLocalCallSync(self._system)
-		else:
-			return getattr(self._system, name)
+class SystemWrapper(object):
+
+    def __init__(self, system):
+        self._system = system
+        pass
+
+    def __getattr__(self, name):
+        if name == 'async_call':
+            return ConnectionLocalCallAsync(self._system)
+        elif name == 'call':
+            return ConnectionLocalCallSync(self._system)
+        else:
+            return getattr(self._system, name)
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

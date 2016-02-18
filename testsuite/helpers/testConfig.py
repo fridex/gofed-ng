@@ -19,32 +19,33 @@
 
 import sys
 
+
 class TestConfig(object):
-	def __init__(self):
-		raise NotImplementedError("Not implemented constructor")
 
-	def _repre(self):
-		raise NotImplementedError("Not implemented method")
+    def __init__(self):
+        raise NotImplementedError("Not implemented constructor")
 
-	def _conf2str(self):
-		ret = "[" + self._repre() + "]\n"
-		for key in self._config:
-			ret += key + ' = ' + self._config[key] + "\n"
+    def _repre(self):
+        raise NotImplementedError("Not implemented method")
 
-	def clear(self):
-		self._config = {}
+    def _conf2str(self):
+        ret = "[" + self._repre() + "]\n"
+        for key in self._config:
+            ret += key + ' = ' + self._config[key] + "\n"
 
-	def write(self, path):
-		with open(path, 'w') as f:
-			f.write(self._conf2str())
-		self._path = path
+    def clear(self):
+        self._config = {}
 
-	def set(self, key, val):
-		self._config[key] = val
+    def write(self, path):
+        with open(path, 'w') as f:
+            f.write(self._conf2str())
+        self._path = path
 
-	def get_path(self):
-		return self._path
+    def set(self, key, val):
+        self._config[key] = val
+
+    def get_path(self):
+        return self._path
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

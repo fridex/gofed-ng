@@ -20,61 +20,62 @@
 import sys
 from testConfig import TestConfig
 
+
 class RegistryConfig(TestConfig):
-	def __init__(self):
-		self._path = None
-		self._conf = {
-			'mode': 'UDP',
-			'ipv6': 'False',
-			'logfile': 'registry.log',
-			'quiet': 'False',
-			'port': '11920',
-			'host': '::'
-		}
 
-	def _repre(self):
-		return 'registry'
+    def __init__(self):
+        self._path = None
+        self._conf = {
+            'mode': 'UDP',
+            'ipv6': 'False',
+            'logfile': 'registry.log',
+            'quiet': 'False',
+            'port': '11920',
+            'host': '::'
+        }
 
-	# setters
+    def _repre(self):
+        return 'registry'
 
-	def set_mode(self, mode):
-		self._conf['mode'] = str(mode)
+    # setters
 
-	def set_ipv6(self, ipv6):
-		self._conf['ipv6'] = str(ipv6)
+    def set_mode(self, mode):
+        self._conf['mode'] = str(mode)
 
-	def set_logfile(self, logfile):
-		self._conf['logfile'] = str(logfile)
+    def set_ipv6(self, ipv6):
+        self._conf['ipv6'] = str(ipv6)
 
-	def set_quiet(self, quiet):
-		self._conf['quiet'] = str(quiet)
+    def set_logfile(self, logfile):
+        self._conf['logfile'] = str(logfile)
 
-	def set_port(self, port):
-		self._conf['port'] = str(port)
+    def set_quiet(self, quiet):
+        self._conf['quiet'] = str(quiet)
 
-	def set_host(self, host):
-		self._conf['host'] = str(host)
+    def set_port(self, port):
+        self._conf['port'] = str(port)
 
-	# getters
+    def set_host(self, host):
+        self._conf['host'] = str(host)
 
-	def get_mode(self):
-		return self._conf['mode']
+    # getters
 
-	def get_ipv6(self):
-		return self._conf['ipv6']
+    def get_mode(self):
+        return self._conf['mode']
 
-	def get_logfile(self):
-		return self._conf['logfile']
+    def get_ipv6(self):
+        return self._conf['ipv6']
 
-	def get_quiet(self):
-		return self._conf['quiet'] == 'True'
+    def get_logfile(self):
+        return self._conf['logfile']
 
-	def get_port(self):
-		return int(self._conf['port'])
+    def get_quiet(self):
+        return self._conf['quiet'] == 'True'
 
-	def get_host(self):
-		return self._conf['host']
+    def get_port(self):
+        return int(self._conf['port'])
+
+    def get_host(self):
+        return self._conf['host']
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

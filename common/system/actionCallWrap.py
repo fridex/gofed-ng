@@ -22,22 +22,22 @@
 import sys
 from common.system.fileId import FileId
 
+
 def actionCallWrap(func):
-	def wrapper(*args, **kwargs):
-		new_args = []
-		for arg in args:
-			if isinstance(arg, FileId):
-				new_args.append(arg.get_raw())
-			else:
-				new_args.append(arg)
+    def wrapper(*args, **kwargs):
+        new_args = []
+        for arg in args:
+            if isinstance(arg, FileId):
+                new_args.append(arg.get_raw())
+            else:
+                new_args.append(arg)
 
-		for key, value in kwargs.iteritems():
-			if isinstance(value, FileId):
-				kwargs[key] = value.get_raw()
+        for key, value in kwargs.iteritems():
+            if isinstance(value, FileId):
+                kwargs[key] = value.get_raw()
 
-		return func(*tuple(new_args), **kwargs)
- 	return wrapper
+        return func(*tuple(new_args), **kwargs)
+    return wrapper
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

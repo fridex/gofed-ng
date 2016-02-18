@@ -23,13 +23,16 @@ from plumbum import cli
 from contextlib import contextmanager
 from common.system.system import System
 
+
 class Flag(cli.Flag):
-	pass
+    pass
+
 
 class SwitchAttr(cli.SwitchAttr):
-	pass
+    pass
+
 
 class Scenario(cli.Application):
-	def get_system(self):
-		return System(self.parent.get_config(), self.parent.get_system_json_path())
 
+    def get_system(self):
+        return System(self.parent.get_config(), self.parent.get_system_json_path())

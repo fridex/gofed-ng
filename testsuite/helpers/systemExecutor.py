@@ -27,78 +27,81 @@ from utils import service_path2service_name
 
 REGISTRY_DEFAULT_PATH = 'registry.py'
 
+
 class SystemExecutor(object):
-	def __init__(self, services_list, registry = None):
-		self._services_list = services_list
-		self._registry = registry
 
-		self._service_processes = []
-		self._registry_process = None
-		self._tmp_files = []
+    def __init__(self, services_list, registry=None):
+        self._services_list = services_list
+        self._registry = registry
 
-	def _get_tempfile(self):
-		with NamedTemporaryFile(delete = False) as tmp:
-			name = tmp.name
-			self._tmp_files.append(name)
-		return name
+        self._service_processes = []
+        self._registry_process = None
+        self._tmp_files = []
 
-	def _run_services(self):
-		for service in self._services_list:
-			if isinstance(service, str):
-				# only service path supplied
-				service_name = service_path2service_name(service)
-				process = TestProcess(service)
-				pass
-			else:
-				assert isinstance(service, tuple)
-				assert isinstance(service[0], str)
-				assert isinstance(service[1], ServiceConfig)
-				service_config_path = self._get_tempfile()
-				service[1].set_service_name(service_path2service_name(service[0]))
-				service[1].write(service_config_path)
-				process = TestProcess(service[0], service_config_path)
+    def _get_tempfile(self):
+        with NamedTemporaryFile(delete=False) as tmp:
+            name = tmp.name
+            self._tmp_files.append(name)
+        return name
 
-			process.run()
-			self._service_processes.append(process)
+    def _run_services(self):
+        for service in self._services_list:
+            if isinstance(service, str):
+                # only service path supplied
+                service_name = service_path2service_name(service)
+                process = TestProcess(service)
+                pass
+            else:
+                assert isinstance(service, tuple)
+                assert isinstance(service[0], str)
+                assert isinstance(service[1], ServiceConfig)
+                service_config_path = self._get_tempfile()
+                service[1].set_service_name(
+                    service_path2service_name(service[0]))
+                service[1].write(service_config_path)
+                process = TestProcess(service[0], service_config_path)
 
-	def _run_registry(self):
-		registry_path = None
-		registry_config_path = None
+            process.run()
+            self._service_processes.append(process)
 
-		if self._registry is None:
-			return
+    def _run_registry(self):
+        registry_path = None
+        registry_config_path = None
 
-		if type(self._registry) == type(True):
-			if self._registry is False:
-				return
-			# we should run registry, but no path/config supplied
-			self._registry_process = TestProcess(REGISTRY_DEFAULT_PATH)
-		else:
-			registry_config_path = self._get_tempfile()
-			if isinstance(self._registry, tuple):
-				registry_path = self._registry[0]
-				self._registry[1].write(registry_config_path)
-			else:
-				assert isinstance(self._registry, RegistryConfig)
-				self._registry.write(registry_config_path)
-				self._registry_process = TestProcess(registry_path, registry_config_path)
+        if self._registry is None:
+            return
 
-		self._registry_process.run()
+        if type(self._registry) == type(True):
+            if self._registry is False:
+                return
+            # we should run registry, but no path/config supplied
+            self._registry_process = TestProcess(REGISTRY_DEFAULT_PATH)
+        else:
+            registry_config_path = self._get_tempfile()
+            if isinstance(self._registry, tuple):
+                registry_path = self._registry[0]
+                self._registry[1].write(registry_config_path)
+            else:
+                assert isinstance(self._registry, RegistryConfig)
+                self._registry.write(registry_config_path)
+                self._registry_process = TestProcess(
+                    registry_path, registry_config_path)
 
-	def run(self):
-		if len(self._service_processes) > 0:
-			raise RuntimeError("System is already running")
+        self._registry_process.run()
 
-		self._run_services()
-		self._run_registry()
+    def run(self):
+        if len(self._service_processes) > 0:
+            raise RuntimeError("System is already running")
 
-	def terminate(self):
-		self._registry_process.terminate()
-		for service in self._service_processes:
-			service.terminate()
-		for tmp in self._tmp_files:
-			os.unlink(tmp)
+        self._run_services()
+        self._run_registry()
+
+    def terminate(self):
+        self._registry_process.terminate()
+        for service in self._service_processes:
+            service.terminate()
+        for tmp in self._tmp_files:
+            os.unlink(tmp)
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

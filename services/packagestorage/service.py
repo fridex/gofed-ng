@@ -25,25 +25,25 @@ from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
 
-DEFAULT_PACKAGES_TREE_DIR="packages/"
+DEFAULT_PACKAGES_TREE_DIR = "packages/"
+
 
 class PackageStorageService(StorageService):
-	'''  Fedora Git packages provider '''
+    '''  Fedora Git packages provider '''
 
-	@action
-	def package_get(self, package_name):
-		'''
-		Needs design
-		'''
-		return "TODO"
+    @action
+    def package_get(self, package_name):
+        '''
+        Needs design
+        '''
+        return "TODO"
 
-	@action
-	def package_get_commit(self, package_name, commit):
-		'''
-		Needs design
-		'''
-		return "TODO"
+    @action
+    def package_get_commit(self, package_name, commit):
+        '''
+        Needs design
+        '''
+        return "TODO"
 
 if __name__ == "__main__":
-	ServiceEnvelope.serve(PackageStorageService)
-
+    ServiceEnvelope.serve(PackageStorageService)

@@ -23,20 +23,21 @@ import sys
 from common.helpers.utils import json_pretty_format
 from scenario import Scenario
 
+
 class Api(Scenario):
-	''' API analysis example '''
-	def main(self, project_file):
-		with self.get_system() as system:
+    ''' API analysis example '''
 
-			with open(project_file, 'r') as f:
-				file = system.async_call.upload(f.read())
+    def main(self, project_file):
+        with self.get_system() as system:
 
-			api = system.async_call.api(file.get_result())
+            with open(project_file, 'r') as f:
+                file = system.async_call.upload(f.read())
 
-			print json_pretty_format(api.get_result())
+            api = system.async_call.api(file.get_result())
 
-		return 0
+            print json_pretty_format(api.get_result())
+
+        return 0
 
 if __name__ == '__main__':
-	sys.exit(1)
-
+    sys.exit(1)

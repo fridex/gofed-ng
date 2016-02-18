@@ -19,9 +19,9 @@
 
 import sys
 
+
 class GofedTest():
-	pass
+    pass
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

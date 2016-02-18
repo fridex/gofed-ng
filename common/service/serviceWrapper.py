@@ -22,31 +22,33 @@
 import sys
 import importlib
 
+
 class ServiceWrapper(object):
-	def __init__(self, service_name, system):
-		class_name = service_name[0] + service_name[1:].lower() + 'Service'
 
-		name = 'services.%s.service' % service_name.lower()
-		module = importlib.import_module(name)
+    def __init__(self, service_name, system):
+        class_name = service_name[0] + service_name[1:].lower() + 'Service'
 
-		self._instance = None
-		self._cls = getattr(module, class_name)
-		self._system = system
-		self._service_name = service_name
+        name = 'services.%s.service' % service_name.lower()
+        module = importlib.import_module(name)
 
-	def __getattr__(self, name):
-		if self._instance is None:
-			# conn parameter is because of local connection
-			self._cls.on_startup(self._system.get_config().get(self._service_name))
-			self._instance = self._cls(conn = None, system = self._system)
+        self._instance = None
+        self._cls = getattr(module, class_name)
+        self._system = system
+        self._service_name = service_name
 
-		exposed_name = "exposed_" + name
-		return self._instance._rpyc_getattr(exposed_name)
+    def __getattr__(self, name):
+        if self._instance is None:
+            # conn parameter is because of local connection
+            self._cls.on_startup(
+                self._system.get_config().get(self._service_name))
+            self._instance = self._cls(conn=None, system=self._system)
 
-	def __del__(self):
-		del self._instance
-		self._cls.on_termination()
+        exposed_name = "exposed_" + name
+        return self._instance._rpyc_getattr(exposed_name)
+
+    def __del__(self):
+        del self._instance
+        self._cls.on_termination()
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

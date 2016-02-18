@@ -20,10 +20,10 @@
 import sys
 import os
 
+
 def service_path2service_name(service_path):
-	basename = os.path.basename(service_path)
-	return basename[:-len('.py')]
+    basename = os.path.basename(service_path)
+    return basename[:-len('.py')]
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

@@ -23,22 +23,23 @@ import hashlib
 
 _BLOCKSIZE = 65535
 
+
 def file_hash(path):
-	h = hashlib.sha1()
+    h = hashlib.sha1()
 
-	with open(path, 'rb') as f:
-		buf = f.read(_BLOCKSIZE)
-		while len(buf) > 0:
-			h.update(buf)
-			buf = f.read(_BLOCKSIZE)
+    with open(path, 'rb') as f:
+        buf = f.read(_BLOCKSIZE)
+        while len(buf) > 0:
+            h.update(buf)
+            buf = f.read(_BLOCKSIZE)
 
-	return h.hexdigest()
+    return h.hexdigest()
+
 
 def blob_hash(blob):
-	h = hashlib.sha1()
-	h.update(blob)
-	return h.hexdigest()
+    h = hashlib.sha1()
+    h.update(blob)
+    return h.hexdigest()
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

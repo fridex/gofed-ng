@@ -23,26 +23,27 @@ import sys
 import tarfile
 from common.system.file import File
 
+
 class ExtractedFile(File):
-	def __init__(self, path, origin):
-		self._path = path
-		# store a ref to origin (e.g. parent) -- the file which was extracted to
-		# this file
-		self._origin = origin
-		raise NotImplementedError()
 
-	def get_type(self):
-		return self._origin.get_type()
+    def __init__(self, path, origin):
+        self._path = path
+        # store a ref to origin (e.g. parent) -- the file which was extracted to
+        # this file
+        self._origin = origin
+        raise NotImplementedError()
 
-	def get_path(self):
-		return self._path
+    def get_type(self):
+        return self._origin.get_type()
 
-	def get_origin(self):
-		return self._origin
+    def get_path(self):
+        return self._path
 
-	def pack(self, dst_path = None):
-		raise NotImplementedError()
+    def get_origin(self):
+        return self._origin
+
+    def pack(self, dst_path=None):
+        raise NotImplementedError()
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

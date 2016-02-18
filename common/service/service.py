@@ -28,129 +28,130 @@ from common.service.serviceResultGenerator import ServiceResultGenerator
 from common.system.system import System
 from common.service.action import action
 
+
 class Service(RpycService):
-	def __init__(self, conn, system = None):
-		# conn has to be always supplied because of rpyc.Service __init__
-		if conn is not None: # remote service
-			super(Service, self).__init__(conn)
 
-		self._result = ServiceResultGenerator()
-		self._result.log_service_name(self.get_service_name())
-		self._result.log_service_aliases(self.get_service_aliases())
+    def __init__(self, conn, system=None):
+        # conn has to be always supplied because of rpyc.Service __init__
+        if conn is not None:  # remote service
+            super(Service, self).__init__(conn)
 
-		if system is not None:
-			# we are running local service
-			assert conn is None
-			self.system = system
-		else:
-			# in this case we are running remote service, system should be passed
-			# by SystemEnvelope by calling on_startup()
-			assert conn is not None
-			self.system = self.__class__._system
+        self._result = ServiceResultGenerator()
+        self._result.log_service_name(self.get_service_name())
+        self._result.log_service_aliases(self.get_service_aliases())
 
-		self.signal_init()
+        if system is not None:
+            # we are running local service
+            assert conn is None
+            self.system = system
+        else:
+            # in this case we are running remote service, system should be passed
+            # by SystemEnvelope by calling on_startup()
+            assert conn is not None
+            self.system = self.__class__._system
 
-	def __del__(self):
-		self.signal_destruct()
+        self.signal_init()
 
-	@classmethod
-	def on_termination(cls):
-		cls.signal_termination()
+    def __del__(self):
+        self.signal_destruct()
 
-	def on_connect(self):
-		if self.is_remote():
-			self._result.log_connect_time()
-		self.signal_connect()
+    @classmethod
+    def on_termination(cls):
+        cls.signal_termination()
 
-	def on_disconnect(self):
-		self.signal_destruct()
-		self.signal_disconnect()
+    def on_connect(self):
+        if self.is_remote():
+            self._result.log_connect_time()
+        self.signal_connect()
 
-	def _rpyc_getattr(self, name):
-		func = getattr(self, name)
-		if hasattr(func, 'action') and func.action is True:
-			return ActionWrapper(
-					func,
-					self._result,
-					prehook = self.signal_process,
-					posthook = self.signal_processed
-				)
-		else:
-			raise AttributeError("Service '%s' does not expose action '%s'" %
-					(self.get_service_name(), name))
+    def on_disconnect(self):
+        self.signal_destruct()
+        self.signal_disconnect()
 
-	def get_lock(self):
-		return self.__class__._lock
+    def _rpyc_getattr(self, name):
+        func = getattr(self, name)
+        if hasattr(func, 'action') and func.action is True:
+            return ActionWrapper(
+                func,
+                self._result,
+                prehook=self.signal_process,
+                posthook=self.signal_processed
+            )
+        else:
+            raise AttributeError("Service '%s' does not expose action '%s'" %
+                                 (self.get_service_name(), name))
 
-	def acquire_lock(self):
-		self.__class__._lock.acquire()
+    def get_lock(self):
+        return self.__class__._lock
 
-	def release_lock(self):
-		self.__class__._lock.release()
+    def acquire_lock(self):
+        self.__class__._lock.acquire()
 
-	@classmethod
-	def signal_startup(cls, config):
-		pass
+    def release_lock(self):
+        self.__class__._lock.release()
 
-	@classmethod
-	def signal_termination(cls):
-		pass
+    @classmethod
+    def signal_startup(cls, config):
+        pass
 
-	def signal_init(self):
-		pass
+    @classmethod
+    def signal_termination(cls):
+        pass
 
-	def signal_destruct(self):
-		pass
+    def signal_init(self):
+        pass
 
-	def signal_connect(self):
-		pass
+    def signal_destruct(self):
+        pass
 
-	def signal_disconnect(self):
-		pass
+    def signal_connect(self):
+        pass
 
-	def signal_process(self):
-		pass
+    def signal_disconnect(self):
+        pass
 
-	def signal_processed(self, was_error):
-		pass
+    def signal_process(self):
+        pass
 
-	def is_local(self):
-		try:
-			self._conn
-			return False
-		except:
-			return True
+    def signal_processed(self, was_error):
+        pass
 
-	def is_remote(self):
-		return not self.is_local()
+    def is_local(self):
+        try:
+            self._conn
+            return False
+        except:
+            return True
 
-	@classmethod
-	def get_service_version(cls):
-		return VERSION
+    def is_remote(self):
+        return not self.is_local()
 
-	@classmethod
-	def get_host(cls):
-		# TODO: improve - use conn?
-		remote = cls._config.get('remote')
+    @classmethod
+    def get_service_version(cls):
+        return VERSION
 
-		if remote == 'False':
-			return 'localhost'
+    @classmethod
+    def get_host(cls):
+        # TODO: improve - use conn?
+        remote = cls._config.get('remote')
 
-		return cls._config.get('host')
+        if remote == 'False':
+            return 'localhost'
 
-	@classmethod
-	def get_port(cls):
-		# TODO: improve - use conn?
-		remote = cls._config.get('remote')
+        return cls._config.get('host')
 
-		if remote == 'False':
-			return 'localhost'
+    @classmethod
+    def get_port(cls):
+        # TODO: improve - use conn?
+        remote = cls._config.get('remote')
 
-		return cls._config.get('port')
+        if remote == 'False':
+            return 'localhost'
 
-	def version(self):
-		return self.__class__.get_service_version()
+        return cls._config.get('port')
+
+    def version(self):
+        return self.__class__.get_service_version()
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

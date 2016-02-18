@@ -28,88 +28,100 @@ from datetime import timedelta
 from subprocess import PIPE, Popen
 from time import gmtime, strftime
 
+
 def get_user():
-	return getpass.getuser()
+    return getpass.getuser()
+
 
 def get_hostname():
-	return os.uname()[1]
+    return os.uname()[1]
+
 
 def json_pretty_format(o):
-	return json.dumps(o, sort_keys = True, separators = (',', ': '), indent = 2)
+    return json.dumps(o, sort_keys=True, separators=(',', ': '), indent = 2)
 
-def get_time_str(t = None):
-	return strftime("%Y-%m-%d %H:%M:%S", t if t else gmtime())
+
+def get_time_str(t=None):
+    return strftime("%Y-%m-%d %H:%M:%S", t if t else gmtime())
+
 
 def config2dict(config):
-	ret = {}
-	for section in config.sections():
-		ret[section] = dict(config.items(section))
+    ret = {}
+    for section in config.sections():
+        ret[section] = dict(config.items(section))
 
-	return ret
+    return ret
+
 
 def get_githead():
-	stdout, _, _ = runcmd(["git", "rev-parse", "HEAD"])
-	return stdout[:-1]
+    stdout, _, _ = runcmd(["git", "rev-parse", "HEAD"])
+    return stdout[:-1]
 
-def runcmd(cmd, cwd = "."):
-	''' Run command `cmd' in working directory `cwd' '''
-	process = Popen(cmd, stderr = PIPE, stdout = PIPE, cwd = cwd, close_fds = True)
-	stdout, stderr = process.communicate()
-	rt = process.returncode
 
-	if rt != 0:
-		raise RuntimeError(stderr)
+def runcmd(cmd, cwd="."):
+    ''' Run command `cmd' in working directory `cwd' '''
+    process = Popen(cmd, stderr=PIPE, stdout=PIPE, cwd=cwd, close_fds=True)
+    stdout, stderr = process.communicate()
+    rt = process.returncode
 
-	return stdout, stderr, rt
+    if rt != 0:
+        raise RuntimeError(stderr)
 
-def runpipe(cmds, cwd = "."):
-	p1 = Popen(cmds[0], stdin = None, stdout = PIPE, stderr = PIPE, cwd = cwd)
-	prev = p1
+    return stdout, stderr, rt
 
-	for cmd in cmds[1:]:
-		p = Popen(cmd, stdin = prev.stdout, stdout = PIPE, stderr = PIPE, cwd = cwd)
-		prev = p
 
-	stdout, stderr = p.communicate()
-	p.wait()
-	rt = p.returncode
+def runpipe(cmds, cwd="."):
+    p1 = Popen(cmds[0], stdin=None, stdout=PIPE, stderr=PIPE, cwd=cwd)
+    prev = p1
 
-	if rt != 0:
-		raise RuntimeError(stderr)
+    for cmd in cmds[1:]:
+        p = Popen(cmd, stdin=prev.stdout, stdout=PIPE, stderr=PIPE, cwd=cwd)
+        prev = p
 
-	return stdout, stderr, rt
+    stdout, stderr = p.communicate()
+    p.wait()
+    rt = p.returncode
+
+    if rt != 0:
+        raise RuntimeError(stderr)
+
+    return stdout, stderr, rt
+
 
 def parse_timedelta(time_str):
-	# thanks to
-	# http://stackoverflow.com/questions/4628122/how-to-construct-a-timedelta-object-from-a-simple-string
-	regex = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')
-	parts = regex.match(time_str)
-	if not parts:
-		return
-	parts = parts.groupdict()
-	time_params = {}
-	for (name, param) in parts.iteritems():
-		if param:
-			time_params[name] = int(param)
-	return timedelta(**time_params)
+    # thanks to
+    # http://stackoverflow.com/questions/4628122/how-to-construct-a-timedelta-object-from-a-simple-string
+    regex = re.compile(
+        r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')
+    parts = regex.match(time_str)
+    if not parts:
+        return
+    parts = parts.groupdict()
+    time_params = {}
+    for (name, param) in parts.iteritems():
+        if param:
+            time_params[name] = int(param)
+    return timedelta(**time_params)
+
 
 def package2repo(package_name):
-	ret = None
-	parts = package_name.split('-')
+    ret = None
+    parts = package_name.split('-')
 
-	if parts[0] != 'golang':
-		raise ValueError("Package name should be prefixed with 'golang-'")
+    if parts[0] != 'golang':
+        raise ValueError("Package name should be prefixed with 'golang-'")
 
-	# TODO: implemente bitbucket/googlecode/...
-	if parts[1] == 'github':
-		if len(parts) < 4:
-			raise ValueError("Package name should consist of github user and repo name, got '%s'" % package_name)
-		ret = 'https://github.com/%s/%s/' % (parts[2], parts[3])
-	else:
-		raise NotImplementedError("Not implemented package upstream provider '%s'", parts[1])
+    # TODO: implemente bitbucket/googlecode/...
+    if parts[1] == 'github':
+        if len(parts) < 4:
+            raise ValueError(
+                "Package name should consist of github user and repo name, got '%s'" % package_name)
+        ret = 'https://github.com/%s/%s/' % (parts[2], parts[3])
+    else:
+        raise NotImplementedError(
+            "Not implemented package upstream provider '%s'", parts[1])
 
-	return ret
+    return ret
 
 if __name__ == '__main__':
-	sys.exit(1)
-
+    sys.exit(1)

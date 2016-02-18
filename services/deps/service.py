@@ -25,28 +25,28 @@ from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
 
+
 class DepsService(ComputationalService):
-	''' Dependencies checks '''
+    ''' Dependencies checks '''
 
-	@action
-	def deps_analysis(self, file_id):
-		'''
-		Get deps of a file
-		@param file_id: file to be analysed
-		@return: list of dependencies
-		'''
-		return "TODO"
+    @action
+    def deps_analysis(self, file_id):
+        '''
+        Get deps of a file
+        @param file_id: file to be analysed
+        @return: list of dependencies
+        '''
+        return "TODO"
 
-	@action
-	def deps_diff(self, deps1, deps2):
-		'''
-		Make a diff of dependencies
-		@param deps1: the first dependency list
-		@param deps2: the second dependency list
-		@return: list of dependency differences
-		'''
-		return "TODO"
+    @action
+    def deps_diff(self, deps1, deps2):
+        '''
+        Make a diff of dependencies
+        @param deps1: the first dependency list
+        @param deps2: the second dependency list
+        @return: list of dependency differences
+        '''
+        return "TODO"
 
 if __name__ == "__main__":
-	ServiceEnvelope.serve(DepsService)
-
+    ServiceEnvelope.serve(DepsService)

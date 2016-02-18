@@ -22,37 +22,37 @@
 import sys
 import logging
 
+
 class LoggerSingleton(object):
-	_instance = None
+    _instance = None
 
-	def __init__(self):
-		pass
+    def __init__(self):
+        pass
 
-	def init(self, configfile = None, verbose = False, name = ""):
-		if LoggerSingleton._instance is None:
-			level = logging.INFO if verbose is True else logging.WARNING
-			if configfile is not None:
-				logging.basicConfig(level = level, filename = configfile)
-			else:
-				# use the default stream
-				logging.basicConfig(level = level)
-			LoggerSingleton._instance = logging.getLogger(name)
+    def init(self, configfile=None, verbose=False, name=""):
+        if LoggerSingleton._instance is None:
+            level = logging.INFO if verbose is True else logging.WARNING
+            if configfile is not None:
+                logging.basicConfig(level=level, filename=configfile)
+            else:
+                # use the default stream
+                logging.basicConfig(level=level)
+            LoggerSingleton._instance = logging.getLogger(name)
 
-	def __getattr__(self, attr):
-		if attr == 'init':
-			return self.init
-		elif attr == 'close':
-			return self.shutdown
+    def __getattr__(self, attr):
+        if attr == 'init':
+            return self.init
+        elif attr == 'close':
+            return self.shutdown
 
-		if LoggerSingleton._instance is None:
-			self.init()
-		return getattr(self._instance, attr)
+        if LoggerSingleton._instance is None:
+            self.init()
+        return getattr(self._instance, attr)
 
-	def close(self):
-		logging.shutdown()
+    def close(self):
+        logging.shutdown()
 
 log = LoggerSingleton()
 
 if __name__ == '__main__':
-	sys.exit(1)
-
+    sys.exit(1)

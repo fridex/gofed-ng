@@ -25,63 +25,65 @@ from common.system.serviceResultObject import ServiceResultObject
 from common.service.serviceWrapper import ServiceWrapper
 from common.system.systemWrapper import SystemWrapper
 
+
 class Connection(object):
-	def __init__(self, service_name, host = None, port = None, system = None):
-		self._service_name = service_name
-		self._connection = None
-		self._instance = None
-		self.host = host
-		self.port = port
 
-		if host:
-			assert port is not None
-			self._connect()
-			self._local = False
-		else:
-			self._instantiate(system)
-			self._local = True
+    def __init__(self, service_name, host=None, port=None, system=None):
+        self._service_name = service_name
+        self._connection = None
+        self._instance = None
+        self.host = host
+        self.port = port
 
-	def _connect(self):
-		self._connection = rpyc.connect(self.host, self.port)
+        if host:
+            assert port is not None
+            self._connect()
+            self._local = False
+        else:
+            self._instantiate(system)
+            self._local = True
 
-	def _get_connection(self):
-		if self._connection is None or self._connection.closed:
-			self._connect()
-		return self._connection.root
+    def _connect(self):
+        self._connection = rpyc.connect(self.host, self.port)
 
-	def _instantiate(self, system):
-		self._instance = ServiceWrapper(self._service_name, SystemWrapper(system))
+    def _get_connection(self):
+        if self._connection is None or self._connection.closed:
+            self._connect()
+        return self._connection.root
 
-	def is_local(self):
-		return self._local
+    def _instantiate(self, system):
+        self._instance = ServiceWrapper(
+            self._service_name, SystemWrapper(system))
 
-	def is_remote(self):
-		return not self.is_local()
+    def is_local(self):
+        return self._local
 
-	def get_action(self, action_name, async = False):
-		if action_name == 'download':
-			if self.is_local():
-				getattr(self._instance, action_name)
-			else:
-				return getattr(self._get_connection(), action_name)
-		else:
-			if self.is_local():
-				# TODO: bind to object
-				return ServiceResultObject(self._service_name, action_name, self, getattr(self._instance, action_name))
-			else:
-				action = getattr(self._get_connection(), action_name)
-				if async is True:
-					return ServiceResultObject(self._service_name, action_name, self, rpyc.async(action), async = True)
-				else:
-					return ServiceResultObject(self._service_name, action_name, self, action)
+    def is_remote(self):
+        return not self.is_local()
 
-	def destruct(self):
-		if self._connection is not None:
-			self._connection.__del__()
+    def get_action(self, action_name, async=False):
+        if action_name == 'download':
+            if self.is_local():
+                getattr(self._instance, action_name)
+            else:
+                return getattr(self._get_connection(), action_name)
+        else:
+            if self.is_local():
+                # TODO: bind to object
+                return ServiceResultObject(self._service_name, action_name, self, getattr(self._instance, action_name))
+            else:
+                action = getattr(self._get_connection(), action_name)
+                if async is True:
+                    return ServiceResultObject(self._service_name, action_name, self, rpyc.async(action), async=True)
+                else:
+                    return ServiceResultObject(self._service_name, action_name, self, action)
 
-		if self._instance is not None:
-			self._instance.__del__()
+    def destruct(self):
+        if self._connection is not None:
+            self._connection.__del__()
+
+        if self._instance is not None:
+            self._instance.__del__()
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)

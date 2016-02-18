@@ -25,16 +25,17 @@ from common.system.extractedFile import ExtractedFile
 
 # TODO: implement
 
-class ExtractedTarballFile(ExtractedFile):
-	def __init__(self, path, origin):
-		self._path = path
-		# store a ref to origin (e.g. parent) -- the file which was extracted to
-		# this file
-		self._origin = origin
 
-	def pack(self, dst_path = None):
-		raise NotImplementedError()
+class ExtractedTarballFile(ExtractedFile):
+
+    def __init__(self, path, origin):
+        self._path = path
+        # store a ref to origin (e.g. parent) -- the file which was extracted to
+        # this file
+        self._origin = origin
+
+    def pack(self, dst_path=None):
+        raise NotImplementedError()
 
 if __name__ == "__main__":
-	sys.exit(1)
-
+    sys.exit(1)
