@@ -31,9 +31,9 @@ class Api(Scenario):
         with self.get_system() as system:
 
             with open(project_file, 'r') as f:
-                file = system.async_call.upload(f.read())
+                file_id = system.async_call.upload(f.read())
 
-            api = system.async_call.api(file.get_result())
+            api = system.async_call.api_analysis(file_id.get_result())
 
             print json_pretty_format(api.get_result())
 
