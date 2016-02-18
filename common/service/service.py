@@ -31,8 +31,18 @@ class Service(RpycService):
     # a list of locks for resources so each thread has it's own locks for currently manipulated resources
     # this avoids to block all threads every time a resource is accessed
     _resource_lock = Lock()
-    _resource_lock_list = []
+    _resource_lock_list = {}
     _service_lock = Lock()
+
+    class ResourceLock(Lock):
+        def __init__(self, resource):
+            self._resource = resource
+
+        def __exit__(self):
+            with Service._resource_lock:
+                super(self, Service.ResourceLock).__exit__()
+                if self in Service._resource_lock_list:
+                    Service._resource_lock_list.remove(self)
 
     def __init__(self, conn, system=None):
         # conn has to be always supplied because of rpyc.Service __init__
@@ -92,9 +102,7 @@ class Service(RpycService):
             if resource in self.__class__._resource_lock_list:
                 ret = self.__class__._resource_lock_list[resource]
             else:
-                # TODO: this needs an optimization
-                # we have to remove it from the list once released not no store a lot of locks in memory
-                ret = Lock()
+                ret = Service.ResourceLock(resource)
                 self.__class__._resource_lock_list[resource] = ret
 
         return ret
