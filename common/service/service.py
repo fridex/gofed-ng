@@ -25,11 +25,14 @@ from rpyc import Service as RpycService
 from common.helpers.version import VERSION
 from common.service.actionWrapper import ActionWrapper
 from common.service.serviceResultGenerator import ServiceResultGenerator
-from common.system.system import System
-from common.service.action import action
 
 
 class Service(RpycService):
+    # a list of locks for resources so each thread has it's own locks for currently manipulated resources
+    # this avoids to block all threads every time a resource is accessed
+    _resource_lock = Lock()
+    _resource_lock_list = []
+    _service_lock = Lock()
 
     def __init__(self, conn, system=None):
         # conn has to be always supplied because of rpyc.Service __init__
@@ -84,14 +87,23 @@ class Service(RpycService):
             raise AttributeError("Service '%s' does not expose action '%s'" %
                                  (self.get_service_name(), name))
 
-    def get_lock(self):
-        return self.__class__._lock
+    def _get_resource_lock(self, resource):
+        with self.__class__._resource_lock:
+            if resource in self.__class__._resource_lock_list:
+                ret = self.__class__._resource_lock_list[resource]
+            else:
+                # TODO: this needs an optimization
+                # we have to remove it from the list once released not no store a lot of locks in memory
+                ret = Lock()
+                self.__class__._resource_lock_list[resource] = ret
 
-    def acquire_lock(self):
-        self.__class__._lock.acquire()
+        return ret
 
-    def release_lock(self):
-        self.__class__._lock.release()
+    def get_lock(self, resource = None):
+        if resource is not None:
+            return self._get_resource_lock(resource)
+        else:
+            return self.__class__._service_lock
 
     @classmethod
     def signal_startup(cls, config):
