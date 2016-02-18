@@ -132,21 +132,23 @@ class Service(RpycService):
 
     @classmethod
     def get_host(cls):
-        # TODO: improve - use conn?
+        # this is pretty dummy way, but there is nothing we can do with it for now
         remote = cls._config.get('remote')
+        remote = remote == 'True'
 
-        if remote == 'False':
-            return 'localhost'
+        if remote is False:
+            return None
 
         return cls._config.get('host')
 
     @classmethod
     def get_port(cls):
-        # TODO: improve - use conn?
+        # this is pretty dummy way, but there is nothing we can do with it for now
         remote = cls._config.get('remote')
+        remote = remote == 'True'
 
-        if remote == 'False':
-            return 'localhost'
+        if remote is False:
+            return None
 
         return cls._config.get('port')
 
