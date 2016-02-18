@@ -34,13 +34,15 @@ class Service(RpycService):
     _resource_lock_list = {}
     _service_lock = Lock()
 
-    class ResourceLock(Lock):
+    class ResourceLock(object):
         def __init__(self, resource):
             self._resource = resource
 
+        def __enter__(self):
+            return Lock()
+
         def __exit__(self):
             with Service._resource_lock:
-                super(self, Service.ResourceLock).__exit__()
                 if self in Service._resource_lock_list:
                     Service._resource_lock_list.remove(self)
 
