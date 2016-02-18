@@ -46,28 +46,7 @@ class ServiceResultObject(object):
         self._file_id = None
 
     def __str__(self):
-        ret = {
-            "service_name": self._service_name,
-            "action": str(self._action_name),
-            "local": self.is_local(),
-        }
-
-        if self._args:
-            ret['args'] = self._args
-
-        if self._kwargs:
-            ret['kwargs'] = self._kwargs
-
-        if self.is_remote():
-            ret['async'] = self.is_async()
-
-        if self.is_async():
-            ret['expired'] = self.is_expired()
-            ret['error'] = self.error()
-            ret['result_ready'] = self.result_ready()
-            ret['async callback'] = str(
-                self._async_callback) if self._async_callback is not None else None
-            ret['expiry'] = self._expiry
+        ret = self.get_client_stats()
 
         if self.result_ready() and not self.is_async():
             ret['response'] = json.loads(self._call_result)
@@ -157,6 +136,10 @@ class ServiceResultObject(object):
             self._async_callback = callback
             self._call_result.add_callback(callback)
 
+    @property
+    def result(self):
+        return self.get_result()
+
     def get_result(self):
         self.result_wait()
 
@@ -170,6 +153,45 @@ class ServiceResultObject(object):
             return self._file_id
         else:
             return self.get_raw_result()
+
+    def get_client_stats(self):
+        ret = {
+            "service_name": self._service_name,
+            "action": str(self._action_name),
+            "local": self.is_local(),
+        }
+
+        if self._args:
+            ret['args'] = self._args
+
+        if self._kwargs:
+            ret['kwargs'] = self._kwargs
+
+        if self.is_remote():
+            ret['async'] = self.is_async()
+
+        if self.is_async():
+            ret['expired'] = self.is_expired()
+            ret['error'] = self.error()
+            ret['result_ready'] = self.result_ready()
+            ret['async callback'] = str(
+                    self._async_callback) if self._async_callback is not None else None
+            ret['expiry'] = self._expiry
+
+        return ret
+
+    def get_service_stats(self):
+        self.result_wait()
+        if not self.is_async():
+            ret = json.loads(self._call_result)
+        else:
+            ret = json.loads(self._call_result.value)
+
+        del ret['result']
+        return ret
+
+    def get_stats(self):
+        return {'client': self.get_client_stats(), 'service': self.get_service_stats()}
 
 if __name__ == "__main__":
     sys.exit(1)
