@@ -78,10 +78,11 @@ class ApiService(ComputationalService):
         log.info("got processed signal")
 
     @action
-    def api_analysis(self, file_id):
+    def api_analysis(self, file_id, opts = {}):
         '''
         Get API of a file
         @param file_id: file to be analysed
+        @param opts: specify api analysis
         @return: list of exported API
         '''
         ret = ServiceResult()
