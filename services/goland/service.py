@@ -20,14 +20,18 @@
 # ####################################################################
 
 import os
-from common.helpers.output import log
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
+from goland.goTranslator import GoTranslator
+from common.service.serviceResult import ServiceResult
 
 
 class GolandService(ComputationalService):
     ''' Golang specific service '''
+    # it can be periodically updated, so read it every time
+    # it would worth it to add this to config file
+    mappings_json = os.path.join("goland", "mappings.json")
 
     @action
     def golang_upstream2package(self, upstream_url):
@@ -36,7 +40,13 @@ class GolandService(ComputationalService):
         @param upstream_url: URL of a project
         @return: package name in Fedora
         '''
-        return "TODO"
+        ret = ServiceResult()
+
+        with self.get_lock(self.mappings_json):
+            t = GoTranslator(self.mappings_json)
+            ret.result = t.upstream2pkgname(upstream_url)
+
+        return ret
 
     @action
     def golang_package2upstream(self, package_name):
@@ -45,7 +55,13 @@ class GolandService(ComputationalService):
         @param upstream_url: URL of a project
         @return: package name in Fedora
         '''
-        return "TODO"
+        ret = ServiceResult()
+
+        with self.get_lock(self.mappings_json):
+            t = GoTranslator(self.mappings_json)
+            ret.result = t.pkgname2upstream(package_name)
+
+        return ret
 
 if __name__ == "__main__":
     ServiceEnvelope.serve(GolandService)
