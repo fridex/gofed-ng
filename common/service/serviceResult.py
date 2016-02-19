@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/python
 # -*- coding: utf-8 -*-
 # ####################################################################
 # gofed-ng - Golang system
@@ -20,24 +20,28 @@
 # ####################################################################
 
 import sys
-from common.helpers.utils import dict2json
-from scenario import Scenario
 
 
-class Api(Scenario):
-    ''' API analysis example '''
+class ServiceResult(object):
+    def __init__(self):
+        self._meta = {}
+        self._result = {}
 
-    def main(self, project_file):
-        with self.get_system() as system:
+    @property
+    def meta(self):
+        return self._meta
 
-            with open(project_file, 'r') as f:
-                file_id = system.async_call.upload(f.read())
+    @property
+    def result(self):
+        return self._result
 
-            api = system.async_call.api_analysis(file_id.get_result())
+    @meta.setter
+    def meta(self, val):
+        self._meta = val
 
-            print dict2json(api.result)
+    @result.setter
+    def result(self, val):
+        self._result = val
 
-        return 0
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(1)

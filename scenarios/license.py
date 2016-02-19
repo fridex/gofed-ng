@@ -20,7 +20,7 @@
 # ####################################################################
 
 import sys
-from common.helpers.utils import json_pretty_format
+from common.helpers.utils import dict2json
 from scenario import Scenario
 
 
@@ -35,7 +35,7 @@ class License(Scenario):
 
             licenses = system.async_call.license_analysis(file_id.result)
 
-            print json_pretty_format(licenses.result)
+            print dict2json(licenses.result)
 
         return 0
 

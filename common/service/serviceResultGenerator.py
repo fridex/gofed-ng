@@ -35,6 +35,7 @@ class ServiceResultGenerator(object):
                        'started': None,
                        'finished': None,
                        'result': None,
+                       'meta': None,
                        'version': VERSION,
                        'hostname': get_hostname(),
                        }
@@ -48,11 +49,14 @@ class ServiceResultGenerator(object):
     def log_processed_time(self):
         self._stats['finished'] = get_time_str()
 
-    def log_result(self, result):
-        if type(result) is not dict and type(result) is not str and type(result) is not list and type(result) is not type(True):
-            raise ValueError(
-                "Action should return serializable object, one of dict, list, string; got %s", type(result))
+    def log_meta(self, meta):
+        if not isinstance(meta, dict):
+            raise ValueError("Unknown meta type %s" % (type(meta),))
+        self._stats['meta'] = meta
 
+    def log_result(self, result):
+        if not isinstance(result, dict) and not isinstance(result, str) and not isinstance(result, list):
+            raise ValueError("Unknown result type %s" % (type(result),))
         self._stats['result'] = result
 
     def log_service_name(self, name):

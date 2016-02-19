@@ -140,6 +140,10 @@ class ServiceResultObject(object):
     def result(self):
         return self.get_result()
 
+    @property
+    def meta(self):
+        return self.get_raw()['meta']
+
     def get_result(self):
         self.result_wait()
 

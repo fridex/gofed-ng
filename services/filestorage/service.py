@@ -30,6 +30,7 @@ from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
 from common.system.fileId import FileId
+from common.service.serviceResult import ServiceResult
 
 DEFAULT_UPLOAD_DIR = 'uploads'
 DEFAULT_FILE_LIFETIME = '2h'
@@ -68,6 +69,7 @@ class FileStorageService(StorageService):
         @param blob: a file content to be store
         @return: file id
         '''
+        res = ServiceResult()
         log.info("uploading")
         h = blob_hash(blob)
         dst = os.path.join(self.upload_dir, h)
@@ -79,7 +81,8 @@ class FileStorageService(StorageService):
         creation_time = datetime_parse(time.ctime(os.path.getctime(dst)))
         valid_until = creation_time + self.file_lifetime
 
-        return FileId.construct(self, dst, str(valid_until), h)
+        res.result = FileId.construct(self, dst, str(valid_until), h)
+        return res
 
     @action
     def download(self, file_id):

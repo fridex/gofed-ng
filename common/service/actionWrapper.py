@@ -20,6 +20,7 @@
 # ####################################################################
 
 import sys
+from common.service.serviceResult import ServiceResult
 
 
 class ActionWrapper(object):
@@ -34,18 +35,22 @@ class ActionWrapper(object):
         self._prehook()
         self._stats_logger.log_process_time()
         try:
-            result = self._action(*args, **dict(kwargs))
+            ret = self._action(*args, **dict(kwargs))
         except:
             exc_info = sys.exc_info()
             self._posthook(was_error=True)
             raise exc_info[0], exc_info[1], exc_info[2]
         self._stats_logger.log_processed_time()
         self._posthook(was_error=False)
-        self._stats_logger.log_result(result)
 
         if self._action.__name__ == 'download':
-            return result
+            return ret
         else:
+            if not isinstance(ret, ServiceResult):
+                raise ValueError("Service should always return type '%s', got '%s' instead"
+                                 %(ServiceResult.__name__, type(ret)))
+            self._stats_logger.log_result(ret.result)
+            self._stats_logger.log_meta(ret.meta)
             return self._stats_logger.dump()
 
 if __name__ == "__main__":
