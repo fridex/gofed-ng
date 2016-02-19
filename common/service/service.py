@@ -38,7 +38,7 @@ class Service(RpycService):
         def __enter__(self):
             return Lock()
 
-        def __exit__(self):
+        def __exit__(self, type_, value, traceback):
             with Service._resource_lock:
                 if self in Service._resource_lock_list:
                     Service._resource_lock_list.remove(self)
