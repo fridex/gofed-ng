@@ -35,9 +35,6 @@ class Service(RpycService):
     _service_lock = Lock()
 
     class ResourceLock(object):
-        def __init__(self, resource):
-            self._resource = resource
-
         def __enter__(self):
             return Lock()
 
@@ -104,7 +101,7 @@ class Service(RpycService):
             if resource in self.__class__._resource_lock_list:
                 ret = self.__class__._resource_lock_list[resource]
             else:
-                ret = Service.ResourceLock(resource)
+                ret = Service.ResourceLock()
                 self.__class__._resource_lock_list[resource] = ret
 
         return ret

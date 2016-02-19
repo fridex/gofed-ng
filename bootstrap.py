@@ -27,7 +27,7 @@ import shutil
 import logging
 from plumbum import cli
 from jinja2 import Environment, FileSystemLoader
-from common.helpers.utils import get_user, get_hostname, get_time_str, json_pretty_format, get_githead
+from common.helpers.utils import get_user, get_hostname, get_time_str, dict2json, get_githead
 from common.helpers.version import VERSION
 from shutil import copyfile
 
@@ -344,7 +344,7 @@ class GofedBootstrap(cli.Application):
             ret = self._make_header(services)
 
             if not self.ugly_output:
-                ret = json_pretty_format(ret)
+                ret = dict2json(ret)
             else:
                 ret = json.dumps(ret)
             if self.output_file == '-':

@@ -24,7 +24,7 @@ import gitapi
 import urllib2
 import json
 from common.helpers.output import log
-from common.helpers.utils import json_pretty_format, runcmd
+from common.helpers.utils import dict2json, runcmd
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
@@ -52,7 +52,7 @@ class GoPackageStorageService(StorageService):
 
         if packages['output'] != 'ok':
             raise RuntimeError("Bad response from Fedora package database:\n%s"
-                               % json_pretty_format(packages))
+                               % dict2json(packages))
 
         # TODO: handle pagination
         assert packages['page'] == 1 and packages['page_total'] == 1

@@ -37,8 +37,11 @@ def get_hostname():
     return os.uname()[1]
 
 
-def json_pretty_format(o):
-    return json.dumps(o, sort_keys=True, separators=(',', ': '), indent = 2)
+def dict2json(o, pretty=True):
+    if pretty is True:
+        return json.dumps(o, sort_keys=True, separators=(',', ': '), indent = 2)
+    else:
+        return json.dumps(o)
 
 
 def get_time_str(t=None):

@@ -26,6 +26,7 @@ from common.helpers.utils import runcmd
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
+from common.service.serviceResult import ServiceResult
 from common.system.extractedRpmFile import ExtractedRpmFile
 from common.system.extractedSrpmFile import ExtractedSrpmFile
 from common.system.extractedTarballFile import ExtractedTarballFile
@@ -56,6 +57,8 @@ class LicenseService(ComputationalService):
         @param file_id: a file id of a file that needs to be analysed
         @return: list of all licenses found
         '''
+        ret = ServiceResult()
+
         self.tmpfile_path = self.get_tmp_filename()
         with self.get_system() as system:
             f = system.download(file_id, self.tmpfile_path)
@@ -74,8 +77,13 @@ class LicenseService(ComputationalService):
             d = f.unpack(self.extracted2_path)
             src_path = d.get_path()
 
-        stdout, _, _ = runcmd(["licenselib/cucos_license_check.py", src_path])
-        return json.loads(stdout)
+        stdout, stderr, _ = runcmd(["licenselib/cucos_license_check.py", src_path])
+
+        ret.result = json.loads(stdout)
+        ret.meta['stderr'] = json.loads(stderr)
+        ret.meta['tool'] = "cucos_license_check"
+
+        return ret
 
     @action
     def license_diff(self, licenses1, licenses2):

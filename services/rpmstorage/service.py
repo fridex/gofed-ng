@@ -20,7 +20,7 @@
 # ####################################################################
 
 from common.helpers.output import log
-from common.helpers.utils import json_pretty_format
+from common.helpers.utils import dict2json
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
@@ -34,7 +34,7 @@ class RpmStorageService(StorageService):
     @classmethod
     def signal_startup(cls, config):
         log.info("got startup signal")
-        log.info("custom config sections: " + json_pretty_format(config))
+        log.info("custom config sections: " + dict2json(config))
         cls.rpm_dir = config.get('rpm-dir', DEFAULT_RPM_DIR)
 
     @classmethod

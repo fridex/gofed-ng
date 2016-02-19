@@ -22,13 +22,14 @@
 import os
 import shutil
 from common.helpers.output import log
-from common.helpers.utils import json_pretty_format
+from common.helpers.utils import dict2json
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
 from common.system.extractedRpmFile import ExtractedRpmFile
 from common.system.extractedSrpmFile import ExtractedSrpmFile
 from common.system.extractedTarballFile import ExtractedTarballFile
+from common.service.serviceResult import ServiceResult
 
 from gofedlib.gosymbolsextractor import api
 from gofedlib.goapidiff import apidiff
@@ -40,7 +41,7 @@ class ApiService(ComputationalService):
     @classmethod
     def signal_startup(cls, config):
         log.info("got startup signal")
-        log.info("config sections: " + json_pretty_format(config))
+        log.info("config sections: " + dict2json(config))
 
     @classmethod
     def signal_termination(cls):
@@ -83,6 +84,8 @@ class ApiService(ComputationalService):
         @param file_id: file to be analysed
         @return: list of exported API
         '''
+        ret = ServiceResult()
+
         self.tmpfile_path = self.get_tmp_filename()
         with self.get_system() as system:
             f = system.download(file_id, self.tmpfile_path)
@@ -101,7 +104,10 @@ class ApiService(ComputationalService):
             d = f.unpack(self.extracted2_path)
             src_path = d.get_path()
 
-        return api(src_path)
+        ret.result = api(src_path)
+        ret.meta = {'language': 'goland', 'tool': 'gofedlib'}
+
+        return ret
 
     @action
     def api_diff(self, api1, api2):
@@ -111,7 +117,12 @@ class ApiService(ComputationalService):
         @param api2: the second API
         @return: list of API differences
         '''
-        return apidiff(api1, api2)
+        ret = ServiceResult()
+
+        ret.result = apidiff(api1, api2)
+        ret.meta = {'language': 'golang', 'tool': 'gofedlib'}
+
+        return ret
 
 if __name__ == "__main__":
     ServiceEnvelope.serve(ApiService)

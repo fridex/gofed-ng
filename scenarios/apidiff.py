@@ -20,7 +20,7 @@
 # ####################################################################
 
 import sys
-from common.helpers.utils import json_pretty_format
+from common.helpers.utils import dict2json
 from scenario import Scenario
 
 
@@ -41,7 +41,7 @@ class Apidiff(Scenario):
 
             apidiff = system.call.apidiff(api1.get_result(), api2.get_result())
 
-            print json_pretty_format(apidiff.get_result())
+            print dict2json(apidiff.get_result())
 
         return 0
 

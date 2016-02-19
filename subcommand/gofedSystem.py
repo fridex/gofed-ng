@@ -21,7 +21,7 @@ import sys
 import os
 from common.helpers.output import log
 from plumbum import cli
-from common.helpers.utils import get_user, get_hostname, json_pretty_format, get_time_str
+from common.helpers.utils import get_user, get_hostname, dict2json, get_time_str
 from common.system.system import System
 from common.helpers.version import VERSION
 
@@ -69,7 +69,7 @@ class GofedSystem(cli.Application):
             'port': system.get_registry_port()
         })
 
-        print json_pretty_format(ret)
+        print dict2json(ret)
 
     def get_config(self):
         return self.parent.get_config()

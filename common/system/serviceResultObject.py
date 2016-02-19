@@ -21,7 +21,7 @@
 
 import sys
 import json
-from common.helpers.utils import json_pretty_format
+from common.helpers.utils import dict2json
 from common.system.fileId import FileId
 from common.system.actionCallWrap import actionCallWrap
 
@@ -54,7 +54,7 @@ class ServiceResultObject(object):
         if self.result_ready() and self.is_async():
             ret['response'] = json.loads(self._call_result.value)
 
-        return json_pretty_format(ret)
+        return dict2json(ret)
 
     def get_raw(self):
         self.result_wait()
