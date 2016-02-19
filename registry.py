@@ -41,6 +41,8 @@ class RegistryServer(cli.Application):
 
     ipv6 = cli.Flag(["-6", "--ipv6"], help="use ipv6 instead of ipv4")
 
+    host = cli.SwitchAttr(["--host"], str, default="::", help="Interface to bind to")
+
     port = cli.SwitchAttr(["-p", "--port"], cli.Range(0, 65535), default=REGISTRY_PORT,
                           help="The UDP/TCP listener port")
 
@@ -60,6 +62,7 @@ class RegistryServer(cli.Application):
             conf = ConfigParser({
                 "mode": "UDP",
                 "ipv6": False,
+                "host": "::",
                 "port": REGISTRY_PORT,
                 "logfile": None,
                 "quiet": True,
@@ -68,17 +71,17 @@ class RegistryServer(cli.Application):
 
         self.mode = conf.get("registry", "mode").upper()
         if self.mode not in ["UDP", "TCP"]:
-            raise ValueError("Invalid mode %r" % mode)
+            raise ValueError("Invalid mode %s" % (self.mode,))
 
         self.ipv6 = conf.getboolean("registry", "ipv6")
         self.port = conf.getint("registry", "port")
         self.logfile = conf.get("registry", "logfile")
+        self.host = conf.get("registry", "host")
         self.quiet = conf.getboolean("registry", "quiet")
 
     def main(self):
         if self.mode == "UDP":
-            server = UDPRegistryServer(host='::' if self.ipv6 else '0.0.0.0', port=self.port,
-                                       pruning_timeout=self.timeout)
+            server = UDPRegistryServer(host=self.host, port=self.port, pruning_timeout=self.timeout)
         elif self.mode == "TCP":
             server = TCPRegistryServer(
                 port=self.port, pruning_timeout=self.timeout)
