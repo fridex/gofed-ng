@@ -29,15 +29,15 @@ class LoggerSingleton(object):
     def __init__(self):
         pass
 
-    def init(self, configfile=None, verbose=False, name=""):
+    def init(self, logfile=None, verbose=False, name=""):
         if LoggerSingleton._instance is None:
             level = logging.INFO if verbose is True else logging.WARNING
-            if configfile is not None:
-                logging.basicConfig(level=level, filename=configfile)
+            if logfile is not None:
+                logging.basicConfig(level=level, filename=logfile)
             else:
                 # use the default stream
                 logging.basicConfig(level=level)
-            LoggerSingleton._instance = logging.getLogger(name)
+        LoggerSingleton._instance = logging.getLogger(name)
 
     def __getattr__(self, attr):
         if attr == 'init':

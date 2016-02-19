@@ -23,7 +23,6 @@ import sys
 import signal
 from plumbum import cli
 from rpyc.utils.server import ThreadPoolServer
-from rpyc.utils.registry import REGISTRY_PORT
 from rpyc.utils.registry import UDPRegistryClient, TCPRegistryClient, REGISTRY_PORT
 from rpyc.lib import setup_logger
 from common.helpers.output import log
@@ -115,7 +114,8 @@ class ServiceEnvelope(cli.Application):
                              reuse_addr=True, ipv6=self.ipv6,
                              registrar=self.registrar, auto_register=self.auto_register,
                              nbThreads=self.max_client_count, requestBatchSize=self.max_requests_per_client,
-                             protocol_config={'exposed_prefix': '', 'logger': None})  # TODO: add logger based on config
+                             protocol_config={'exposed_prefix': '',
+                                              'log_exceptions': True})
         t.start()
 
     def main(self):
@@ -128,12 +128,12 @@ class ServiceEnvelope(cli.Application):
         self.conf = config2dict(self.conf)
 
         cls = ServiceEnvelope.SERVICE_CLASS
-        configfile = self.logfile if self.logfile != '-' else None
+        logfile = self.logfile if self.logfile != '-' else None
         verbose = not self.quiet
         name = cls.get_service_name()
         version = cls.get_service_version()
 
-        log.init(configfile, verbose, name)
+        log.init(logfile, verbose, name)
         log.critical("Service starting at %s, version is %s" %
                      (get_time_str(), version))
 
