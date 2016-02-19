@@ -23,6 +23,7 @@ import os
 import sys
 import ast
 import json
+import codegen
 import shutil
 import logging
 from plumbum import cli
@@ -87,6 +88,14 @@ class GofedBootstrap(cli.Application):
                     item['args'] = item['args'][1:]
 
                 ret.append(item)
+
+
+                defaults = action.args.defaults
+                for i, val  in enumerate(defaults):
+                    # we need to cover all defaults listed, from right hand side
+                    idx = -len(defaults) + i
+                    item['args'][idx] = item['args'][idx] + " = " + codegen.to_source(val)
+
 
         return ret
 
