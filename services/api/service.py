@@ -31,7 +31,7 @@ from common.system.extractedSrpmFile import ExtractedSrpmFile
 from common.system.extractedTarballFile import ExtractedTarballFile
 from common.service.serviceResult import ServiceResult
 
-from gofedlib.gosymbolsextractor import api
+import gofedlib.gosymbolsextractor as gofedlib
 from gofedlib.goapidiff import apidiff
 
 
@@ -78,14 +78,21 @@ class ApiService(ComputationalService):
         log.info("got processed signal")
 
     @action
-    def api_analysis(self, file_id, opts = {}):
+    def api_analysis(self, file_id, opts=None):
         '''
         Get API of a file
         @param file_id: file to be analysed
-        @param opts: specify api analysis
+        @param opts: additional analysis options
         @return: list of exported API
         '''
+        default_opts = {'language': 'detect', 'tool': 'default', 'exclude_dirs': []}
         ret = ServiceResult()
+
+        if opts is None:
+            opts = default_opts
+        else:
+            default_opts.update(opts)
+            opts = default_opts
 
         self.tmpfile_path = self.get_tmp_filename()
         with self.get_system() as system:
@@ -105,8 +112,9 @@ class ApiService(ComputationalService):
             d = f.unpack(self.extracted2_path)
             src_path = d.get_path()
 
-        ret.result = api(src_path)
-        ret.meta = {'language': 'goland', 'tool': 'gofedlib'}
+        # TODO: handle opts
+        ret.result = gofedlib.api(src_path, opts['exclude_dirs'])
+        ret.meta = {'language': 'golang', 'tool': 'gofedlib'}
 
         return ret
 
