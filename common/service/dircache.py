@@ -38,6 +38,8 @@ class Dircache(object):
     def _get_setize(self, size):
         if type(size) is int or type(size) is float:
             return size
+        elif size.endswith('B'):
+            return float(size[:-len('B')])
         elif size.endswith('K'):
             return float(size[:-len('K')]) * 1024
         elif size.endswith('M'):
