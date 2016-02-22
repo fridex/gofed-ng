@@ -20,33 +20,102 @@
 # ####################################################################
 
 import os
-from common.helpers.output import log
+import shutil
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
+from common.service.serviceResult import ServiceResult
+from common.system.extractedRpmFile import ExtractedRpmFile
+from common.system.extractedSrpmFile import ExtractedSrpmFile
+from common.system.extractedTarballFile import ExtractedTarballFile
+
+import gofedlib.gosymbolsextractor as gofedlib
 
 
 class DepsService(ComputationalService):
     ''' Dependencies checks '''
 
+    def signal_process(self):
+        self.tmpfile_path = None
+        self.extracted1_path = None
+        self.extracted2_path = None
+
+    def signal_processed(self, was_error):
+        if self.tmpfile_path is not None:
+            os.remove(self.tmpfile_path)
+
+        if self.extracted1_path is not None:
+            shutil.rmtree(self.extracted1_path)
+
+        if self.extracted2_path is not None:
+            shutil.rmtree(self.extracted2_path)
+
     @action
-    def deps_analysis(self, file_id):
+    def deps_analysis(self, file_id, opts=None):
         '''
         Get deps of a file
         @param file_id: file to be analysed
+        @param opts: additional analysis opts
         @return: list of dependencies
         '''
-        return "TODO"
+        ret = ServiceResult()
+        default_opts = {'language': 'detect', 'tool': 'default', 'exclude_dirs': []}
+
+        if opts is None:
+            opts = default_opts
+        else:
+            default_opts.update(opts)
+            opts = default_opts
+
+        self.tmpfile_path = self.get_tmp_filename()
+        with self.get_system() as system:
+            f = system.download(file_id, self.tmpfile_path)
+
+        self.extracted1_path = self.get_tmp_dirname()
+        d = f.unpack(self.extracted1_path)
+
+        if isinstance(d, ExtractedRpmFile):
+            src_path = d.get_content_path()
+        elif isinstance(d, ExtractedTarballFile):
+            src_path = d.get_path()
+        elif isinstance(d, ExtractedSrpmFile):
+            # we have to unpack tarball first
+            t = d.get_tarball()
+            self.extracted2_path = self.get_tmp_dirname()
+            d = f.unpack(self.extracted2_path)
+            src_path = d.get_path()
+
+        # TODO: handle opts
+        if not 'ippath' in opts:
+            raise ValueError("gofedlib's deps analyzer expects spectified 'ippath', in opts")
+
+        ret.result = gofedlib.project_packages(src_path, opts['ippath'], opts['exclude_dirs'])
+        ret.meta = {'language': 'golang', 'tool': 'gofedlib'}
+
+        return ret
 
     @action
-    def deps_diff(self, deps1, deps2):
+    def deps_diff(self, deps1, deps2, opts=None):
         '''
         Make a diff of dependencies
         @param deps1: the first dependency list
         @param deps2: the second dependency list
+        @param opts: additional analysis opts
         @return: list of dependency differences
         '''
-        return "TODO"
+        default_opts = {'language': 'detect', 'tool': 'default'}
+        ret = ServiceResult()
+
+        if opts is None:
+            opts = default_opts
+        else:
+            default_opts.update(opts)
+            opts = default_opts
+
+        # TODO: implement deps difference
+        raise NotImplementedError("Currently not implemented")
+
+        return ret
 
 if __name__ == "__main__":
     ServiceEnvelope.serve(DepsService)
