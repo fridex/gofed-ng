@@ -107,24 +107,5 @@ def parse_timedelta(time_str):
     return timedelta(**time_params)
 
 
-def package2repo(package_name):
-    ret = None
-    parts = package_name.split('-')
-
-    if parts[0] != 'golang':
-        raise ValueError("Package name should be prefixed with 'golang-'")
-
-    # TODO: implemente bitbucket/googlecode/...
-    if parts[1] == 'github':
-        if len(parts) < 4:
-            raise ValueError(
-                "Package name should consist of github user and repo name, got '%s'" % package_name)
-        ret = 'https://github.com/%s/%s/' % (parts[2], parts[3])
-    else:
-        raise NotImplementedError(
-            "Not implemented package upstream provider '%s'", parts[1])
-
-    return ret
-
 if __name__ == '__main__':
     sys.exit(1)
