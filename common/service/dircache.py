@@ -28,12 +28,24 @@ class Dircache(object):
 
     def __init__(self, path, max_size=float("inf")):
         self._path = path
-        self._max_size = max_size
+        self._max_size = self._get_setize(max_size)
         # file usage - from "less used" to the "most used"
         self._fileusage = []
 
         if not os.path.isdir(path):
             os.mkdir(path)
+
+    def _get_setize(self, size):
+        if type(size) is int or type(size) is float:
+            return size
+        elif size.endswith('K'):
+            return float(size[:-len('K')]) * 1024
+        elif size.endswith('M'):
+            return float(size[:-len('M')]) * 1024 * 1024
+        elif size.endswith('G'):
+            return float(size[-len('G')]) * 1024 * 1024 * 1024
+        else:
+            return float(size)
 
     def set_max_size(self, max_size):
         self._max_size = max_size
@@ -45,6 +57,12 @@ class Dircache(object):
     def get_path(self):
         return self._path
 
+    def get_file_path(self, filename):
+        if not self.is_available(filename):
+            raise ValueError("File is not available in dircache")
+
+        return os.path.join(self.get_path(), filename)
+
     def store(self, blob, filename):
         dst = os.path.join(self.get_path(), filename)
 
@@ -53,6 +71,10 @@ class Dircache(object):
 
         self._mark_used(filename)
         self._run_cleanup()
+
+    def is_available(self, filename):
+        dst = os.path.join(self.get_path(), filename)
+        return os.path.isfile(dst)
 
     def retrieve(self, filename):
         dst = os.path.join(self.get_path(), filename)
