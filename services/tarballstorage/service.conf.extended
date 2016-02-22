@@ -1,2 +1,3 @@
 # Custom service configuration
 tarball-dir = tarballs
+tarball-dir-size = 100M
