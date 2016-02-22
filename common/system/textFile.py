@@ -20,49 +20,29 @@
 # ####################################################################
 
 import sys
-import magic
+from common.system.file import File
 
 
-class File(object):
+class TextFile(File):
 
     def __init__(self, path, file_id):
+        # example output:
+        #   'ASCII text'
         self._path = path
         self._file_id = file_id
-        raise NotImplementedError()
-
-    @staticmethod
-    def get_representation(path, file_id):
-        m = magic.from_file(path)
-
-        if RpmFile.magic_match(m):
-            return RpmFile(path, file_id)
-        elif SrpmFile.magic_match(m):
-            return SrpmFile(path, file_id)
-        elif TarballFile.magic_match(m):
-            return TarballFile(path, file_id)
-        elif TextFile.magic_match(m):
-            return TextFile(path, file_id)
-        else:
-            raise ValueError("Unknown file '%s' with magic '%s'", (path, m))
+        self._type = self._get_raw_type()
+        if self._type != 'ASCII text':
+            raise ValueError("Not a text file %s" % (path,))
 
     @classmethod
     def magic_match(cls, m):
-        raise NotImplementedError
+        return m == 'ASCII text'
 
-    def get_path(self):
-        self._path
+    def get_rpm_version(self):
+        return self._type[1]
 
     def get_type(self):
-        raise NotImplementedError()
-
-    def _get_raw_type(self):
-        return magic.from_file(self._path)
-
-# Fix circular deps
-from common.system.rpmFile import RpmFile
-from common.system.srpmFile import SrpmFile
-from common.system.tarballFile import TarballFile
-from common.system.textFile import TextFile
+        return 'text'
 
 if __name__ == "__main__":
     sys.exit(1)
