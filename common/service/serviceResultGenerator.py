@@ -35,9 +35,7 @@ class ServiceResultGenerator(object):
                        'started': None,
                        'finished': None,
                        'result': None,
-                       'meta': None,
-                       'version': VERSION,
-                       'hostname': get_hostname(),
+                       'meta': {},
                        }
 
     def log_connect_time(self):
@@ -52,7 +50,8 @@ class ServiceResultGenerator(object):
     def log_meta(self, meta):
         if not isinstance(meta, dict):
             raise ValueError("Unknown meta type %s" % (type(meta),))
-        self._stats['meta'] = meta
+        for key, val in meta.iteritems():
+            self._stats['meta'][key] = val
 
     def log_result(self, result):
         if not isinstance(result, dict) and not isinstance(result, str) and not isinstance(result, list):
@@ -60,7 +59,9 @@ class ServiceResultGenerator(object):
         self._stats['result'] = result
 
     def log_service_name(self, name):
-        self._stats['service'] = name
+        self._stats['meta']['service'] = name
+        self._stats['meta']['service-version'] = VERSION
+        self._stats['meta']['hostname'] = get_hostname()
 
     def log_service_aliases(self, names):
         self._stats['aliases'] = names
