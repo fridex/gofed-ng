@@ -31,7 +31,7 @@ class LoggerSingleton(object):
 
     def init(self, logfile=None, verbose=False, name=""):
         if LoggerSingleton._instance is None:
-            level = logging.INFO if verbose is True else logging.WARNING
+            level = logging.DEBUG if verbose is True else logging.WARNING
             if logfile is not None:
                 logging.basicConfig(level=level, filename=logfile)
             else:
