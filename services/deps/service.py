@@ -84,10 +84,12 @@ class DepsService(ComputationalService):
             self.extracted2_path = self.get_tmp_dirname()
             d = f.unpack(self.extracted2_path)
             src_path = d.get_path()
+        else:
+            raise ValueError("Filetype %s cannot be processed" % (d.get_type(),))
 
         # TODO: handle opts
         if not 'ippath' in opts:
-            raise ValueError("gofedlib's deps analyzer expects spectified 'ippath', in opts")
+            raise ValueError("gofedlib's deps analyzer expects specified 'ippath', in opts")
 
         ret.result = gofedlib.project_packages(src_path, opts['ippath'], opts['exclude_dirs'])
         ret.meta = {'language': 'golang', 'tool': 'gofedlib'}
