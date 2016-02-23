@@ -1,0 +1,6 @@
+# Custom service configuration
+database-host = localhost
+database-port = 27017
+database-name = gofed
+database-collection-project = project-api
+database-collection-package = package-api
