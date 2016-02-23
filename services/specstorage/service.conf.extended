@@ -1,0 +1,3 @@
+# Custom service configuration
+spec-dir = specs
+spec-dir-size = 500M
