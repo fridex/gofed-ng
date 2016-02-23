@@ -12,11 +12,9 @@ subcommand/load_scenarios.py
 *.rpm
 *.src.rpm
 *.spec
+system.json_bac
 
 # service related
 services/*/tmp/
 services/*/*.log
-services/filestorage/uploads/
-services/gopackagestorage/packages/
-system.json_bac
 
