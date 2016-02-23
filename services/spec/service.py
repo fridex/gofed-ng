@@ -67,32 +67,5 @@ class SpecService(ComputationalService):
         '''
         return "TODO"
 
-    @action
-    def spec_requires_raw(self, specfile):
-        '''
-        Get all requires for a package
-        @param specfile: raw specfile content
-        @return: list of requires
-        '''
-        return "TODO"
-
-    @action
-    def spec_buildrequires_raw(self, specfile):
-        '''
-        Get all buildrequires for a package
-        @param specfile: raw specfile content
-        @return: list of buildrequires
-        '''
-        return "TODO"
-
-    @action
-    def spec_packages_raw(self, specfile):
-        '''
-        Get all packages (e.g. devel, ...) of a package
-        @param specfile: raw specfile content
-        @return: list of packages
-        '''
-        return "TODO"
-
 if __name__ == "__main__":
     ServiceEnvelope.serve(SpecService)
