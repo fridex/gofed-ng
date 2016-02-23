@@ -76,6 +76,8 @@ class LicenseService(ComputationalService):
             self.extracted2_path = self.get_tmp_dirname()
             d = f.unpack(self.extracted2_path)
             src_path = d.get_path()
+        else:
+            raise ValueError("Filetype %s cannot be processed" % (d.get_type(),))
 
         stdout, stderr, _ = runcmd(["licenselib/cucos_license_check.py", src_path])
 
