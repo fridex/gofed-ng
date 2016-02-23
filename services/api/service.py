@@ -111,6 +111,8 @@ class ApiService(ComputationalService):
             self.extracted2_path = self.get_tmp_dirname()
             d = f.unpack(self.extracted2_path)
             src_path = d.get_path()
+        else:
+            raise ValueError("Filetype %s cannot be processed" % (d.get_type(),))
 
         # TODO: handle opts
         ret.result = gofedlib.api(src_path, opts['exclude_dirs'])
