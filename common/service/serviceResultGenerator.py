@@ -54,7 +54,8 @@ class ServiceResultGenerator(object):
             self._stats['meta'][key] = val
 
     def log_result(self, result):
-        if not isinstance(result, dict) and not isinstance(result, str) and not isinstance(result, list):
+        if not isinstance(result, dict) and not isinstance(result, str)\
+                and not isinstance(result, list) and not isinstance(result, bool):
             raise ValueError("Unknown result type %s" % (type(result),))
         self._stats['result'] = result
 
