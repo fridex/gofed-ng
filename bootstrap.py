@@ -21,6 +21,7 @@
 
 import os
 import sys
+import re
 import ast
 import json
 import codegen
@@ -200,6 +201,13 @@ class GofedBootstrap(cli.Application):
         return service_classes
 
     def _generate_scenarios(self):
+        def get_scenario_name(f_name):
+            name = f[:-len('.py')]
+            name = re.sub( r"([A-Z])", r" \1", name).split()
+            name = [x.lower() for x in name ]
+            name = "-".join(name)
+            return name
+
         log.info("Generating scenarios")
         content = ""
 
@@ -209,11 +217,12 @@ class GofedBootstrap(cli.Application):
             if not os.path.isfile(os.path.join('scenarios', f)):
                 continue
 
-            scenario_name = f[:-len('.py')]
-            scenario_class = scenario_name[0].upper() + scenario_name[1:]
+            scenario_name = get_scenario_name(f)
+            scenario_module = f[:-len('.py')]
+            scenario_class = scenario_module[0].upper() + scenario_module[1:]
 
             content += 'from scenarios.%s import %s\n' % (
-                scenario_name, scenario_class)
+                scenario_module, scenario_class)
             content += 'GofedSystem.subcommand("%s", %s)\n' % (
                 scenario_name, scenario_class)
 
