@@ -21,6 +21,7 @@
 
 import os
 import gitapi
+import shutil
 from common.helpers.output import log
 from common.helpers.utils import runcmd
 from common.service.serviceResult import ServiceResult
@@ -45,6 +46,29 @@ class SpecStorageService(StorageService):
     def _ident2commit(cls, ident):
         return None if ident == "" else ident
 
+    # TODO: this will probably need a review
+    def _register_pkg(self, package_name):
+        def clean_up():
+            while len(self._pkgs) > self.pkg_count:
+                to_remove = self._pkgs[0]
+                with self.get_lock(to_remove):
+                    path = os.path.join(self.pkg_dir, to_remove)
+                    shutil.rmtree(path)
+
+        with self.get_lock(id(self._pkgs)):
+            self._pkgs.append(package_name)
+
+            if len(self._pkgs) > self.pkg_count:
+                clean_up()
+
+    # TODO: this will probably need a review
+    def _mark_used(self, package_name):
+        with self.get_lock(id(self._pkgs)):
+            if package_name in self._pkgs:
+                self._pkgs.remove(package_name)
+
+            self._pkgs.append(package_name)
+
     @classmethod
     def signal_startup(cls, config):
         cls.pkg_dir = config.get('pkg-dir', DEFAULT_PKG_DIR)
@@ -53,13 +77,14 @@ class SpecStorageService(StorageService):
         if not os.path.isdir(cls.pkg_dir):
             os.mkdir(cls.pkg_dir)
 
-    # TODO: clean up
+        cls._pkgs = []
 
     def _git_tree_prepare(self, package_name, branch, commit=None):
         path = os.path.join(self.pkg_dir, package_name)
 
         if not os.path.isdir(path):
             runcmd(['fedpkg', 'clone', '-a', package_name], cwd=self.pkg_dir)
+            self._register_pkg(package_name)
 
         path = os.path.join(self.pkg_dir, package_name)
 
@@ -70,6 +95,7 @@ class SpecStorageService(StorageService):
         else:
             repo.git_pull()
 
+        self._mark_used(package_name)
         return path
 
     @action
