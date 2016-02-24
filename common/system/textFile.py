@@ -30,13 +30,13 @@ class TextFile(File):
         #   'ASCII text'
         self._path = path
         self._file_id = file_id
-        self._type = self._get_raw_type()
-        if self._type != 'ASCII text':
+        if not self.magic_match(self._get_raw_type()):
             raise ValueError("Not a text file %s" % (path,))
 
     @classmethod
     def magic_match(cls, m):
-        return m == 'ASCII text'
+        # we want to cover all text files (e.g. patches, specfiles, ...), so just grep for ASCII text
+        return m.find('ASCII text') != -1
 
     def get_rpm_version(self):
         return self._type[1]
