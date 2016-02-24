@@ -30,16 +30,20 @@ from common.service.action import action
 from goland.goTranslator import GoTranslator
 from common.service.serviceResult import ServiceResult
 
+DEFAULT_UPDATE_INTERVAL = 5*60
 PKGDB_API_URL = "https://admin.fedoraproject.org/pkgdb/api/packages/?&pattern=golang-*"
-UPDATE_INTERVAL = 5*60
 
 
 class GolandService(ComputationalService):
     ''' Golang specific service '''
     # it can be periodically updated, so read it every time
     # it would worth it to add this to config file
-    mappings_json = os.path.join("goland", "mappings.json")
-    packages = {'packages': None, 'updated': None}
+
+    @classmethod
+    def signal_startup(cls, config):
+        cls.mappings_json = os.path.join("goland", "mappings.json")
+        cls.packages = {'packages': None, 'updated': None}
+        cls.update_interval = config.get('update-interval', DEFAULT_UPDATE_INTERVAL)
 
     @classmethod
     def _fedora_pkgdb_packages_list(cls):
@@ -100,7 +104,7 @@ class GolandService(ComputationalService):
         ret = ServiceResult()
 
         def data_cached():
-            return self.packages['packages'] is not None and (time() - self.packages['updated'] < UPDATE_INTERVAL)
+            return self.packages['packages'] is not None and (time() - self.packages['updated'] < self.update_interval)
 
         if not data_cached():
             with self.get_lock(self._fedora_pkgdb_packages_list):

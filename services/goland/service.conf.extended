@@ -1,2 +1,4 @@
 # Custom service configuration
 tmp-dir = tmp
+# once per 5min
+update-interval = 300
