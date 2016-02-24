@@ -25,7 +25,7 @@ from scenario import Scenario
 
 
 class License(Scenario):
-    ''' License analysis example '''
+    ''' license analysis example '''
 
     def main(self, project_file):
         with self.get_system() as system:
