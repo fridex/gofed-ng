@@ -20,11 +20,18 @@
 # ####################################################################
 
 import os
+import urllib2
+import json
+from time import time
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
+from common.helpers.utils import dict2json
 from common.service.action import action
 from goland.goTranslator import GoTranslator
 from common.service.serviceResult import ServiceResult
+
+PKGDB_API_URL = "https://admin.fedoraproject.org/pkgdb/api/packages/?&pattern=golang-*"
+UPDATE_INTERVAL = 5*60
 
 
 class GolandService(ComputationalService):
@@ -32,6 +39,27 @@ class GolandService(ComputationalService):
     # it can be periodically updated, so read it every time
     # it would worth it to add this to config file
     mappings_json = os.path.join("goland", "mappings.json")
+    packages = {'packages': None, 'updated': None}
+
+    @classmethod
+    def _fedora_pkgdb_packages_list(cls):
+        ret = []
+        response = urllib2.urlopen(PKGDB_API_URL)
+
+        if response.code != 200:
+            raise RuntimeError("Failed to receive packages from Fedora package database (%s)"
+                               % str(response.code))
+
+        packages = json.loads(response.read())
+
+        if packages['output'] != 'ok':
+            raise RuntimeError("Bad response from Fedora package database:\n%s"
+                               % dict2json(packages))
+
+        # TODO: handle pagination
+        assert packages['page'] == 1 and packages['page_total'] == 1
+
+        return packages['packages']
 
     @action
     def golang_upstream2package(self, upstream_url):
@@ -61,6 +89,26 @@ class GolandService(ComputationalService):
             t = GoTranslator(self.mappings_json)
             ret.result = t.pkgname2upstream(package_name)
 
+        return ret
+
+    @action
+    def goland_package_listing(self):
+        '''
+        List of all available golang packages packaged in fedora
+        @return: packages packaged in fedora
+        '''
+        ret = ServiceResult()
+
+        def data_cached():
+            return self.packages['packages'] is not None and (time() - self.packages['updated'] < UPDATE_INTERVAL)
+
+        if not data_cached():
+            with self.get_lock(self._fedora_pkgdb_packages_list):
+                if not data_cached():
+                    self.packages['packages'] = self._fedora_pkgdb_packages_list()
+                    self.packages['updated'] = time()
+
+        ret.result = self.packages['packages']
         return ret
 
 if __name__ == "__main__":
