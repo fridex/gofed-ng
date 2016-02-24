@@ -50,7 +50,7 @@ class File(object):
         raise NotImplementedError
 
     def get_path(self):
-        self._path
+        return self._path
 
     def get_type(self):
         raise NotImplementedError()
