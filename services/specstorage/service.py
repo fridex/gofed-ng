@@ -37,6 +37,15 @@ class SpecStorageService(StorageService):
     ''' Acessing specfiles of packages '''
 
     @classmethod
+    def _commit2ident(cls, branch):
+        # TODO: maybe it would worth it to store actual commit
+        return "" if branch is None else branch
+
+    @classmethod
+    def _ident2commit(cls, ident):
+        return None if ident == "" else ident
+
+    @classmethod
     def signal_startup(cls, config):
         cls.pkg_dir = config.get('pkg-dir', DEFAULT_PKG_DIR)
         cls.pkg_count = int(config.get('pkg-count', DEFAULT_PKG_COUNT))
@@ -58,35 +67,52 @@ class SpecStorageService(StorageService):
         repo.git_checkout(branch)
         if commit is not None:
             repo.git_checkout(commit)
+        else:
+            repo.git_pull()
+
+        return path
 
     @action
     def spec_get(self, package_name, branch=None, commit=None):
+        '''
+        Get specfile of a package packaged in Fedora
+        @param package_name: package name
+        @param branch: branch (e.g. "f23", ...); if omitted "rawhide" is used
+        @param commit: fedpkg git commit; if omitted, the latest commit is used
+        @return: specfile file id
+        '''
         ret = ServiceResult()
 
         # prevent from accessing suspicious files
         package_name = os.path.basename(package_name)
 
-        if branch is None:
-            branch = "rawhide"
+        if branch is None or branch == "rawhide":
+            branch = "master"
 
         # we have to ensure that such package/branch/commit exist
         with self.get_lock(package_name):
-            self._git_tree_prepare(package_name, branch, commit)
-
-        ret.result = FileId.construct(self, "%s/%s/%s/%s.spec" % (package_name, branch, commit, package_name),
-                                      float("inf"), hash_ = "")
+            path = self._git_tree_prepare(package_name, branch, commit)
+            ident = "%s/%s/%s/%s.spec" % (package_name, branch, self._commit2ident(commit), package_name)
+            ret.result = FileId.construct(self, ident, float("inf"), path=os.path.join(path, "%s.spec" % package_name))
         return ret
 
     @action
     def spec_patch_listing(self, package_name, branch=None, commit=None):
+        '''
+        Get listing of downstream patches for package packaged in Fedora
+        @param package_name: package name
+        @param branch: branch (e.g. "f23", ...); if omitted, "rawhide" is used
+        @param commit: fedpkg git commit; if omitted, the latest commit is used
+        @return: list of downstream patches
+        '''
         ret = ServiceResult()
         ret.result = []
 
         # prevent from accessing suspicious files
         package_name = os.path.basename(package_name)
 
-        if branch is None:
-            branch = "rawhide"
+        if branch is None or branch == "rawhide":
+            branch = "master"
 
         with self.get_lock(package_name):
             self._git_tree_prepare(package_name, branch, commit)
@@ -96,10 +122,19 @@ class SpecStorageService(StorageService):
             for f in os.listdir(path):
                 if f.endswith('.patch'):
                     ret.result.append(f)
+
         return ret
 
     @action
     def spec_patch_get(self, package_name, patch_name, branch=None, commit=None):
+        '''
+        Get file id of a downstream patch of a package packaged in Fedora
+        @param package_name: package name
+        @param patch_name: name of the patch file
+        @param branch: branch (e.g. "f23", ...); if omitted, "rawhide" is used
+        @param commit: fedpkg git commit; if omitted, the latest commit is used
+        @return: file id of the patch
+        '''
         ret = ServiceResult()
         ret.result = []
 
@@ -107,20 +142,19 @@ class SpecStorageService(StorageService):
         package_name = os.path.basename(package_name)
         patch_name = os.path.basename(patch_name)
 
-        if branch is None:
-            branch = "rawhide"
+        if branch is None or branch == "rawhide":
+            branch = "master"
 
         with self.get_lock(package_name):
-            self._git_tree_prepare(package_name, branch, commit)
+            path = self._git_tree_prepare(package_name, branch, commit)
 
-            path = os.path.join(self.pkg_dir, package_name)
             patch_path = os.path.join(path, patch_name)
             if not os.path.isfile(patch_path):
                 raise ValueError("There is not patch %s for package %s, branch %s and commit %s"
                                  % (patch_name, package_name, branch, commit))
 
-            ret.result = FileId.construct(self, "%s/%s/%s/%s.spec" % (package_name, branch, commit, patch_name),
-                                          float("inf"), hash_ = "")
+            ident = "%s/%s/%s/%s" % (package_name, branch, self._commit2ident(commit), patch_name),
+            ret.result = FileId.construct(self, ident, float("inf"), path=patch_path)
 
         return ret
 
@@ -132,20 +166,20 @@ class SpecStorageService(StorageService):
         @return: file
         '''
         identifier = file_id.get_identifier()
-
-        identifier.split('/')
+        identifier = identifier.split('/')
 
         if len(identifier) != 4:
             raise ValueError("Unknown file to be accessed")
+
         package_name = os.path.basename(identifier[0])
         branch = os.path.basename(identifier[1])
-        commit = os.path.basename(identifier[2])
+        commit = self._ident2commit(os.path.basename(identifier[2]))
         f = os.path.basename(identifier[3])
 
         if not f.endswith('.spec') and not f.endswith('.patch'):
             raise ValueError("Unknown file to be accessed")
 
-        path = os.path.join(self.pkg_path, package_name)
+        path = os.path.join(self.pkg_dir, package_name)
         file_path = os.path.join(path, f)
 
         log.debug("downloading '%s'" % (file_path,))
