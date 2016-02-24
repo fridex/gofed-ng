@@ -32,9 +32,12 @@ class FileId(object):
         self._file_id = file_id
 
     @staticmethod
-    def construct(service, path, valid_until, hash_=None):
+    def construct(service, identifier, valid_until, hash_=None, path=None):
+        if path is None:
+            path = identifier
+
         ret = {
-            'identifier': path,
+            'identifier': identifier,
             'service': service.get_service_name(),
             'host': service.get_host(),
             'port': service.get_port(),
