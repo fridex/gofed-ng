@@ -63,6 +63,7 @@ class Connection(object):
 
     def get_action(self, action_name, async=False):
         if action_name == 'download':
+            # TODO: encapsulate with DownloadCall
             if self.is_local():
                 getattr(self._instance, action_name)
             else:
