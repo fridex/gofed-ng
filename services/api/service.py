@@ -25,11 +25,15 @@ from common.helpers.output import log
 from common.helpers.utils import dict2json
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
+from common.service.serviceResult import ServiceResult
 from common.service.action import action
 from common.system.extractedRpmFile import ExtractedRpmFile
 from common.system.extractedSrpmFile import ExtractedSrpmFile
 from common.system.extractedTarballFile import ExtractedTarballFile
-from common.service.serviceResult import ServiceResult
+from common.system.tarballFile import TarballFile
+from common.system.rpmFile import RpmFile
+from common.system.srpmFile import SrpmFile
+
 
 import gofedlib.gosymbolsextractor as gofedlib
 from gofedlib.goapidiff import apidiff
@@ -97,6 +101,9 @@ class ApiService(ComputationalService):
         self.tmpfile_path = self.get_tmp_filename()
         with self.get_system() as system:
             f = system.download(file_id, self.tmpfile_path)
+
+        if not isinstance(f, RpmFile) and not isinstance(f, SrpmFile) and not isinstance(f, TarballFile):
+            raise ValueError("Unable to process filetype %s" % (f.get_type(),))
 
         self.extracted1_path = self.get_tmp_dirname()
         d = f.unpack(self.extracted1_path)
