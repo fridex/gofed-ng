@@ -32,7 +32,7 @@ class FileId(object):
         self._file_id = file_id
 
     @staticmethod
-    def construct(service, identifier, valid_until, hash_=None, path=None):
+    def construct(service, identifier, hash_=None, path=None):
         if path is None:
             path = identifier
 
@@ -41,7 +41,6 @@ class FileId(object):
             'service': service.get_service_name(),
             'host': service.get_host(),
             'port': service.get_port(),
-            'valid_until': valid_until,
             'sha1': file_hash(path) if hash_ is None else hash_,
             'size': os.path.getsize(path)
         }
@@ -54,8 +53,7 @@ class FileId(object):
             return False
 
         # let's make it dummy way for now
-        return 'identifier' in d and 'service' in d and 'host' in d and 'port' in d \
-            and 'valid_until' in d and 'sha1' in d
+        return 'identifier' in d and 'service' in d and 'host' in d and 'port' in d and 'sha1' in d
 
     def get_service_name(self):
         return self._file_id['service']

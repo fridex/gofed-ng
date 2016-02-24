@@ -61,7 +61,7 @@ class TarballStorageService(StorageService):
         with self.get_lock(filename):
             self.dircache.store(blob, filename)
 
-        return FileId.construct(self, self.dircache.get_file_path(filename), valid_until = float("inf"), hash_ = h)
+        return FileId.construct(self, self.dircache.get_file_path(filename), hash_ = h)
 
     @action
     def tarball_github_get(self, upstream_url, commit):
@@ -79,7 +79,7 @@ class TarballStorageService(StorageService):
         filename = self._get_github_file_name(m.group(1), m.group(2), commit)
 
         if self.dircache.is_available(filename):
-            res.result = FileId.construct(self, self.dircache.get_file_path(filename), valid_until = float("inf"))
+            res.result = FileId.construct(self, self.dircache.get_file_path(filename))
         else:
             res.result = self._github_download_tarball(m.group(1), m.group(2), commit)
 

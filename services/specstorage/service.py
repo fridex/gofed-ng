@@ -119,7 +119,7 @@ class SpecStorageService(StorageService):
         with self.get_lock(package_name):
             path = self._git_tree_prepare(package_name, branch, commit)
             ident = "%s/%s/%s/%s.spec" % (package_name, branch, self._commit2ident(commit), package_name)
-            ret.result = FileId.construct(self, ident, float("inf"), path=os.path.join(path, "%s.spec" % package_name))
+            ret.result = FileId.construct(self, ident, path=os.path.join(path, "%s.spec" % package_name))
         return ret
 
     @action
@@ -180,7 +180,7 @@ class SpecStorageService(StorageService):
                                  % (patch_name, package_name, branch, commit))
 
             ident = "%s/%s/%s/%s" % (package_name, branch, self._commit2ident(commit), patch_name),
-            ret.result = FileId.construct(self, ident, float("inf"), path=patch_path)
+            ret.result = FileId.construct(self, ident, path=patch_path)
 
         return ret
 

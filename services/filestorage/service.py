@@ -79,9 +79,10 @@ class FileStorageService(StorageService):
                 f.write(blob)
 
         creation_time = datetime_parse(time.ctime(os.path.getctime(dst)))
+        # TODO: remove, use dircache instead
         valid_until = creation_time + self.file_lifetime
 
-        res.result = FileId.construct(self, dst, str(valid_until), h)
+        res.result = FileId.construct(self, dst, h)
         return res
 
     @action
