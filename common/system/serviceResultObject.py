@@ -69,8 +69,7 @@ class ServiceResultObject(object):
     def get_raw_result(self):
         return self.get_raw()['result']
 
-    @actionCallWrap
-    def __call__(self, *args, **kwargs):
+    def _store_args(self, *args, **kwargs):
         if len(args) > 0:
             self._args = []
             for arg in args:
@@ -92,8 +91,31 @@ class ServiceResultObject(object):
                 else:
                     self._kwargs[key] = val
 
-        self._call_result = self._call(*args, **kwargs)
+    @actionCallWrap
+    def __call__(self, *args, **kwargs):
+        self._store_args(*args, **kwargs)
 
+        # now we have to serialize dicts/arrays
+        new_args = []
+        for arg in args:
+            if isinstance(arg, dict) or isinstance(arg, list):
+                try:
+                    new_args.append(json.dumps(arg))
+                except Exception as e:
+                    raise ValueError("Failed to serialize request for call '%s': %s" % (self._action_name, str(e)))
+            else:
+                new_args.append(arg)
+
+        for key, value in kwargs.iteritems():
+            if isinstance(value, dict) or isinstance(value, list):
+                try:
+                    kwargs[key] = json.dumps(value)
+                except Exception as e:
+                    raise ValueError("Failed to serialize request for call '%s': %s" % (self._action_name, str(e)))
+
+        self._call_result = self._call(*tuple(new_args), **kwargs)
+
+        # TODO: ?
         if type(self._call_result).__name__ in dir(__builtins__):
             self._local_call = True
 

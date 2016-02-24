@@ -21,6 +21,7 @@
 
 import sys
 import functools
+import json
 from common.system.fileId import FileId
 
 
@@ -29,13 +30,28 @@ def action(func):
     def wrapper(*args, **kwargs):
         new_args = []
         for arg in args:
-            if FileId.is_file_id(arg):
-                new_args.append(FileId(arg))
+            if isinstance(arg, str):
+                # when a json was supplied, we deserialize it to dict
+                try:
+                    new_args.append(json.loads(arg))
+                except:
+                    # regular string from a user
+                    new_args.append(arg)
             else:
                 new_args.append(arg)
 
+            if FileId.is_file_id(new_args[-1]):
+                new_args[-1] = FileId(new_args[-1])
+
         for key, value in kwargs.iteritems():
-            if FileId.is_file_id(value):
+            if isinstance(value, str):
+                # when a json was supplied, we deserialize it to dict
+                try:
+                    kwargs[key] = json.loads(value)
+                except:
+                    pass
+
+            if FileId.is_file_id(kwargs[key]):
                 kwargs[key] = FileId(value)
 
         return func(*tuple(new_args), **kwargs)
