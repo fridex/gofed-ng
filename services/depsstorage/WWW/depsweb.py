@@ -33,6 +33,8 @@ DEFAULT_DATABASE_NAME = "gofed"
 DEFAULT_DATABASE_COLLECTION_PROJECT = "project-deps"
 DEFAULT_DATABASE_COLLECTION_PACKAGE = "package-deps"
 DEFAULT_DEBUG = True
+DEFAULT_HOST = "127.0.0.1"
+DEFAULT_PORT = 5000
 
 app = Flask(APP_NAME)
 
@@ -127,7 +129,8 @@ def deps_package_deps(package, version, distro):
     ret = []
     filtering = {'_id': 0, 'version': 0, 'distro': distro, 'package': 0}
 
-    cursor = conn.get_deps_collection_package().find({'package': package, 'version': version, 'distro': distro}, filtering)
+    cursor = conn.get_deps_collection_package().find({'package': package, 'version': version, 'distro': distro},
+                                                     filtering)
     for item in cursor:
         ret.append({'meta': item['meta'], 'deps': item['deps']})
 
@@ -194,6 +197,8 @@ def print_help(progname):
 if __name__ == '__main__':
     configfile = None
     dbg = DEFAULT_DEBUG
+    host = DEFAULT_HOST
+    port = DEFAULT_PORT
 
     if len(sys.argv) != 3:
         print >> sys.stderr, "Expecting one argument"
@@ -221,7 +226,9 @@ if __name__ == '__main__':
             'database-name': DEFAULT_DATABASE_NAME,
             'database-collection-project': DEFAULT_DATABASE_COLLECTION_PROJECT,
             'database-collection-package': DEFAULT_DATABASE_COLLECTION_PACKAGE,
-            'debug': DEFAULT_DEBUG
+            'debug': DEFAULT_DEBUG,
+            'host': DEFAULT_HOST,
+            'port': DEFAULT_PORT
         })
         conf.read(configfile)
 
@@ -236,5 +243,5 @@ if __name__ == '__main__':
         else:
             raise ValueError("No section %s in config file" % (APP_NAME,))
 
-    app.run(debug=dbg)
+    app.run(host=host, port=port, debug=dbg)
 
