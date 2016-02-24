@@ -41,6 +41,10 @@ class TextFile(File):
     def get_rpm_version(self):
         return self._type[1]
 
+    def get_path(self):
+        return self._path
+
+    # TODO: distinguish diff/patch/spec/...
     def get_type(self):
         return 'text'
 
