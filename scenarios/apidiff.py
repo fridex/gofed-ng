@@ -36,10 +36,10 @@ class Apidiff(Scenario):
             with open(project_file2, 'r') as f:
                 file2 = system.async_call.upload(f.read())
 
-            api1 = system.async_call.api(file1.get_result())
-            api2 = system.async_call.api(file2.get_result())
+            api1 = system.async_call.api_analysis(file1.get_result())
+            api2 = system.async_call.api_analysis(file2.get_result())
 
-            apidiff = system.call.apidiff(api1.get_result(), api2.get_result())
+            apidiff = system.call.api_diff(api1.get_result(), api2.get_result())
 
             print dict2json(apidiff.get_result())
 
