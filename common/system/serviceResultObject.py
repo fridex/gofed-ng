@@ -21,6 +21,7 @@
 
 import sys
 import json
+from common.helpers.output import log
 from common.helpers.utils import dict2json
 from common.system.fileId import FileId
 from common.system.actionCallWrap import actionCallWrap
@@ -113,6 +114,8 @@ class ServiceResultObject(object):
                 except Exception as e:
                     raise ValueError("Failed to serialize request for call '%s': %s" % (self._action_name, str(e)))
 
+        log.debug("Calling %s, action %s, params:\nargs:%s\nkwargs%s"
+                  % (self._service_name, self._action_name, self._args, self._kwargs))
         self._call_result = self._call(*tuple(new_args), **kwargs)
 
         # TODO: ?
@@ -178,6 +181,9 @@ class ServiceResultObject(object):
         if self._file_id is not False:
             return self._file_id
         else:
+            log.debug("Calling %s, action %s, client stats:%s\nserver stats:%s\nresult%s"
+                      % (self._service_name, self._action_name, self.get_client_stats(),
+                         self.get_service_stats(), self.get_raw_result()))
             return self.get_raw_result()
 
     def get_client_stats(self):

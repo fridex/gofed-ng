@@ -23,6 +23,7 @@ import sys
 import rpyc
 import importlib
 import random
+from common.helpers.output import log
 import json
 from plumbum import SshMachine
 from common.helpers.output import log  # TODO: use log
@@ -31,21 +32,28 @@ from common.system.connectionCall import ConnectionCallSync, ConnectionCallAsync
 from common.system.connection import Connection
 from common.system.fileId import FileId
 from common.system.file import File
+from common.helpers.utils import dict2json
 
 
 class System(object):
 
     def __init__(self, config, system_json_file, service=False):
+
         self._config = config
         self._connections = {}
         self._service = service
         with open(system_json_file, 'r') as f:
             self._system = json.load(f)
 
+        log.debug("Config file:\n%s\n" % dict2json(config))
+        log.debug("System:\n%s\n" % dict2json(self._system))
+
     def __getattr__(self, name):
         if name == 'async_call':
+            log.debug("Preparing asynchronous call")
             return ConnectionCallAsync(self)
         elif name == 'call':
+            log.debug("Preparing synchronous call")
             return ConnectionCallSync(self)
         else:
             return getattr(System, name)
@@ -102,6 +110,7 @@ class System(object):
 
     def download(self, file_id, path):
         # TODO: this can be extended with IP/port check once multiple services of a same type will be available
+        log.debug("Downloading file '%s' to '%s'", dict2json(file_id), path)
         conn = self.get_connection(file_id.get_service_name())
         call = conn.get_action('download', async=False)
         blob = call(file_id.get_raw())

@@ -21,6 +21,7 @@
 
 import sys
 import rpyc
+from common.helpers.output import log
 from common.system.serviceResultObject import ServiceResultObject
 from common.service.serviceWrapper import ServiceWrapper
 from common.system.systemWrapper import SystemWrapper
@@ -44,6 +45,7 @@ class Connection(object):
             self._local = True
 
     def _connect(self):
+        log.debug("Connecting to service '%s', %s:%s", self._service_name, self.host, self.port)
         self._connection = rpyc.connect(self.host, self.port)
 
     def _get_connection(self):
@@ -62,6 +64,7 @@ class Connection(object):
         return not self.is_local()
 
     def get_action(self, action_name, async=False):
+        log.debug("getting action '%s' (async == %s)" % (action_name, async))
         if action_name == 'download':
             # TODO: encapsulate with DownloadCall
             if self.is_local():
@@ -80,6 +83,7 @@ class Connection(object):
                     return ServiceResultObject(self._service_name, action_name, self, action)
 
     def destruct(self):
+        log.debug("closing Connection to '%s'" % self._service_name)
         if self._connection is not None:
             self._connection.__del__()
 
