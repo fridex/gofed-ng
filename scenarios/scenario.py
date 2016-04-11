@@ -19,8 +19,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
+import sys
 from plumbum import cli
-from contextlib import contextmanager
 from common.system.system import System
 
 
@@ -36,3 +36,6 @@ class Scenario(cli.Application):
 
     def get_system(self):
         return System(self.parent.get_config(), self.parent.get_system_json_path())
+
+if __name__ == "__main__":
+    sys.exit(1)
