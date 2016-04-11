@@ -82,7 +82,7 @@ class LicenseService(ComputationalService):
         stdout, stderr, _ = runcmd(["licenselib/cucos_license_check.py", src_path])
 
         ret.result = json.loads(stdout)
-        ret.meta['stderr'] = json.loads(stderr)
+        ret.meta['stderr'] = stderr
         ret.meta['tool'] = "cucos_license_check"
 
         return ret
