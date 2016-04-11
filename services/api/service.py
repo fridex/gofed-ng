@@ -89,7 +89,7 @@ class ApiService(ComputationalService):
         @param opts: additional analysis options
         @return: list of exported API
         '''
-        default_opts = {'language': 'detect', 'tool': 'default', 'exclude_dirs': []}
+        default_opts = {'language': 'detect', 'tool': 'default'}
         ret = ServiceResult()
 
         if opts is None:
@@ -122,7 +122,7 @@ class ApiService(ComputationalService):
             raise ValueError("Filetype %s cannot be processed" % (d.get_type(),))
 
         # TODO: handle opts
-        ret.result = gofedlib.api(src_path, opts['exclude_dirs'])
+        ret.result = gofedlib.api(src_path)
         ret.meta = {'language': 'golang', 'tool': 'gofedlib'}
 
         return ret
