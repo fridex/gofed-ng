@@ -29,12 +29,12 @@ class Deps(Scenario):
     ''' analyze dependencies of a project '''
 
     language = cli.SwitchAttr("--language", str,
-                            help="specify project language",
-                            default="detect")
+                              help="specify projects language",
+                              default="detect", excludes=["--language1", "--language2"])
 
     tool = cli.SwitchAttr("--tool", str,
-                              help="specify import path for golang projects",
-                              default="default")
+                          help="specify tool to analyse projects with",
+                          default="default", excludes=["--tool1", "--tool2"])
 
     def construct_opts(self):
         opts = {}
@@ -46,7 +46,6 @@ class Deps(Scenario):
             opts['language'] = self.language
 
         return opts
-
 
     def main(self, project_file):
         with self.get_system() as system:
