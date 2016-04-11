@@ -59,7 +59,7 @@ class DepsService(ComputationalService):
         @return: list of dependencies
         '''
         ret = ServiceResult()
-        default_opts = {'language': 'detect', 'tool': 'default', 'exclude_dirs': []}
+        default_opts = {'language': 'detect', 'tool': 'default'}
 
         if opts is None:
             opts = default_opts
@@ -88,10 +88,7 @@ class DepsService(ComputationalService):
             raise ValueError("Filetype %s cannot be processed" % (d.get_type(),))
 
         # TODO: handle opts
-        if not 'ippath' in opts:
-            raise ValueError("gofedlib's deps analyzer expects specified 'ippath', in opts")
-
-        ret.result = gofedlib.project_packages(src_path, opts['ippath'], opts['exclude_dirs'])
+        ret.result = gofedlib.project_packages(src_path)
         ret.meta = {'language': 'golang', 'tool': 'gofedlib'}
 
         return ret

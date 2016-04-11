@@ -20,6 +20,7 @@
 # ####################################################################
 
 import sys
+from plumbum import cli
 from common.helpers.utils import dict2json
 from scenario import Scenario
 
@@ -27,8 +28,38 @@ from scenario import Scenario
 class Deps(Scenario):
     ''' analyze dependencies of a project '''
 
-    def main(self):
-        raise NotImplementedError()
+    language = cli.SwitchAttr("--language", str,
+                            help="specify project language",
+                            default="detect")
+
+    tool = cli.SwitchAttr("--tool", str,
+                              help="specify import path for golang projects",
+                              default="default")
+
+    def construct_opts(self):
+        opts = {}
+
+        if self.language:
+            opts['language'] = self.language
+
+        if self.tool:
+            opts['language'] = self.language
+
+        return opts
+
+
+    def main(self, project_file):
+        with self.get_system() as system:
+
+            opts = self.construct_opts()
+
+            with open(project_file, 'r') as f:
+                file_id = system.async_call.upload(f.read())
+
+            deps = system.async_call.deps_analysis(file_id.get_result(), opts)
+
+            print dict2json(deps.result)
+
         return 0
 
 if __name__ == '__main__':
