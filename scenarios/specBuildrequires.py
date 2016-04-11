@@ -27,8 +27,16 @@ from scenario import Scenario
 class SpecBuildrequires(Scenario):
     ''' get all Buildrequires from a specfile or source RPM '''
 
-    def main(self):
-        raise NotImplementedError()
+    def main(self, projectfile):
+        with self.get_system() as system:
+
+            with open(projectfile, 'r') as f:
+                file_id = system.async_call.upload(f.read())
+
+            br = system.async_call.spec_buildrequires(file_id.get_result())
+
+            print dict2json(br.result)
+
         return 0
 
 if __name__ == '__main__':
