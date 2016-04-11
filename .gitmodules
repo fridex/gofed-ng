@@ -7,3 +7,6 @@
 [submodule "services/deps/gofedlib"]
 	path = services/deps/gofedlib
 	url = https://github.com/gofed/lib.git
+[submodule "services/rpmstorage/lib"]
+	path = services/rpmstorage/lib
+	url = https://github.com/gofed/lib

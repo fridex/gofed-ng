@@ -24,6 +24,7 @@ import os
 import getpass
 import json
 import re
+import urllib2
 from datetime import timedelta
 from subprocess import PIPE, Popen
 from time import gmtime, strftime
@@ -105,6 +106,28 @@ def parse_timedelta(time_str):
         if param:
             time_params[name] = int(param)
     return timedelta(**time_params)
+
+
+def remote_exists(url):
+    # we will override default "GET" request, so no content is actually downloaded
+    class Request(urllib2.Request):
+        def get_method(self):
+            return "HEAD"
+
+    try:
+        while True:
+            request = Request(url)
+            response = urllib2.urlopen(request)
+
+            if response.code == 200:
+                return True
+            elif response.code == 301 or response.code == 302:
+                # we want to handle redirection
+                url = response.info().dict['Location']
+    except:
+        pass
+
+    return False
 
 
 if __name__ == '__main__':
