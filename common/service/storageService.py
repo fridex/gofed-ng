@@ -22,7 +22,6 @@
 import sys
 from threading import Lock
 from service import Service
-from common.system.system import System
 
 
 class StorageService(Service):

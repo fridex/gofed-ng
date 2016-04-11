@@ -17,7 +17,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import sys
 from plumbum import cli
 from common.helpers.utils import config2dict
 from common.helpers.version import VERSION
