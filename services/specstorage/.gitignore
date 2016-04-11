@@ -1,4 +1,6 @@
+pkgs
 virtual_env
 service.conf
 specstorage.log
 common
+system.json

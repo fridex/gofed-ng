@@ -2,9 +2,6 @@
 service.conf
 system.json
 gofed.conf
-services/*/common
-services/*/system.json
-services/*/service.conf
 subcommand/load_scenarios.py
 .ropeproject
 *.tar.gz
@@ -13,8 +10,4 @@ subcommand/load_scenarios.py
 *.src.rpm
 *.spec
 system.json_bac
-
-# service related
-services/*/tmp/
-services/*/*.log
 

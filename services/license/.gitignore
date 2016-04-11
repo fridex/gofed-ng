@@ -4,3 +4,4 @@ virtual_env
 service.conf
 license.log
 common
+system.json

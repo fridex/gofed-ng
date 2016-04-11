@@ -2,3 +2,4 @@ virtual_env
 service.conf
 filestorage.log
 common
+system.json
