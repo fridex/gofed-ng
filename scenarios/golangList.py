@@ -28,7 +28,11 @@ class GolangList(Scenario):
     ''' list all available golang packages packaged in Fedora '''
 
     def main(self):
-        raise NotImplementedError()
+        with self.get_system() as system:
+            packages = system.async_call.goland_package_listing()
+
+            print dict2json(packages.result)
+
         return 0
 
 if __name__ == '__main__':

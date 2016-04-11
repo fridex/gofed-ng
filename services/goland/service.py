@@ -47,23 +47,30 @@ class GolandService(ComputationalService):
 
     @classmethod
     def _fedora_pkgdb_packages_list(cls):
-        ret = []
-        response = urllib2.urlopen(PKGDB_API_URL)
+        packages = []
+        page = 0
 
-        if response.code != 200:
-            raise RuntimeError("Failed to receive packages from Fedora package database (%s)"
-                               % str(response.code))
+        while True:
+            response = urllib2.urlopen(PKGDB_API_URL + '&page=%d' % (page + 1))
 
-        packages = json.loads(response.read())
+            if response.code != 200:
+                raise RuntimeError("Failed to receive packages from Fedora package database (%s)"
+                                   % str(response.code))
 
-        if packages['output'] != 'ok':
-            raise RuntimeError("Bad response from Fedora package database:\n%s"
-                               % dict2json(packages))
+            response = json.loads(response.read())
 
-        # TODO: handle pagination
-        assert packages['page'] == 1 and packages['page_total'] == 1
+            if response['output'] != 'ok':
+                raise RuntimeError("Bad response from Fedora package database:\n%s"
+                                   % dict2json(response))
 
-        return packages['packages']
+            packages.append(response['packages'])
+
+            if response['page'] == response['page_total']:
+                break
+
+            page = int(response['page'])
+
+        return packages
 
     @action
     def golang_upstream2package(self, upstream_url):
