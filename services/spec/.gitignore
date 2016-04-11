@@ -1,6 +1,4 @@
-licenselib
-tmp
 virtual_env
 service.conf
-license.log
+spec.log
 common
