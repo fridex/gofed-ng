@@ -1,0 +1,6 @@
+gitapi==1.0.1
+plumbum==1.6.1.post0
+python-dateutil==2.5.2
+python-magic==0.4.11
+rpyc==3.3.0
+six==1.10.0

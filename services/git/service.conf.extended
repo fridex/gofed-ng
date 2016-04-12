@@ -1,0 +1,3 @@
+# Custom service configuration
+git-dir = repos
+git-dir-size = 500M
