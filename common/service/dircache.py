@@ -59,27 +59,45 @@ class Dircache(object):
     def get_path(self):
         return self._path
 
+    def get_location(self, filename):
+        '''
+        Return location based on current settings, the file can/cannot exist
+        @param filename: file name
+        @return: location string
+        '''
+        return os.path.join(self.get_path(), filename)
+
     def get_file_path(self, filename):
+        '''
+        Return file path, the file HAS TO exist
+        @param filename: file name
+        @return: location string
+        '''
         if not self.is_available(filename):
             raise ValueError("File is not available in dircache")
 
-        return os.path.join(self.get_path(), filename)
+        return self.get_location(filename)
 
     def store(self, blob, filename):
-        dst = os.path.join(self.get_path(), filename)
+        dst = self.get_location(filename)
 
         with open(dst, 'wb') as f:
             f.write(blob)
 
+        self.register(filename)
+
+    def register(self, filename):
+        if filename in self._fileusage:
+            raise KeyError("File '%s' already in dir cache" % filename)
         self._mark_used(filename)
         self._run_cleanup()
 
     def is_available(self, filename):
-        dst = os.path.join(self.get_path(), filename)
+        dst = self.get_location(filename)
         return os.path.isfile(dst)
 
     def retrieve(self, filename):
-        dst = os.path.join(self.get_path(), filename)
+        dst = self.get_location(filename)
 
         with open(dst, 'rb') as f:
             ret = f.read()
@@ -89,7 +107,7 @@ class Dircache(object):
         return ret
 
     def delete(self, filename):
-        dst = os.path.join(self.get_path(), filename)
+        dst = self.get_location(filename)
 
         if os.path.isfile(dst):
             os.remove(dst)
@@ -103,13 +121,17 @@ class Dircache(object):
         while self.get_current_size() > self.get_max_size():
             if len(self._fileusage) > 0:
                 filename = self._fileusage.pop(0)
-                dst = os.path.join(self.get_path(), filename)
+                dst = self.get_location(filename)
                 os.remove(dst)
             else:
                 raise IOError("Not enough space in cache file %s" %
                               (self.get_path(),))
 
+    def mark_used(self, filename):
+        self._mark_used()
+
     def _mark_used(self, filename):
+        # TODO: substitute with mark_used
         if filename in self._fileusage:
             self._fileusage.remove(filename)
 
