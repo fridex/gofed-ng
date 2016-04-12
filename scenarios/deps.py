@@ -20,21 +20,35 @@
 # ####################################################################
 
 import sys
-from plumbum import cli
 from common.helpers.utils import dict2json
-from scenario import Scenario
+from scenario import Scenario, SwitchAttr, Flag
 
 
 class Deps(Scenario):
     ''' analyze dependencies of a project '''
 
-    language = cli.SwitchAttr("--language", str,
-                              help="specify projects language",
-                              default="detect", excludes=["--language1", "--language2"])
+    language = SwitchAttr(["--language"], str,
+                          help="specify projects language",
+                          default="detect")
 
-    tool = cli.SwitchAttr("--tool", str,
-                          help="specify tool to analyse projects with",
-                          default="default", excludes=["--tool1", "--tool2"])
+    tool = SwitchAttr(["--tool"], str,
+                      help="specify tool to analyse projects with",
+                      default="default")
+
+    store = Flag(["--store"],
+                 help="store result in DepsStorage")
+
+    file_path = SwitchAttr(["--file", "-f"], str,
+                           help="Local file to run API on", excludes=["-p", "--store"])
+
+    commit = SwitchAttr(["--commit", "-c"], str,
+                        help="Commit of ", requires=["-p"])
+
+    project = SwitchAttr(["--project", "-p"], str,
+                         help="Remote project to run API analysis on", requires=["-c"])
+
+    meta = Flag(["--meta", "-m"],
+                help="show meta information in output as well")
 
     def construct_opts(self):
         opts = {}
@@ -47,17 +61,29 @@ class Deps(Scenario):
 
         return opts
 
-    def main(self, project_file):
+    def main(self):
+
+        opts = self.construct_opts()
+
         with self.get_system() as system:
 
-            opts = self.construct_opts()
-
-            with open(project_file, 'r') as f:
-                file_id = system.async_call.upload(f.read())
+            if self.file_path:
+                with open(self.file_path, 'r') as f:
+                    file_id = system.async_call.upload(f.read())
+            elif self.project:
+                file_id = system.async_call.tarball_get(self.project, self.commit)
 
             deps = system.async_call.deps_analysis(file_id.get_result(), opts)
 
-            print dict2json(deps.result)
+            if self.store and self.project:
+                system.call.deps_store_project(self.project, self.commit, deps.result, deps.meta)
+            elif self.store:
+                raise NotImplementedError("Not handled")
+
+            if self.meta:
+                print dict2json(deps.get_result_with_meta())
+            else:
+                print dict2json(deps.result)
 
         return 0
 
