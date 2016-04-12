@@ -104,7 +104,7 @@ class System(object):
 
     def download(self, file_id, path):
         # TODO: this can be extended with IP/port check once multiple services of a same type will be available
-        log.debug("Downloading file '%s' to '%s'", dict2json(file_id), path)
+        log.debug("Downloading file '%s' to '%s'", file_id.get_raw(), path)
         conn = self.get_connection(file_id.get_service_name())
         call = conn.get_action('download', async=False)
         blob = call(file_id.get_raw())
