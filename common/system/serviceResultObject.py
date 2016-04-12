@@ -186,6 +186,11 @@ class ServiceResultObject(object):
                          self.get_service_stats(), self.get_raw_result()))
             return self.get_raw_result()
 
+    def get_result_with_meta(self):
+        ret = self.get_stats()
+        ret['result'] = self.result
+        return ret
+
     def get_client_stats(self):
         ret = {
             "service_name": self._service_name,
