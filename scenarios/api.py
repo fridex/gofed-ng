@@ -34,7 +34,7 @@ class Api(Scenario):
     proj_commit = SwitchAttr(["--project-commit", "-c"], str,
                               help="Commit of the project", requires=["-p"])
 
-    proj_commit_date = SwitchAttr(["--project-commit", "-c"], str,
+    proj_commit_date = SwitchAttr(["--project-commit-date"], str,
                                   help="Commit date (needed when storing results)", requires=["--project-commit"])
 
     project = SwitchAttr(["--project", "-p"], str,
@@ -95,10 +95,11 @@ class Api(Scenario):
                 system.call.api_store_project(self.project, self.proj_commit,
                                               self.proj_commit_date, api.result, api.meta)
             elif self.store and self.package_name:
-                system.call.api_store_package(self.package, self.pkg_version, self.pkg_release,
+                system.call.api_store_package(self.package_name, self.pkg_version, self.pkg_release,
                                               self.pkg_distro, api.result, api.meta)
-            else:
-                raise RuntimeError("Store API of a local file is not supported")
+            elif self.store:
+                # when --package
+                raise RuntimeError("Store API not supported")
 
             if self.meta:
                 print dict2json(api.get_result_with_meta())
