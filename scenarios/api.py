@@ -87,9 +87,12 @@ class Api(Scenario):
             api = system.async_call.api_analysis(file_id.get_result())
 
             if self.store and self.project:
-                system.call.api_store_project(self.project, self.commit, api.result, api.meta)
-            elif self.store:
-                raise NotImplementedError("Not handled")
+                system.call.api_store_project(self.project, self.commit, self.commit_date, api.result, api.meta)
+            elif self.store and self.package_name:
+                system.call.api_store_package(self.package, self.pkg_version, self.pkg_release,
+                                              self.pkg_distro, api.result, api.meta)
+            else:
+                raise RuntimeError("Store API of a local file is not supported")
 
             if self.meta:
                 print dict2json(api.get_result_with_meta())

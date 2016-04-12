@@ -72,11 +72,12 @@ class ApiSaveStorageService(StorageService):
         return ret
 
     @action
-    def api_store_package(self, package, version, distro, api, meta):
+    def api_store_package(self, package, version, release, distro, api, meta):
         '''
         Store API of a package
         @param package: package name to store
         @param version: version of package
+        @param release: a package release
         @param distro: distribution
         @param api: exported api
         @param meta: metadata from analysis
@@ -85,6 +86,7 @@ class ApiSaveStorageService(StorageService):
         item = {
             'package': package,
             'version': version,
+            'release': release,
             'distro': distro,
             'api': api,
             'meta': meta
