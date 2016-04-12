@@ -31,8 +31,12 @@ class Api(Scenario):
     file_path = SwitchAttr(["--file", "-f"], str,
                            help="Local file to run API on", excludes=["-p", "--store"])
 
-    commit = SwitchAttr(["--commit", "-c"], str,
-                        help="Commit of ", requires=["-p"])
+    proj_commit = SwitchAttr(["--project-commit", "-c"], str,
+                              help="Commit of the project", requires=["-p"])
+
+    proj_commit_date = SwitchAttr(["--project-commit", "-c"], str,
+                                  help="Commit date (needed when storing results)", requires=["--project-commit"])
+
 
     project = SwitchAttr(["--project", "-p"], str,
                          help="Remote project to run API analysis on", requires=["-c"])
@@ -70,7 +74,7 @@ class Api(Scenario):
                 with open(self.file_path, 'r') as f:
                     file_id = system.async_call.upload(f.read())
             elif self.project:
-                file_id = system.async_call.tarball_get(self.project, self.commit)
+                file_id = system.async_call.tarball_get(self.project, self.proj_commit)
             elif self.package_name:
                 if self.pkg_arch:
                     file_id = system.async_call.rpm_get(self.package_name, self.pkg_version,
@@ -87,7 +91,10 @@ class Api(Scenario):
             api = system.async_call.api_analysis(file_id.get_result())
 
             if self.store and self.project:
-                system.call.api_store_project(self.project, self.commit, self.commit_date, api.result, api.meta)
+                if not self.proj_commit_date:
+                    raise ValueError("Commit date required when storing API results of a project")
+                system.call.api_store_project(self.project, self.proj_commit,
+                                              self.proj_commit_date, api.result, api.meta)
             elif self.store and self.package_name:
                 system.call.api_store_package(self.package, self.pkg_version, self.pkg_release,
                                               self.pkg_distro, api.result, api.meta)
