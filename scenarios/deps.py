@@ -20,65 +20,87 @@
 # ####################################################################
 
 import sys
+from common.helpers.output import log
 from common.helpers.utils import dict2json
 from scenario import Scenario, SwitchAttr, Flag
 
 
 class Deps(Scenario):
-    ''' analyze dependencies of a project '''
-
-    language = SwitchAttr(["--language"], str,
-                          help="specify projects language",
-                          default="detect")
-
-    tool = SwitchAttr(["--tool"], str,
-                      help="specify tool to analyse projects with",
-                      default="default")
-
-    store = Flag(["--store"],
-                 help="store result in DepsStorage")
+    ''' analyze dependencies of a project based on source code '''
 
     file_path = SwitchAttr(["--file", "-f"], str,
-                           help="Local file to run API on", excludes=["-p", "--store"])
+                           help="Local file to run dependency analysis on", excludes=["-p", "--store"])
 
-    commit = SwitchAttr(["--commit", "-c"], str,
-                        help="Commit of ", requires=["-p"])
+    proj_commit = SwitchAttr(["--project-commit", "-c"], str,
+                              help="Commit of the project", requires=["-p"])
+
+    proj_commit_date = SwitchAttr(["--project-commit-date"], str,
+                                  help="Commit date (needed when storing results)", requires=["--project-commit"])
 
     project = SwitchAttr(["--project", "-p"], str,
-                         help="Remote project to run API analysis on", requires=["-c"])
+                         help="Remote project to run dependency analysis on", requires=["-c"])
+
+    store = Flag(["--store"],
+                 help="Save computed results to DepsStorage")
 
     meta = Flag(["--meta", "-m"],
                 help="show meta information in output as well")
 
-    def construct_opts(self):
-        opts = {}
+    package_name = SwitchAttr(["--package-name"], str,
+                              help="Package to run dependency analysis on",
+                              requires=["--package-version", "--package-release", "--package-distro"],
+                              excludes=["--file", "--project", "--package"])
 
-        if self.language:
-            opts['language'] = self.language
+    pkg_version = SwitchAttr(["--package-version"], str,
+                                 help="Package version to run dependency analysis on")
 
-        if self.tool:
-            opts['language'] = self.language
+    pkg_release = SwitchAttr(["--package-release"], str,
+                                 help="Package release to run dependency analysis on")
 
-        return opts
+    pkg_distro = SwitchAttr(["--package-distro"], str,
+                                 help="Package distro to run dependency analysis on")
+
+    pkg_arch = SwitchAttr(["--package-arch"], str,
+                                help="Package architecture to run dependency analysis on;" +
+                                " if omitted, source RPM is used")
+
+    package = SwitchAttr(["--package"], str,
+                         help="Package name (fully qualified name) to run " +
+                              "dependency analysis on (e.g. flannel-0.5.5-5.fc24.x86_64.rpm)")
 
     def main(self):
-
-        opts = self.construct_opts()
-
         with self.get_system() as system:
-
             if self.file_path:
                 with open(self.file_path, 'r') as f:
                     file_id = system.async_call.upload(f.read())
             elif self.project:
-                file_id = system.async_call.tarball_get(self.project, self.commit)
+                file_id = system.async_call.tarball_get(self.project, self.proj_commit)
+            elif self.package_name:
+                if self.pkg_arch:
+                    file_id = system.async_call.rpm_get(self.package_name, self.pkg_version,
+                                                        self.pkg_release, self.pkg_distro, self.pkg_arch)
+                else:
+                    file_id = system.async_call.rpm_src_get(self.package_name, self.pkg_version,
+                                                            self.pkg_release, self.pkg_distro)
+            elif self.package:
+                file_id = system.async_call.rpm_get_by_name(self.package)
+            else:
+                log.error("No action to be performed")
+                return 1
 
-            deps = system.async_call.deps_analysis(file_id.get_result(), opts)
+            deps = system.async_call.deps_analysis(file_id.get_result())
 
             if self.store and self.project:
-                system.call.deps_store_project(self.project, self.commit, deps.result, deps.meta)
+                if not self.proj_commit_date:
+                    raise ValueError("Commit date required when storing dependency results of a project")
+                system.call.deps_store_project(self.project, self.proj_commit,
+                                               self.proj_commit_date, deps.result, deps.meta)
+            elif self.store and self.package_name:
+                system.call.deps_store_package(self.package_name, self.pkg_version, self.pkg_release,
+                                               self.pkg_distro, deps.result, deps.meta)
             elif self.store:
-                raise NotImplementedError("Not handled")
+                # TODO: when --package
+                raise RuntimeError("Store Deps not supported")
 
             if self.meta:
                 print dict2json(deps.get_result_with_meta())
