@@ -50,12 +50,11 @@ class DepsSaveStorageService(StorageService):
         cls.deps_package = cls.db[cls.collection_name_package]
 
     @action
-    def deps_store_project(self, project, commit, commit_date, deps, meta):
+    def deps_store_project(self, project, commit, deps, meta):
         '''
         Store API of a project
         @param project: project name
         @param commit: commit
-        @param commit_date: commit date
         @param deps: project deps
         @param meta: metadata from analysis
         '''
@@ -63,9 +62,8 @@ class DepsSaveStorageService(StorageService):
         item = {
             'project': project,
             'commit': commit,
-            'commit-date': commit_date,
-            'deps': json.loads(deps), # TODO: omit json loads()
-            'meta': json.loads(meta) # TODO: omit json loads()
+            'deps': deps,
+            'meta': meta
         }
 
         self.deps_project.insert(item)
@@ -88,8 +86,8 @@ class DepsSaveStorageService(StorageService):
             'package': package,
             'version': version,
             'distro': distro,
-            'deps': json.loads(deps), # TODO: omit json loads()
-            'meta': json.loads(meta) # TODO: omit jsom loads()
+            'deps': deps,
+            'meta': meta
         }
 
         self.deps_package.insert(item)
