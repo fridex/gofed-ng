@@ -46,71 +46,64 @@ class TarballStorageService(StorageService):
         log.debug("Dircache size %sB " % cls.dircache.get_max_size())
         log.debug("Dircache path '%s'" % cls.dircache.get_path())
 
-    def _get_github_file_name(self, user, project, commit):
+    @staticmethod
+    def _get_github_file_name(user, project, commit):
         return "github-%s-%s-%s.tar.gz" % (user, project, commit[:8])
 
-    def _github_download_tarball(self, user, project, commit):
-        tarball_url = 'https://github.com/%s/%s/archive/%s.tar.gz' % (user, project, commit[:8])
+    @staticmethod
+    def _get_bitbucket_file_name(user, project, commit):
+        return "bitbucket-%s-%s-%s.tar.gz" % (user, project, commit[:8])
 
+    @staticmethod
+    def _get_github_tarball_url(user, project, commit):
+        return 'https://github.com/%s/%s/archive/%s.tar.gz' % (user, project, commit[:8])
+
+    @staticmethod
+    def _get_bitbucket_tarball_url(user, project, commit):
+        return "https://bitbucket.org/%s/%s/get/%s.tar.gz" % (user, project, commit[:8])
+
+    def _download_tarball(self, tarball_url, filename):
         log.debug("Downloading from %s" % (tarball_url,))
         response = urllib2.urlopen(tarball_url)
         blob = response.read()
         h = blob_hash(blob)
 
-        filename = self._get_github_file_name(user, project, commit)
-        with self.get_lock(filename):
-            self.dircache.store(blob, filename)
+        self.dircache.store(blob, filename)
 
         return FileId.construct(self, self.dircache.get_file_path(filename), hash_ = h)
-
-    @action
-    def tarball_github_get(self, upstream_url, commit):
-        '''
-        Retrieve github tarball file
-        @param upstream_url: github upstream URL
-        @param commit: commit of upstream file
-        @return: tarball file id
-        '''
-        res = ServiceResult()
-        m = re.search('https://github.com/([a-z]+)/([a-z-_]+)/?', upstream_url)
-        if m is None:
-            raise ValueError("Expected URL in form 'https://github.com/<USER>/<REPO>/, got %s", (upstream_url,))
-
-        filename = self._get_github_file_name(m.group(1), m.group(2), commit)
-
-        if self.dircache.is_available(filename):
-            res.result = FileId.construct(self, self.dircache.get_file_path(filename))
-        else:
-            res.result = self._github_download_tarball(m.group(1), m.group(2), commit)
-
-        return res
-
-    @action
-    def tarball_bitbucket_get(self, upstream_url, commit):
-        '''
-        Retrieve bitbucket tarball file
-        @param upstream_url: bitbucket upstream URL
-        @param commit: commit of upstream file
-        @return: tarball file id
-        '''
-        # TODO: implement
-        raise NotImplementedError("Retrieving files from bitbucket is currently not implemented")
 
     @action
     def tarball_get(self, upstream_url, commit):
         '''
         Retrieve a tarball from upstream, try to detect upstream provider
         @param upstream_url: an upstream url
-        @param commit: commit of a tarball
-        @return: file id of the tarball
+        @param commit: commit of upstream file
+        @return: tarball file id
         '''
+        res = ServiceResult()
 
         if upstream_url.startswith('https://github.com'):
-            return self.tarball_github_get(upstream_url, commit)
+            m = re.search('https://github.com/([a-z]+)/([a-z-_]+)/?', upstream_url)
+            if m is None:
+                raise ValueError("Expected URL in form 'https://github.com/<USER>/<REPO>/, got %s", (upstream_url,))
+            tarball_url = self._get_github_tarball_url(m.group(1), m.group(2), commit)
+            filename = self._get_github_file_name(m.group(1), m.group(2), commit)
         elif upstream_url.startswith('https://bitbucket.org'):
-            return self.tarball_bitbucket_get(upstream_url, commit)
+            m = re.search('https://bitbucket.org/([a-z]+)/([a-z-_]+)/?', upstream_url)
+            if m is None:
+                raise ValueError("Expected URL in form 'https://bitbucket.org/<USER>/<REPO>/, got %s", (upstream_url,))
+            tarball_url = self._get_bitbucket_tarball_url(m.group(1), m.group(2), commit)
+            filename = self._get_bitbucket_file_name(m.group(1), m.group(2), commit)
         else:
             raise NotImplementedError("Unknown upstream provider %s" % (upstream_url,))
+
+        with self.get_lock(filename):
+            if self.dircache.is_available(filename):
+                res.result = FileId.construct(self, self.dircache.get_file_path(filename))
+            else:
+                res.result = self._download_tarball(tarball_url, filename)
+
+        return res
 
     @action
     def download(self, file_id):
@@ -120,14 +113,12 @@ class TarballStorageService(StorageService):
         @return: file
         '''
         filename = os.path.basename(file_id.get_identifier())
-        file_path = os.path.join(self.tarball_dir, filename)
-        log.info("downloading '%s'" % file_path)
 
-        with self.get_lock():
-            with open(file_path, 'rb') as f:
-                content = f.read()
+        with self.get_lock(filename):
+            content = self.dircache.retrieve(filename)
 
         return content
+
 
 if __name__ == "__main__":
     ServiceEnvelope.serve(TarballStorageService)
