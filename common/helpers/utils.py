@@ -130,5 +130,11 @@ def remote_exists(url):
     return False
 
 
+def format_str(text, formats):
+    for key, val in formats.iteritems():
+        # Now dummy way, since it could be escaped
+        text = re.sub(key, str(val), text)
+    return text
+
 if __name__ == '__main__':
     sys.exit(1)

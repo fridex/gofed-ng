@@ -21,17 +21,38 @@
 
 import sys
 from common.helpers.utils import dict2json
-from scenario import Scenario
+from common.helpers.utils import format_str
+from scenario import Scenario, SwitchAttr
 
 
 class GolangList(Scenario):
     ''' list all available golang packages packaged in Fedora '''
 
+    format = SwitchAttr(["--format"], str,
+                        help="specify output format (%a, %c, %d, %k, %m, %n, %r, %S, %s, %u)")
+
     def main(self):
         with self.get_system() as system:
             packages = system.async_call.goland_package_listing()
 
-            print dict2json(packages.result)
+            if self.format:
+                for package in packages.result:
+                    fmt = {
+                        '\%a': package["acls"],
+                        '\%c': package["creation_date"],
+                        '\%d': package["description"],
+                        '\%k': package["koschei_monitor"],
+                        '\%m': package["monitor"],
+                        '\%n': package["name"],
+                        '\%r': package["review_url"],
+                        '\%S': package["status"],
+                        '\%s': package["summary"],
+                        '\%u': package["upstream_url"]
+                    }
+
+                    print(format_str(self.format, fmt))
+            else:
+                print(dict2json(packages.result))
 
         return 0
 
