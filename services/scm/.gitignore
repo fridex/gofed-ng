@@ -1,6 +1,6 @@
 virtual_env
 service.conf
-git.log
+scm.log
 common
 system.json
 repos

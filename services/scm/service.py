@@ -29,24 +29,27 @@ from common.service.serviceResult import ServiceResult
 from common.service.action import action
 from common.helpers.utils import runcmd
 
-DEFAULT_GIT_DIR="repos"
-DEFAULT_GIT_DIR_SIZE='500M'
+DEFAULT_SCM_DIR="repos"
+DEFAULT_SCM_DIR_SIZE='500M'
+
+REPO_TYPE_GIT = 1
+REPO_TYPE_MERCURIAL = 2
 
 
-class GitService(ComputationalService):
+class ScmService(ComputationalService):
     ''' Git repo analysis '''
 
     @classmethod
     def signal_startup(cls, config):
-        cls.git_dir = config.get('git-dir', DEFAULT_GIT_DIR)
-        cls.git_dir_size = config.get('git-dir-size', DEFAULT_GIT_DIR_SIZE)
-        cls.dircache = Dircache(cls.git_dir, cls.git_dir_size)
+        cls.scm_dir = config.get('scm-dir', DEFAULT_SCM_DIR)
+        cls.scm_dir_size = config.get('scm-dir-size', DEFAULT_SCM_DIR_SIZE)
+        cls.dircache = Dircache(cls.scm_dir, cls.scm_dir_size)
         log.debug("Dircache size %sB " % cls.dircache.get_max_size())
         log.debug("Dircache path '%s'" % cls.dircache.get_path())
 
     @staticmethod
-    def _get_clone_dir_name(git_repo_url):
-        parts = git_repo_url.split('/')
+    def _get_clone_dir_name(repo_url):
+        parts = repo_url.split('/')
         if len(parts) > 2:
             # e.g. https://github.com/user/project
             return "%s-%s-%s" % (parts[-3], parts[-2], parts[-1])
@@ -54,10 +57,10 @@ class GitService(ComputationalService):
             # e.g. https://example.com/project.git
             return "%s-%s" % (parts[-2], parts[-1])
         else:
-            raise ValueError("Unknown repo '%s'", git_repo_url)
+            raise ValueError("Unknown repo '%s'", repo_url)
 
     @staticmethod
-    def _git_log_pretty(repo):
+    def _git_log(repo):
         stdout, stderr, rt = runcmd(["git", "log", "--pretty=format:%H:%an <%ae>:%at:%s"], repo)
         if rt != 0:
             raise RuntimeError("Failed to run git log --pretty: %s", stderr)
@@ -77,33 +80,55 @@ class GitService(ComputationalService):
         return ret
 
     @action
-    def git_log(self, git_repo_url, branch=None):
+    def scm_log(self, repo_url, branch=None):
         '''
-        Get git log of a git repo
-        @param git_repo_url: Git repo URL
+        Get SCM log of a repo
+        @param repo_url: Git repo URL
         @param branch: repo branch
-        @return: list of git (abbreviated hash, author, author email, author time, subject)
+        @return: list of scm commits (abbreviated hash, author, author email, author time, subject)
         '''
+        type = None
+
         ret = ServiceResult()
 
         if branch is not None and branch != "master":
             raise NotImplementedError("Handling different branch than master is not implement")
 
-        dirname = self._get_clone_dir_name(git_repo_url)
+        dirname = self._get_clone_dir_name(repo_url)
         dst_path = self.dircache.get_location(dirname)
 
         with self.get_lock(dirname):
             if self.dircache.is_available(dirname):
-                repo = gitapi.Repo(dst_path)
-                repo.git_pull()
+                try:
+                    repo = gitapi.Repo(dst_path)
+                    repo.git_pull()
+                    type = REPO_TYPE_GIT
+                except:
+                    raise ValueError("Unable to pull repo for '%s'" % repo_url)
+                    # TODO: handle mercurial
+                    pass
+
                 self.dircache.mark_used(dirname)
             else:
-                gitapi.git_clone(git_repo_url, dst_path)
+                try:
+                    gitapi.git_clone(repo_url, dst_path)
+                    type = REPO_TYPE_GIT
+                except:
+                    # TODO: handle mercurial
+                    raise ValueError("Unable to clone repo '%s'" % repo_url)
+                    pass
+
                 self.dircache.register(dirname)
 
-            ret.result = self._git_log_pretty(dst_path)
+            if type == REPO_TYPE_GIT:
+                ret.result = self._git_log(dst_path)
+            elif type == REPO_TYPE_MERCURIAL:
+                # TODO: handle mercurial
+                pass
+            else:
+                raise ValueError("Internal Error: Unhandled repo type")
 
         return ret
 
 if __name__ == "__main__":
-    ServiceEnvelope.serve(GitService)
+    ServiceEnvelope.serve(ScmService)

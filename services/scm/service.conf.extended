@@ -1,0 +1,3 @@
+# Custom service configuration
+scm-dir = repos
+scm-dir-size = 500M
