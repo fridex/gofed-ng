@@ -92,7 +92,7 @@ class GolandService(ComputationalService):
         '''
         Convert a package name packaged in Fedora to upstream URL
         @param upstream_url: URL of a project
-        @return: package name in Fedora
+        @return: URL of package upstream
         '''
         ret = ServiceResult()
 
