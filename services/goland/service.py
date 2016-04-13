@@ -63,7 +63,7 @@ class GolandService(ComputationalService):
                 raise RuntimeError("Bad response from Fedora package database:\n%s"
                                    % dict2json(response))
 
-            packages.append(response['packages'])
+            packages = packages + response['packages']
 
             if response['page'] == response['page_total']:
                 break
