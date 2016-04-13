@@ -21,7 +21,6 @@
 
 import sys
 from common.helpers.utils import dict2json
-from common.helpers.output import log
 from scenario import Scenario, Flag, SwitchAttr
 
 
@@ -31,14 +30,14 @@ class Api(Scenario):
     file_path = SwitchAttr(["--file", "-f"], str,
                            help="Local file to run API on", excludes=["-p", "--store"])
 
-    proj_commit = SwitchAttr(["--project-commit", "-c"], str,
+    proj_commit = SwitchAttr(["--project-commit"], str,
                               help="Commit of the project", requires=["-p"])
 
     proj_commit_date = SwitchAttr(["--project-commit-date"], str,
                                   help="Commit date (needed when storing results)", requires=["--project-commit"])
 
     project = SwitchAttr(["--project", "-p"], str,
-                         help="Remote project to run API analysis on", requires=["-c"])
+                         help="Remote project to run API analysis on", requires=["--project-commit"])
 
     store = Flag(["--store"],
                  help="Save computed results to ApiStorage")
@@ -69,23 +68,10 @@ class Api(Scenario):
 
     def main(self):
         with self.get_system() as system:
-            if self.file_path:
-                with open(self.file_path, 'r') as f:
-                    file_id = system.async_call.upload(f.read())
-            elif self.project:
-                file_id = system.async_call.tarball_get(self.project, self.proj_commit)
-            elif self.package_name:
-                if self.pkg_arch:
-                    file_id = system.async_call.rpm_get(self.package_name, self.pkg_version,
-                                                        self.pkg_release, self.pkg_distro, self.pkg_arch)
-                else:
-                    file_id = system.async_call.rpm_src_get(self.package_name, self.pkg_version,
-                                                            self.pkg_release, self.pkg_distro)
-            elif self.package:
-                file_id = system.async_call.rpm_get_by_name(self.package)
-            else:
-                log.error("No action to be performed")
-                return 1
+            file_id = self.prepare_file_by_args(system)
+
+            if file_id is None:
+                raise ValueError("No file specification supplied")
 
             api = system.async_call.api_analysis(file_id.get_result())
 

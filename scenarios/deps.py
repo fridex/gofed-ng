@@ -70,23 +70,10 @@ class Deps(Scenario):
 
     def main(self):
         with self.get_system() as system:
-            if self.file_path:
-                with open(self.file_path, 'r') as f:
-                    file_id = system.async_call.upload(f.read())
-            elif self.project:
-                file_id = system.async_call.tarball_get(self.project, self.proj_commit)
-            elif self.package_name:
-                if self.pkg_arch:
-                    file_id = system.async_call.rpm_get(self.package_name, self.pkg_version,
-                                                        self.pkg_release, self.pkg_distro, self.pkg_arch)
-                else:
-                    file_id = system.async_call.rpm_src_get(self.package_name, self.pkg_version,
-                                                            self.pkg_release, self.pkg_distro)
-            elif self.package:
-                file_id = system.async_call.rpm_get_by_name(self.package)
-            else:
-                log.error("No action to be performed")
-                return 1
+            file_id = self.prepare_file_by_args(system)
+
+            if not file_id:
+                raise ValueError("No file specified")
 
             deps = system.async_call.deps_analysis(file_id.get_result())
 

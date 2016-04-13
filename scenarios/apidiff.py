@@ -95,45 +95,18 @@ class Apidiff(Scenario):
     meta = Flag(["--meta", "-m"],
                 help="show meta information in output as well")
 
-
     def main(self):
         with self.get_system() as system:
-            if self.file1_path:
-                with open(self.file1_path, 'r') as f:
-                    file1_id = system.async_call.upload(f.read())
-            elif self.project1:
-                file1_id = system.async_call.tarball_get(self.project1, self.proj1_commit)
-            elif self.package1_name:
-                if self.pkg1_arch:
-                    file1_id = system.async_call.rpm_get(self.package1_name, self.pkg1_version,
-                                                        self.pkg1_release, self.pkg1_distro, self.pkg1_arch)
-                else:
-                    file1_id = system.async_call.rpm_src_get(self.package1_name, self.pkg1_version,
-                                                            self.pkg1_release, self.pkg1_distro)
-            elif self.package1:
-                file1_id = system.async_call.rpm_get_by_name(self.package1)
-            else:
-                raise ValueError("No action to be performed for file 1")
+            file1_id, file2_id = self.prepare_files2_by_args(system)
 
-            if self.file2_path:
-                with open(self.file2_path, 'r') as f:
-                    file2_id = system.async_call.upload(f.read())
-            elif self.project2:
-                file2_id = system.async_call.tarball_get(self.project2, self.proj2_commit)
-            elif self.package2_name:
-                if self.pkg2_arch:
-                    file2_id = system.async_call.rpm_get(self.package2_name, self.pkg2_version,
-                                                         self.pkg2_release, self.pkg2_distro, self.pkg2_arch)
-                else:
-                    file2_id = system.async_call.rpm_src_get(self.package2_name, self.pkg2_version,
-                                                             self.pkg2_release, self.pkg2_distro)
-            elif self.package2:
-                file2_id = system.async_call.rpm_get_by_name(self.package2)
-            else:
-                raise ValueError("No action to be performed for file 2")
+            if not file1_id:
+                raise ValueError("First file not specified")
 
-            api1 = system.async_call.api_analysis(file1_id.get_result())
-            api2 = system.async_call.api_analysis(file2_id.get_result())
+            if not file2_id:
+                raise ValueError("Second file not specified")
+
+            api1 = system.async_call.api_analysis(file1_id.result)
+            api2 = system.async_call.api_analysis(file2_id.result)
 
             apidiff = system.async_call.api_diff(api1.result, api2.result)
 
