@@ -28,6 +28,7 @@ import urllib2
 from datetime import timedelta
 from subprocess import PIPE, Popen
 from time import gmtime, strftime
+from contextlib import contextmanager
 
 
 def get_user():
@@ -135,6 +136,14 @@ def format_str(text, formats):
         # Now dummy way, since it could be escaped
         text = re.sub(key, str(val), text)
     return text
+
+
+@contextmanager
+def pushd(new_dir):
+    prev_dir = os.getcwd()
+    os.chdir(new_dir)
+    yield
+    os.chdir(prev_dir)
 
 if __name__ == '__main__':
     sys.exit(1)
