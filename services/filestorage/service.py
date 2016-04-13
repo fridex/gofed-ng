@@ -33,6 +33,7 @@ from common.system.fileId import FileId
 from common.service.serviceResult import ServiceResult
 
 DEFAULT_UPLOAD_DIR = 'uploads'
+# TODO: use dircache
 DEFAULT_FILE_LIFETIME = '2h'
 
 
