@@ -20,6 +20,7 @@
 # ####################################################################
 
 from pymongo import MongoClient
+from common.service.serviceResult import ServiceResult
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
@@ -55,13 +56,15 @@ class DepsStorageService(StorageService):
         Listing of all available projects with analyzed dependencies
         @return: list of all available projects with analyzed dependencies
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'commit': 0, '_id': 0, 'deps': 0, 'meta': 0, 'commit-date': 0}
 
         cursor = self.deps_project.find({}, filtering)
         for item in cursor:
-            if item['project'] not in ret:
-                ret.append(item['project'])
+            if item['project'] not in ret.result:
+                ret.result.append(item['project'])
 
         return ret
 
@@ -72,13 +75,15 @@ class DepsStorageService(StorageService):
         @param project: project name
         @return: list of all available commits with analyzed dependencies
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'_id': 0, 'deps': 0, 'project': 0, 'meta': 0, 'commit-date': 0}
 
         cursor = self.deps_project.find({'project': project}, filtering)
         for item in cursor:
             if item['commit'] not in ret:
-                ret.append(item['commit'])
+                ret.result.append(item['commit'])
 
         return ret
 
@@ -90,12 +95,14 @@ class DepsStorageService(StorageService):
         @param commit: commit hash
         @return: list of deps of the project with analysis metadata
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'commit': 0, '_id': 0, 'project': 0, 'commit-date': 0}
 
         cursor = self.deps_project.find({'project': project, 'commit': commit}, filtering)
         for item in cursor:
-            ret.append({'deps': item['deps'], 'meta': item['meta'], 'commit-date': item['commit-date']})
+            ret.result.append({'deps': item['deps'], 'meta': item['meta'], 'commit-date': item['commit-date']})
 
         return ret
 
@@ -105,13 +112,15 @@ class DepsStorageService(StorageService):
         Listing of all available packages with analyzed dependencies
         @return: list of all available packages
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'version': 0, '_id': 0, 'deps': 0, 'meta': 0}
 
         cursor = self.deps_package.find({}, filtering)
         for item in cursor:
             if item['package'] not in ret:
-                ret.append(item['package'])
+                ret.result.append(item['package'])
 
         return ret
 
@@ -122,7 +131,9 @@ class DepsStorageService(StorageService):
         @param package: package name
         @return: list of all available versions based on distro
         '''
-        ret = {}
+        ret = ServiceResult()
+        ret.result = {}
+
         filtering = {'_id': 0, 'deps': 0, 'package': 0, 'meta': 0}
 
         cursor = self.deps_package.find({'package': package}, filtering)
@@ -131,7 +142,7 @@ class DepsStorageService(StorageService):
                 ret[item['distro']] = []
 
             if item['version'] not in ret[item['distro']]:
-                ret[item['distro']].append(item['version'])
+                ret.result[item['distro']].append(item['version'])
 
         return ret
 
@@ -142,13 +153,15 @@ class DepsStorageService(StorageService):
         @param distro: distribution
         @return: list of all available versions in distribution
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'_id': 0, 'deps': 0, 'package': 0, 'meta': 0}
 
         cursor = self.deps_package.find({'package': package, 'distro': distro}, filtering)
         for item in cursor:
             if item['distro'] not in ret:
-                ret.append(item['distro'])
+                ret.result.append(item['distro'])
 
         return ret
 
@@ -161,12 +174,14 @@ class DepsStorageService(StorageService):
         @param distro: distribution
         @return: list of dependendencies of package with analysis metadata
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'version': 0, '_id': 0, 'package': 0}
 
         cursor = self.deps_package.find({'package': package, 'version': version, 'distro': distro}, filtering)
         for item in cursor:
-            ret.append({'deps': item['deps'], 'meta': item['meta']})
+            ret.result.append({'deps': item['deps'], 'meta': item['meta']})
 
         return ret
 
