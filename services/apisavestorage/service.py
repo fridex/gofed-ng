@@ -63,7 +63,7 @@ class ApiSaveStorageService(StorageService):
         item = {
             'project': project,
             'commit': commit,
-            'commit_date': commit_date,
+            'commit-date': commit_date,
             'api': api,
             'meta': meta
         }
