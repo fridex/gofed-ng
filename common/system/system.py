@@ -65,7 +65,7 @@ class System(object):
         service = RegistryClient.query(service_name, registry_host, int(registry_port))
 
         if len(service) < 1:
-            raise Exception("Service not found in Registry")
+            raise Exception("Service '%s' not found in Registry" % service_name)
 
         return service
 
