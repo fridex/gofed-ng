@@ -20,6 +20,7 @@
 # ####################################################################
 
 from pymongo import MongoClient
+from common.service.serviceResult import ServiceResult
 from common.service.storageService import StorageService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
@@ -55,13 +56,15 @@ class ApiStorageService(StorageService):
         Listing of all available projects with analyzed API
         @return: list of all available projects with analyzed API
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'commit': 0, '_id': 0, 'api': 0, 'meta': 0, 'commit-date': 0}
 
         cursor = self.api_project.find({}, filtering)
         for item in cursor:
-            if item['project'] not in ret:
-                ret.append(item['project'])
+            if item['project'] not in ret.result:
+                ret.result.append(item['project'])
 
         return ret
 
@@ -72,13 +75,15 @@ class ApiStorageService(StorageService):
         @param project: project name
         @return: list of all available commits
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'_id': 0, 'api': 0, 'project': 0, 'meta': 0, 'commit-date': 0}
 
         cursor = self.api_project.find({'project': project}, filtering)
         for item in cursor:
-            if item['commit'] not in ret:
-                ret.append(item['commit'])
+            if item['commit'] not in ret.result:
+                ret.result.append(item['commit'])
 
         return ret
 
@@ -90,12 +95,14 @@ class ApiStorageService(StorageService):
         @param commit: commit hash
         @return: list of APIs of the project with analysis metadata
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'commit': 0, '_id': 0, 'project': 0, 'commit-date': 0}
 
         cursor = self.api_project.find({'project': project, 'commit': commit}, filtering)
         for item in cursor:
-            ret.append({'api': item['api'], 'meta': item['meta'], 'commit-date': item['commit-date']})
+            ret.result.append({'api': item['api'], 'meta': item['meta'], 'commit-date': item['commit-date']})
 
         return ret
 
@@ -105,13 +112,15 @@ class ApiStorageService(StorageService):
         Listing of all available packages with analyzed API
         @return: list of all available packages
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'version': 0, '_id': 0, 'api': 0, 'meta': 0}
 
         cursor = self.api_package.find({}, filtering)
         for item in cursor:
-            if item['package'] not in ret:
-                ret.append(item['package'])
+            if item['package'] not in ret.result:
+                ret.result.append(item['package'])
 
         return ret
 
@@ -122,16 +131,18 @@ class ApiStorageService(StorageService):
         @param project: project name
         @return: list of all available versions based on distro
         '''
-        ret = {}
+        ret = ServiceResult
+        ret.result = {}
+
         filtering = {'_id': 0, 'api': 0, 'package': 0, 'meta': 0}
 
         cursor = self.api_package.find({'package': package}, filtering)
         for item in cursor:
-            if item['distro'] not in ret:
-                ret[item['distro']] = []
+            if item['distro'] not in ret.result:
+                ret.result[item['distro']] = []
 
-            if item['version'] not in ret[item['distro']]:
-                ret[item['distro']].append(item['version'])
+            if item['version'] not in ret.result[item['distro']]:
+                ret.result[item['distro']].append(item['version'])
 
         return ret
 
@@ -143,13 +154,15 @@ class ApiStorageService(StorageService):
         @param distro: distribution
         @return: list of all available versions based on distro
         '''
-        ret = {}
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'_id': 0, 'api': 0, 'package': 0, 'meta': 0}
 
         cursor = self.api_package.find({'package': package, 'distro': distro}, filtering)
         for item in cursor:
-            if item['distro'] not in ret:
-                ret.append(item['distro'])
+            if item['distro'] not in ret.result:
+                ret.result.append(item['distro'])
 
         return ret
 
@@ -161,12 +174,14 @@ class ApiStorageService(StorageService):
         @param version: package version
         @return: list of APIs of the project with analysis metadata
         '''
-        ret = []
+        ret = ServiceResult()
+        ret.result = []
+
         filtering = {'version': 0, '_id': 0, 'package': 0}
 
         cursor = self.api_package.find({'package': package, 'version': version}, filtering)
         for item in cursor:
-            ret.append({'api': item['api'], 'meta': item['meta']})
+            ret.result.append({'api': item['api'], 'meta': item['meta']})
 
         return ret
 
