@@ -54,7 +54,8 @@ class ServiceResultGenerator(object):
 
     def log_result(self, result):
         if not isinstance(result, dict) and not isinstance(result, str)\
-                and not isinstance(result, list) and not isinstance(result, bool):
+                and not isinstance(result, list) and not isinstance(result, bool) \
+                and not isinstance(result, unicode):
             raise ValueError("Unknown result type %s" % (type(result),))
         self._stats['result'] = result
 
