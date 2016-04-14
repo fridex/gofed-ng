@@ -79,7 +79,7 @@ class AppSingleton(object):
 conn = AppSingleton()
 
 
-@app.route('/deps/project/deps/<project>/<commit>', methods=['GET'])
+@app.route('/deps/v1/project/deps/<project>/<commit>', methods=['GET'])
 def deps_project_deps(project, commit):
     ret = []
     filtering = {'_id': 0}
@@ -95,7 +95,7 @@ def deps_project_deps(project, commit):
     return jsonify({'project': project, 'commit': commit, 'deps': ret})
 
 
-@app.route('/deps/project/log/<project>', methods=['GET'])
+@app.route('/deps/v1/project/log/<project>', methods=['GET'])
 def deps_project_log(project):
     ret = []
     filtering = {'_id': 0, 'deps': 0}
@@ -110,8 +110,8 @@ def deps_project_log(project):
     return jsonify({'project': project, 'log': ret})
 
 
-@app.route('/deps/project/listing', defaults={'page': 1}, methods=['GET'])
-@app.route('/deps/project/listing/<int:page>', methods=['GET'])
+@app.route('/deps/v1/project/listing', defaults={'page': 1}, methods=['GET'])
+@app.route('/deps/v1/project/listing/<int:page>', methods=['GET'])
 def deps_project_listing(page):
     ret = []
     filtering = {'commit': 0, '_id': 0, 'deps': 0, 'meta': 0, 'commit-date': 0}
@@ -124,7 +124,7 @@ def deps_project_listing(page):
     return jsonify({'page': page, 'pages': 1, 'projects': ret})
 
 
-@app.route('/deps/package/deps/<package>/<version>/<distro>', methods=['GET'])
+@app.route('/deps/v1/package/deps/<package>/<version>/<distro>', methods=['GET'])
 def deps_package_deps(package, version, distro):
     ret = []
     filtering = {'_id': 0, 'version': 0, 'distro': distro, 'package': 0}
@@ -140,8 +140,8 @@ def deps_package_deps(package, version, distro):
     return jsonify({'package': package, 'version': version, 'distro': distro, 'deps': ret})
 
 
-@app.route('/deps/package/log/<package>', defaults={'page': 1}, methods=['GET'])
-@app.route('/deps/package/log/<package>/<int:page>', methods=['GET'])
+@app.route('/deps/v1/package/log/<package>', defaults={'page': 1}, methods=['GET'])
+@app.route('/deps/v1/package/log/<package>/<int:page>', methods=['GET'])
 def deps_package_log(package, page):
     ret = []
     filtering = {'_id': 0, 'deps': 0}
@@ -156,8 +156,8 @@ def deps_package_log(package, page):
     return jsonify({'page': page, 'pages': 1, 'package': package, 'log': ret})
 
 
-@app.route('/deps/project/listing', defaults={'page': 1}, methods=['GET'])
-@app.route('/deps/project/listing/<int:page>', methods=['GET'])
+@app.route('/deps/v1/project/listing', defaults={'page': 1}, methods=['GET'])
+@app.route('/deps/v1/project/listing/<int:page>', methods=['GET'])
 def deps_package_listing(page):
     ret = []
     filtering = {'_id': 0, 'deps': 0, 'meta': 0, 'version': 0, 'distro': 0}
@@ -197,8 +197,6 @@ def print_help(progname):
 if __name__ == '__main__':
     configfile = None
     dbg = DEFAULT_DEBUG
-    host = DEFAULT_HOST
-    port = DEFAULT_PORT
 
     if len(sys.argv) != 3:
         print >> sys.stderr, "Expecting one argument"
@@ -240,6 +238,8 @@ if __name__ == '__main__':
             db_collection_name_package = conf.get(APP_NAME, 'database-collection-package')
             conn.init(db_host, db_port, db_name, db_collection_name_project, db_collection_name_package)
             dbg = conf.getboolean(APP_NAME, 'debug')
+            port = conf.getint(APP_NAME, 'port')
+            host = conf.get(APP_NAME, 'host')
         else:
             raise ValueError("No section %s in config file" % (APP_NAME,))
 
