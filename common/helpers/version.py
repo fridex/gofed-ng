@@ -28,6 +28,9 @@ def _get_version():
     except RuntimeError as e:
         if str(e).startswith('fatal: No names found, cannot describe anything.'):
             return 'git-' + get_githead()[:8]
+    except OSError:
+        # e.g. not a git repo
+        return "Unknown"
 
     return stdout
 
