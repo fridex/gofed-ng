@@ -305,8 +305,6 @@ class GofedBootstrap(cli.Application):
 
                 service_dir = os.path.join(
                     self.service_dir, service['name'].lower())
-                service_conf_extended = os.path.join(
-                    service_dir, 'service.conf.extended')
                 service_dir = os.path.join(
                     self.service_dir, service['name'].lower())
                 service_conf_extended = os.path.join(
