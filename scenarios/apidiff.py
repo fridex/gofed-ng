@@ -22,7 +22,6 @@
 import sys
 from common.helpers.utils import dict2json
 from scenario import Scenario, SwitchAttr, Flag
-from api import Api
 
 
 class Apidiff(Scenario):
