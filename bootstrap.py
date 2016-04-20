@@ -202,7 +202,6 @@ class GofedBootstrap(cli.Application):
         return ret
 
     def _analyse_service(self, directory):
-        ret = {}
         service_file = os.path.join(directory, 'service.py')
 
         with open(service_file, 'r') as f:
