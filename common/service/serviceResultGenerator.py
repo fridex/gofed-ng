@@ -21,6 +21,7 @@
 
 import sys
 import json
+import time
 from common.helpers.version import VERSION
 from common.helpers.utils import get_hostname, get_time_str
 
@@ -63,7 +64,7 @@ class ServiceResultGenerator(object):
         self._stats['meta']['service'] = name
         self._stats['meta']['service-version'] = VERSION
         self._stats['meta']['hostname'] = get_hostname()
-        self._stats['meta']['created'] = get_time_str()
+        self._stats['meta']['created'] = time.time()
 
     def log_service_aliases(self, names):
         self._stats['aliases'] = names
