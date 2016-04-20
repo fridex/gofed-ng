@@ -1,1 +1,91 @@
-<h1>Hello world</h1>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Fridolin Pokorny">
+
+    <title>Gofed-ng API Analysis Results</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/simple-sidebar.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/highlight.style.css">
+    <link rel="icon" href="img/favicon.png" type="image/x-icon">
+  </head>
+
+  <body style="overflow-y: scroll">
+    <h1 style="display: none">Gofed-ng API Analysis Results</h1>
+    <div id="wrapper">
+      <!-- Sidebar -->
+      <div id="sidebar-wrapper" class="no-print">
+        <ul class="sidebar-nav">
+          <li class="sidebar-brand">
+            <a href="/api">Gofed-ng API</a>
+          </li>
+          <li id="nav-overview">
+            <a href="#overview">Overview</a>
+          </li>
+          <li id="nav-architecture">
+            <a href="#projects">Projects</a>
+          </li>
+          <li id="nav-configuration">
+            <a href="#packages">Packages</a>
+          </li>
+        </ul>
+      </div>
+      <!-- Content -->
+      <div id="page-content-wrapper">
+        <div class="container-fluid">
+          <div class="row">
+            <div id="content" class="col-lg-12">
+              <!--
+              <div class="alert alert-danger text-center" role="alert">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                  Please enable JavaScript to browse this page. If you are
+                  seeing this with JavaScript enabled, make sure that this page
+                  is located on a web server (because of jQuery
+                  <code>load()</code> call).
+              </div>
+              -->
+          </div>
+        </div>
+      </div>
+    </div>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script type="text/javascript">
+    jQuery(function($) {
+      $(window).on('hashchange load', function() {
+        var hash = location.hash.replace( /^#/, '' );
+
+        $('html, body').animate({ scrollTop: 0 }, 'slow');
+
+        $(".sidebar-nav").find(".active").removeClass("active");
+        $('#nav-' + hash + ' a').addClass('active');
+
+        if (hash == "overview" || hash == "packages" || hash == "projects") {
+          content = hash;
+        } else {
+          content = 'overview';
+          $('#nav-overview a').addClass('active');
+        }
+
+        $("#content").empty().hide().load(content, function() { $("#content").fadeIn('5000'); });
+
+        return true;
+      });
+
+      $(document).ready(function(){
+        setTimeout(function() {
+          $("#under-construction").removeClass("hidden").animate({left: '52%', top: '5%', duration: 50000})
+        }, 1500);
+      });
+    });
+  </script>
+
+  </body>
+</html>
+

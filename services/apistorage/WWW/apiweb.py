@@ -23,7 +23,7 @@ import sys
 import os
 import getopt
 from pymongo import MongoClient
-from flask import Flask, jsonify, send_from_directory, abort
+from flask import Flask, jsonify, send_from_directory, abort, redirect, url_for
 from ConfigParser import ConfigParser
 
 APP_NAME = "APIWEB"
@@ -170,24 +170,24 @@ def api_package_listing(page):
     return jsonify({'page': page, 'pages': 1, 'packages': ret})
 
 
-@app.route('/api/css/<path:path>')
+@app.route('/api/page/css/<path:path>')
 def css(path):
     return send_from_directory('css', path)
 
 
-@app.route('/api/js/<path:path>')
+@app.route('/api/page/js/<path:path>')
 def js(path):
     return send_from_directory('js', path)
 
 
-@app.route('/api/html/<path:path>')
+@app.route('/api/page/<path:path>')
 def html(path):
-    return send_from_directory('html', path)
+    return send_from_directory('html', path + '.html')
 
 
 @app.route('/api')
 def index():
-    return send_from_directory('html', 'index.html')
+    return redirect(url_for('html', path="index"))
 
 
 def print_help(progname):
