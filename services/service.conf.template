@@ -1,9 +1,9 @@
 [{{ param['name'] }}]
-port = 0
+port = {{ param['port'] }}
 host = localhost
 quiet = False
 logfile = -
-#logfile = {{ param['name']|lower }}.log
+logfile = {{ param['name']|lower }}.log
 register = True
 register-type = UDP
 register-host = localhost

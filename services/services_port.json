@@ -1,0 +1,21 @@
+{
+  "api": 5670,
+  "apisavestorage": 5671,
+  "apistorage": 5672,
+  "deps": 5673,
+  "depssavestorage": 5674,
+  "depsstorage": 5675,
+  "filestorage": 5676,
+  "github": 5677,
+  "goland": 5678,
+  "gotest": 5679,
+  "license": 5680,
+  "packagestorage": 5681,
+  "rpm": 5682,
+  "rpmstorage": 5683,
+  "scm": 5684,
+  "scmstorage": 5685,
+  "spec": 5686,
+  "specstorage": 5687,
+  "tarballstorage": 5688
+}

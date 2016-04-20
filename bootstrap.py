@@ -60,7 +60,22 @@ class GofedBootstrap(cli.Application):
     no_configs = cli.Flag(["--no-configs"],
                           help="Do not generate service and client configs", group="Services")
 
-    def _get_exposed_funcs(self, node, path, method=False):
+    service_port = cli.SwitchAttr(["--service-port", "-p"], str,
+                                  help="Print service port mapping", group="Services",
+                                  excludes=["-o", "-c", "-u", "--no-configs"])
+
+    # ports mapping based on services_port.json
+    ports = None
+
+    def _get_service_port(self, service_name):
+        if not self.ports:
+            with open(os.path.join(self.service_dir, "services_port.json"), "r") as f:
+                self.ports = json.load(f)
+
+        return self.ports[service_name]
+
+    @staticmethod
+    def _get_exposed_funcs(node, path, method=False):
         def is_action(action):
             for dec in action.decorator_list:
                 if dec.id == 'action':
@@ -274,7 +289,7 @@ class GofedBootstrap(cli.Application):
             service_conf = os.path.join(service_dir, 'service.conf')
 
             self._render_template(service_conf_template, service_conf, {
-                                  'name': service['name']})
+                                  'name': service['name'], 'port': self._get_service_port(service['name'].lower())})
             self._append_extended_conf(service_dir, service_conf)
 
     def _render_gofed_conf(self, services):
@@ -337,6 +352,10 @@ class GofedBootstrap(cli.Application):
 
     def main(self):
         service_classes = []
+
+        if self.service_port:
+            print(self._get_service_port(self.service_port))
+            return 0
 
         log.info("Performing analyses for services in '%s'" % self.service_dir)
         for service in os.listdir(self.service_dir):

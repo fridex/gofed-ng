@@ -1,9 +1,6 @@
 FROM fedora:23
 MAINTAINER Fridolin Pokorny <fpokorny@redhat.com>
 
-# Service port
-EXPOSE 5003
-
 # Service configuration
 ENV SERVICE_DOCKER_DIR="/home/service"
 ENV SERVICE_NAME="specstorage"
