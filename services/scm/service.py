@@ -21,6 +21,8 @@
 
 import gitapi
 import re
+import shutil
+import os
 from common.service.dircache import Dircache
 from common.helpers.output import log
 from common.service.computationalService import ComputationalService
@@ -42,6 +44,9 @@ class ScmService(ComputationalService):
     @classmethod
     def signal_startup(cls, config):
         cls.scm_dir = config.get('scm-dir', DEFAULT_SCM_DIR)
+        if os.path.isdir(cls.scm_dir):
+            shutil.rmtree(cls.scm_dir)
+        os.mkdir(cls.scm_dir)
         cls.scm_dir_size = config.get('scm-dir-size', DEFAULT_SCM_DIR_SIZE)
         cls.dircache = Dircache(cls.scm_dir, cls.scm_dir_size)
         log.debug("Dircache size %sB " % cls.dircache.get_max_size())
