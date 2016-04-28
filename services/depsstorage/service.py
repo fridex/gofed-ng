@@ -82,7 +82,7 @@ class DepsStorageService(StorageService):
 
         cursor = self.deps_project.find({'project': project}, filtering)
         for item in cursor:
-            if item['commit'] not in ret:
+            if item['commit'] not in ret.result:
                 ret.result.append(item['commit'])
 
         return ret
