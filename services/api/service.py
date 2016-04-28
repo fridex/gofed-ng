@@ -21,6 +21,7 @@
 
 import os
 import shutil
+import sys
 from common.helpers.output import log
 from common.helpers.utils import dict2json
 from common.service.computationalService import ComputationalService
@@ -121,9 +122,18 @@ class ApiService(ComputationalService):
         else:
             raise ValueError("Filetype %s cannot be processed" % (d.get_type(),))
 
-        # TODO: handle opts
-        ret.result = gofedlib.api(src_path)
-        ret.meta = {'language': 'golang', 'tool': 'gofedlib'}
+        # TODO: handle detect
+        if (opts['language'] == 'golang' and opts['tool'] == 'gofedlib') or opts['language'] == 'detect':
+            try:
+                ret.result = gofedlib.api(src_path)
+            except:
+                exc_info = sys.exc_info()
+                ret.meta['error'] = [ str(exc_info[0]), str(exc_info[1]), str(exc_info[2])]
+            finally:
+                ret.meta['language'] = 'golang'
+                ret.meta['tool'] = 'gofedlib'
+        else:
+            raise NotImplementedError()
 
         return ret
 
