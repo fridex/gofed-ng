@@ -128,7 +128,7 @@ class Dircache(object):
                               (self.get_path(),))
 
     def mark_used(self, filename):
-        self._mark_used()
+        self._mark_used(filename)
 
     def _mark_used(self, filename):
         # TODO: substitute with mark_used
