@@ -22,11 +22,20 @@
 import sys
 from tqdm import tqdm
 from common.helpers.output import log
-from scenario import Scenario
+from scenario import Scenario, SwitchAttr, Flag
 
 
 class GolangDepsUpdate(Scenario):
     ''' update dependencies of Golang projects packaged in Fedora '''
+
+    max_depth = SwitchAttr("--max-depth", int, default=None,
+                              help="specify commit depth limit")
+
+    since_date = SwitchAttr("--since-date", str, default=None,
+                            help="specify since date")
+
+    skip_errors = Flag("--skip-errors",
+                       help="errors will be reported, but the computation will not be interrupted")
 
     def main(self):
         with self.get_system() as system:
@@ -41,23 +50,33 @@ class GolangDepsUpdate(Scenario):
                     # TODO: remove once support for mercurial and full package->upstream translation will be available
                     continue
 
-                print("Inspecting '%s'" % pkg['name'])
-                upstream_url = system.async_call.golang_package2upstream(pkg['name'])
+                try:
+                    raise ValueError("value error")
+                    print("Inspecting '%s'" % pkg['name'])
+                    upstream_url = system.async_call.golang_package2upstream(pkg['name'])
 
-                if pkg['name'] in stored_projects.result:
-                    stored_commits = system.async_call.deps_project_commit_listing(pkg['name'])
-                else:
-                    stored_commits = None
+                    if pkg['name'] in stored_projects.result:
+                        stored_commits = system.async_call.deps_project_commit_listing(pkg['name'])
+                    else:
+                        stored_commits = None
 
-                scm_log = system.async_call.scm_log(upstream_url.result)
+                    scm_log = system.async_call.scm_log(upstream_url.result,
+                                                        max_depth=self.max_depth,
+                                                        since_date=self.since_date)
 
-                for commit in tqdm(scm_log.result):
-                    log.debug("Commit %s project %s" % (commit['hash'], pkg['name']))
-                    if not stored_commits or commit not in stored_commits.result:
-                        file_id = system.async_call.scm_store(upstream_url.result, commit['hash'])
-                        deps = system.async_call.deps_analysis(file_id.result)
-                        system.async_call.deps_store_project(pkg['name'], commit['hash'], commit['time'],
-                                                             deps.result, deps.meta)
+                    for commit in tqdm(scm_log.result):
+                        log.debug("Commit %s project %s" % (commit['hash'], pkg['name']))
+                        if not stored_commits or commit not in stored_commits.result:
+                            file_id = system.async_call.scm_store(upstream_url.result, commit['hash'])
+                            deps = system.async_call.deps_analysis(file_id.result)
+                            system.async_call.deps_store_project(pkg['name'], commit['hash'], commit['time'],
+                                                                 deps.result, deps.meta)
+                except:
+                    exc_info = sys.exc_info()
+                    if self.skip_errors:
+                        log.error(exc_info[2].print_exc())
+                    else:
+                        raise exc_info
 
 
 if __name__ == '__main__':
