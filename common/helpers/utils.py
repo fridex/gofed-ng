@@ -65,7 +65,8 @@ def get_githead():
 
 def runcmd(cmd, cwd="."):
     ''' Run command `cmd' in working directory `cwd' '''
-    process = Popen(cmd, stderr=PIPE, stdout=PIPE, cwd=cwd, close_fds=True)
+    devnull = open(os.devnull, 'r')
+    process = Popen(cmd, stderr=PIPE, stdout=PIPE, stdin=devnull, cwd=cwd, close_fds=True)
     stdout, stderr = process.communicate()
     rt = process.returncode
 
