@@ -52,6 +52,9 @@ class ServiceResultGenerator(object):
             raise ValueError("Unknown meta type %s" % (type(meta),))
         for key, val in meta.iteritems():
             self._stats['meta'][key] = val
+        if 'error' not in self._stats['meta']:
+            # If there was not error, propagate no error flag
+            self._stats['meta']['error'] = False
 
     def log_result(self, result):
         if not isinstance(result, dict) and not isinstance(result, str)\
