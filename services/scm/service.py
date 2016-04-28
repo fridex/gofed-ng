@@ -60,14 +60,22 @@ class ScmService(ComputationalService):
             raise ValueError("Unknown repo '%s'", repo_url)
 
     @staticmethod
-    def _git_log(repo):
-        stdout, stderr, rt = runcmd(["git", "log", "--pretty=format:%H:%an <%ae>:%at:%s"], repo)
+    def _git_log(repo, max_depth, since_date):
+        cmd = ["git", "log", "--pretty=format:%H:%an <%ae>:%at:%s"]
+        if max_depth:
+            cmd.append("--max-count=%d" % max_depth)
+        if since_date:
+            cmd.append("--since=%s" % since_date)
+        stdout, stderr, rt = runcmd(cmd, repo)
         if rt != 0:
             raise RuntimeError("Failed to run git log --pretty: %s", stderr)
 
+        print(stdout)
         lines = stdout.split('\n')
         ret = []
         for line in lines:
+            if line == "":
+                continue # skip no results
             # hash: author name <e-mail>:time:subject
             m = re.match("([A-Fa-f0-9]+):(.*):([0-9]+):(.*)", line)
             ret.append({
@@ -80,15 +88,15 @@ class ScmService(ComputationalService):
         return ret
 
     @action
-    def scm_log(self, repo_url, branch=None):
+    def scm_log(self, repo_url, max_depth=None, since_date=None, branch=None):
         '''
         Get SCM log of a repo
         @param repo_url: Git repo URL
+        @param max_depth: log depth
+        @param since_date: since date
         @param branch: repo branch
         @return: list of scm commits (abbreviated hash, author, author email, author time, subject)
         '''
-        type = None
-
         ret = ServiceResult()
 
         if branch is not None and branch != "master":
@@ -121,7 +129,7 @@ class ScmService(ComputationalService):
                 self.dircache.register(dirname)
 
             if type == REPO_TYPE_GIT:
-                ret.result = self._git_log(dst_path)
+                ret.result = self._git_log(dst_path, max_depth, since_date)
             elif type == REPO_TYPE_MERCURIAL:
                 # TODO: handle mercurial
                 pass
