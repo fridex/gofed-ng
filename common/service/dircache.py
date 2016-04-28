@@ -94,7 +94,7 @@ class Dircache(object):
 
     def is_available(self, filename):
         dst = self.get_location(filename)
-        return os.path.isfile(dst)
+        return os.path.isfile(dst) or os.path.isdir(dst)
 
     def retrieve(self, filename):
         dst = self.get_location(filename)
