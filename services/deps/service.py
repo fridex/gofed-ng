@@ -21,6 +21,7 @@
 
 import os
 import shutil
+import sys
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.action import action
@@ -88,8 +89,14 @@ class DepsService(ComputationalService):
             raise ValueError("Filetype %s cannot be processed" % (d.get_type(),))
 
         # TODO: handle opts
-        ret.result = gofedlib.project_packages(src_path)
-        ret.meta = {'language': 'golang', 'tool': 'gofedlib'}
+        try:
+            ret.result = gofedlib.project_packages(src_path)
+        except:
+            exc_info = sys.exc_info()
+            ret.meta['error'] = [ str(exc_info[0]), str(exc_info[1]), str(exc_info[2])]
+        finally:
+            ret.meta['language'] = 'golang'
+            ret.meta['tool'] = 'gofedlib'
 
         return ret
 
