@@ -67,7 +67,7 @@ class ServiceResultGenerator(object):
         self._stats['meta']['service'] = name
         self._stats['meta']['service-version'] = VERSION
         self._stats['meta']['hostname'] = get_hostname()
-        self._stats['meta']['created'] = time.time()
+        self._stats['meta']['created'] = int(time.time())
 
     def log_service_aliases(self, names):
         self._stats['aliases'] = names
