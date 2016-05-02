@@ -43,6 +43,11 @@ class ScmStorageService(StorageService):
     def signal_startup(cls, config):
         cls.scm_dir = config.get('repos-dir', DEFAULT_REPOS_DIR)
         cls.scm_dir_size = config.get('repos-dir-size', DEFAULT_REPOS_DIR_SIZE)
+
+        if os.path.isdir(cls.scm_dir):
+            shutil.rmtree(cls.scm_dir)
+        os.mkdir(cls.scm_dir)
+
         cls.file_lifetime = config.get('repos-dir-size', DEFAULT_REPOS_DIR_SIZE)
         cls.dircache = Dircache(cls.scm_dir, cls.scm_dir_size)
         log.debug("Dircache size %sB " % cls.dircache.get_max_size())
