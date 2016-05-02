@@ -22,15 +22,17 @@
 import sys
 import os
 import shutil
+from threading import Lock
 
 
 class Dircache(object):
 
     def __init__(self, path, max_size=float("inf")):
-        self._path = path
+        self._path = os.path.join(os.getcwd(), path)
         self._max_size = self._get_setize(max_size)
         # file usage - from "less used" to the "most used"
         self._fileusage = []
+        self._lock = Lock()
 
         if not os.path.isdir(path):
             os.mkdir(path)
@@ -51,7 +53,8 @@ class Dircache(object):
 
     def set_max_size(self, max_size):
         self._max_size = max_size
-        self._run_cleanup()
+        with self._lock:
+            self._run_cleanup()
 
     def get_max_size(self):
         return self._max_size
@@ -74,51 +77,69 @@ class Dircache(object):
         @return: location string
         '''
         if not self.is_available(filename):
-            raise ValueError("File is not available in dircache")
+            raise ValueError("File '%s' is not available in dircache" % filename)
 
         return self.get_location(filename)
 
     def store(self, blob, filename):
-        dst = self.get_location(filename)
+        with self._lock:
+            dst = self.get_location(filename)
 
-        with open(dst, 'wb') as f:
-            f.write(blob)
+            with open(dst, 'wb') as f:
+                f.write(blob)
 
-        self.register(filename)
+            self._register(filename)
 
-    def register(self, filename):
+    def _register(self, filename):
         if filename in self._fileusage:
             raise KeyError("File '%s' already in dir cache" % filename)
         self._mark_used(filename)
         self._run_cleanup()
 
+    def register(self, filename):
+        with self._lock:
+            self._register(filename)
+
     def is_available(self, filename):
-        dst = self.get_location(filename)
-        return os.path.isfile(dst) or os.path.isdir(dst)
+        with self._lock:
+            return self._is_available(filename)
+
+    def _is_available(self, filename):
+        return filename in self._fileusage
 
     def retrieve(self, filename):
-        dst = self.get_location(filename)
+        with self._lock:
+            dst = self.get_location(filename)
 
-        with open(dst, 'rb') as f:
-            ret = f.read()
+            with open(dst, 'rb') as f:
+                ret = f.read()
 
-        self._mark_used(filename)
+            self._mark_used(filename)
 
         return ret
 
     def delete(self, filename):
-        dst = self.get_location(filename)
+        with self._lock:
+            dst = self.get_location(filename)
 
-        if os.path.isfile(dst):
-            os.remove(dst)
-        else:
-            shutil.rmtree(dst)
+            if os.path.isfile(dst):
+                os.remove(dst)
+            else:
+                shutil.rmtree(dst)
+
+    def _get_current_size(self):
+        size = 0
+        for entry in self._fileusage:
+            path = self.get_location(entry)
+            size += os.path.getsize(path)
+        return size
 
     def get_current_size(self):
-        return sum(os.path.getsize(f) for f in os.listdir(self.get_path()) if os.path.isfile(f))
+        with self._lock:
+            return self._get_current_size()
 
     def _run_cleanup(self):
-        while self.get_current_size() > self.get_max_size():
+        while self._get_current_size() > self.get_max_size():
             if len(self._fileusage) > 0:
                 filename = self._fileusage.pop(0)
                 dst = self.get_location(filename)
@@ -128,14 +149,15 @@ class Dircache(object):
                               (self.get_path(),))
 
     def mark_used(self, filename):
-        self._mark_used(filename)
+        with self._lock:
+            self._mark_used(filename)
 
     def _mark_used(self, filename):
-        # TODO: substitute with mark_used
         if filename in self._fileusage:
             self._fileusage.remove(filename)
 
         self._fileusage.append(filename)
+
 
 if __name__ == "__main__":
     sys.exit(1)
