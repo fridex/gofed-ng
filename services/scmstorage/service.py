@@ -72,10 +72,12 @@ class ScmStorageService(StorageService):
         return "%s.tar.gz" % dirname
 
     def _pack_repo(self, repo_dir, filename):
-        with pushd(self.dircache.get_path()): # we want to avoid 'repos/' dir inside pack
-            tar = tarfile.open(filename, "w:gz")
-            tar.add(repo_dir)
-            tar.close()
+        # tarfile is not thread sage, so we have to lock whole service here
+        with self.get_lock():
+            with pushd(self.dircache.get_path()): # we want to avoid 'repos/' dir inside pack
+                tar = tarfile.open(filename, "w:gz")
+                tar.add(repo_dir)
+                tar.close()
 
     @action
     def scm_store(self, repo_url, commit=None, branch=None):
