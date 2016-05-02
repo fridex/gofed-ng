@@ -19,17 +19,19 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ####################################################################
 
-import gitapi
-import re
+import hglib
 import shutil
 import os
+import sys
+import time
+from dateutil.parser import parse as date_parser
+from common.helpers.gitcmd import GitCmd
 from common.service.dircache import Dircache
 from common.helpers.output import log
 from common.service.computationalService import ComputationalService
 from common.service.serviceEnvelope import ServiceEnvelope
 from common.service.serviceResult import ServiceResult
 from common.service.action import action
-from common.helpers.utils import runcmd
 
 DEFAULT_SCM_DIR="repos"
 DEFAULT_SCM_DIR_SIZE='500M'
@@ -65,32 +67,64 @@ class ScmService(ComputationalService):
             raise ValueError("Unknown repo '%s'", repo_url)
 
     @staticmethod
-    def _git_log(repo, max_depth, since_date):
-        cmd = ["git", "log", "--pretty=format:%H:%an <%ae>:%at:%s"]
-        if max_depth:
-            cmd.append("--max-count=%d" % max_depth)
-        if since_date:
-            cmd.append("--since=%s" % since_date)
-        stdout, stderr, rt = runcmd(cmd, repo)
-        if rt != 0:
-            raise RuntimeError("Failed to run git log --pretty: %s", stderr)
+    def _hg_log(repo_path, max_depth, since_date):
+        repo = hglib.open(repo_path)
+        commits = repo.log()
 
-        print(stdout)
-        lines = stdout.split('\n')
+        since_date = date_parser(since_date)
+        since_date = time.mktime(since_date.timetuple())
+
         ret = []
-        for line in lines:
-            if line == "":
-                continue # skip no results
-            # hash: author name <e-mail>:time:subject
-            m = re.match("([A-Fa-f0-9]+):(.*):([0-9]+):(.*)", line)
+        for i, commit in enumerate(commits):
+            (rev, node, tags, branch, author, desc, date) = commit
+            # lets convert time to Unix timestamp
+            date = int(time.mktime(date.timetuple()))
+
+            if i > max_depth:
+                break
+
+            if date < since_date:
+                break
+
             ret.append({
-                'hash': m.group(1),
-                'author': m.group(2),
-                'time': m.group(3),
-                'commit': m.group(4)
+                'hash': node,
+                'author': author,
+                'time': date,
+                'commit': desc
             })
 
         return ret
+
+    @staticmethod
+    def _scm_clone(repo_url, dst_path):
+        try:
+            GitCmd.git_clone_repo(repo_url, dst_path)
+            return REPO_TYPE_GIT
+        except:
+            git_exc_info = sys.exc_info()
+            try:
+                hglib.clone(repo_url, dst_path)
+                return REPO_TYPE_MERCURIAL
+            except:
+                raise ValueError("Failed to clone repo '%s' to '%s':\nGIT:\n%s\nMercurial:\n%s\n",
+                                 repo_url, dst_path, str(git_exc_info), str(sys.exc_info()))
+
+    @staticmethod
+    def _scm_pull(repo_dir, branch="master"):
+        try:
+            repo = GitCmd(repo_dir)
+            repo.git_checkout(branch)
+            repo.git_pull()
+            return REPO_TYPE_GIT
+        except:
+            git_exc_info = sys.exc_info()
+            try:
+                repo = hglib.open(repo_dir)
+                repo.pull(update=True, branch="default" if branch != "master" else branch)
+                return REPO_TYPE_MERCURIAL
+            except:
+                raise ValueError("Failed to pull repo:\nGIT:\n%s\nMercurial:\n%s\n",
+                                 str(git_exc_info), str(sys.exc_info()))
 
     @action
     def scm_log(self, repo_url, max_depth=None, since_date=None, branch=None):
@@ -112,32 +146,16 @@ class ScmService(ComputationalService):
 
         with self.get_lock(dirname):
             if self.dircache.is_available(dirname):
-                try:
-                    repo = gitapi.Repo(dst_path)
-                    repo.git_pull()
-                    type = REPO_TYPE_GIT
-                except:
-                    raise ValueError("Unable to pull repo for '%s'" % repo_url)
-                    # TODO: handle mercurial
-                    pass
-
+                repo_type = self._scm_pull(dst_path)
                 self.dircache.mark_used(dirname)
             else:
-                try:
-                    gitapi.git_clone(repo_url, dst_path)
-                    type = REPO_TYPE_GIT
-                except:
-                    # TODO: handle mercurial
-                    raise ValueError("Unable to clone repo '%s'" % repo_url)
-                    pass
-
+                repo_type = self._scm_clone(repo_url, dst_path)
                 self.dircache.register(dirname)
 
-            if type == REPO_TYPE_GIT:
-                ret.result = self._git_log(dst_path, max_depth, since_date)
-            elif type == REPO_TYPE_MERCURIAL:
-                # TODO: handle mercurial
-                pass
+            if repo_type == REPO_TYPE_GIT:
+                ret.result = GitCmd.git_log_repo(dst_path, max_depth, since_date)
+            elif repo_type == REPO_TYPE_MERCURIAL:
+                ret.result = self._hg_log(dst_path, max_depth, since_date)
             else:
                 raise ValueError("Internal Error: Unhandled repo type")
 
