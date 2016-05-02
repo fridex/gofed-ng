@@ -20,9 +20,9 @@
 # ####################################################################
 
 import os
-import gitapi
 import shutil
 import tarfile
+from common.helpers.gitcmd import GitCmd
 from common.helpers.utils import pushd
 from common.helpers.output import log
 from common.service.dircache import Dircache
@@ -101,26 +101,25 @@ class ScmStorageService(StorageService):
 
         with self.get_lock(dirname):
             if not self.dircache.is_available(filename):
-                try:
-                    repo = gitapi.git_clone(repo_url, dst_path)
-                    repo.git_checkout(branch)
-                    if commit:
-                        repo.git_checkout(commit)
-                    else:
-                        commit = repo.command(dst_path, "rev-parse", "HEAD")[:7]
+                repo = GitCmd.git_clone_repo(repo_url, dst_path)
+                repo.git_checkout(branch)
+                if commit:
+                    repo.git_checkout(commit)
+                else:
+                    commit = repo.git_rev_parse_head(dst_path)[:7]
 
-                    # if user did not supplied commit, we have to check it explicitly
-                    filename = self._get_filename(self._get_dirname(repo_url, commit, branch))
-
-                except:
-                    # TODO: handle mercurial
-                    raise ValueError("Unable to clone repo '%s'" % repo_url)
-                    pass
+                # if user did not supplied commit, we have to check it explicitly
+                filename_old = filename
+                filename = self._get_filename(self._get_dirname(repo_url, commit, branch))
+                # we have to move it so it will be available with specified commit and branch
+                if filename_old != filename:
+                    shutil.move(filename_old, filename)
 
                 if not self.dircache.is_available(filename):
                     # if user did not supplied commit, we have to pack the repo
                     self._pack_repo(dirname, filename)
                 shutil.rmtree(dst_path)
+
                 if not self.dircache.is_available(filename):
                     self.dircache.register(filename)
 
