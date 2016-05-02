@@ -83,11 +83,12 @@ class Connection(object):
                     return ServiceResultObject(self._service_name, action_name, self, action)
 
     def destruct(self):
-        log.debug("closing Connection to '%s'" % self._service_name)
         if self._connection is not None:
+            log.debug("closing connection to '%s'" % self._service_name)
             self._connection.__del__()
 
         if self._instance is not None:
+            log.debug("destruction of a local instance of service '%s'" % self._service_name)
             self._instance.__del__()
 
 if __name__ == "__main__":
