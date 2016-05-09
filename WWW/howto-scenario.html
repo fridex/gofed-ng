@@ -32,6 +32,7 @@ immediately dive into the code:
 <pre><code class="python">
 from scenario import Scenario
 
+
 class Example(Scenario):
 	''' Example API diff scenario '''
 	def main(self, project_file1, project_file2):
@@ -77,9 +78,9 @@ $ ./gofed.py system example file1.tar.gz file2.srpm
 Voilà! Now you see API differences of projects.
 
 <div class="alert alert-danger" role="alert">
-  Always name scenario source files after scenario class names without uppercase
-  characters. Automated system will integrate your scenarios automatically and
-  you will make source tree cleaner.
+  Always name scenario source files after scenario class names. Uppercase
+  characters will distinguish dashes in scenario name (e.g. "apiScan.py" gets
+  mapped to "api-scan" command).
 </div>
 
 <h4>Understanding the Source Code</h4>
@@ -155,7 +156,8 @@ section.
 
 <p>
 Just note that synchronous calls operations block until a result is not ready,
-asynchronous calls continue execution on the client side.
+asynchronous calls continue execution on the client side. They block if you
+explicitly ask for the result and the computation hasn't finished.
 
 <h3>Available System & Action Methods</h3>
 
